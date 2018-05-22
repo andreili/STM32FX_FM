@@ -147,13 +147,16 @@ SECTIONS
 
     _sidata = LOADADDR(.data);
 
-    .data (NOLOAD) : AT (__etext)
+    .data : ALIGN(4)
     {
+        FILL(0xFF)
         . = ALIGN(4);
+        PROVIDE(__textdata__ = LOADADDR(.data));
         __data_start__ = .;
         *(vtable)
         _sdata = .;        /* create a global symbol at data start */
         *(.data*)
+        *(.ramtext)
 
         . = ALIGN(4);
         /* preinit data */
@@ -182,16 +185,18 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end */
         __data_end__ = .;
 
-    } > RAM
+    } > RAM AT > FLASH
 
-    .bss :
+    .bss (NOLOAD) : ALIGN(4)
     {
         . = ALIGN(4);
         _sbss = .;         /* define a global symbol at bss start */
         __bss_start__ = _sbss;
         *(.bss*)
+        *(.bss.*)
         *(COMMON)
         . = ALIGN(4);
+        PROVIDE(_bss_end = .);
         _ebss = .;
         __bss_end__ = _ebss;
     } > RAM

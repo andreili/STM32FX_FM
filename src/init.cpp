@@ -53,14 +53,22 @@ void base_init()
 void SystemInit()
 {
     base_init();
-
     // system initialization
     //__enable_fault_irq();
     //__enable_irq();
     STM32_RCC::init();
     STM32_SYSTICK::init();
 
+    /* Initialize interrupt vectors for a peripheral */
+    STM32_NVIC::init_vectors();
+}
+
+void PeriphInit()
+{
+    STM32_RCC::update_clock();
+
     /* Other IO and peripheral initializations */
+    STM32_GPIO::init_all();
     STM32_UART::init_all();
     STM32_SPI::init_all();
 #ifdef STM32_RTC_ENABLE
@@ -69,9 +77,6 @@ void SystemInit()
     #ifdef STM32_FATFS_USE
     sd_driver.init_gpio();
     #endif
-
-    /* Initialize interrupt vectors for a peripheral */
-    STM32_NVIC::init_vectors();
 }
 
 #define INIT_SP() \
@@ -79,9 +84,36 @@ void SystemInit()
         __ASM volatile("ldr sp, =_estack\n\r" : : ); \
     } \
 
+static inline void __initialize_data (uint32_t* from, uint32_t* region_begin, uint32_t* region_end)
+{
+    // Iterate and copy word by word.
+    // It is assumed that the pointers are word aligned.
+    uint32_t *p = region_begin;
+    while (p < region_end)
+        *p++ = *from++;
+}
+
+static inline void __initialize_bss (uint32_t* region_begin, uint32_t* region_end)
+{
+    // Iterate and clear word by word.
+    // It is assumed that the pointers are word aligned.
+    uint32_t *p = region_begin;
+    while (p < region_end)
+        *p++ = 0;
+}
+
+extern uint32_t __textdata__;
+extern uint32_t __data_start__;
+extern uint32_t __data_end__;
+extern uint32_t __bss_start__;
+extern uint32_t __bss_end__;
+
 void ISR::Reset()
 {
     INIT_SP();
     SystemInit();
+    __initialize_bss(&__bss_start__, &__bss_end__);
+    __initialize_data(&__textdata__, &__data_start__, &__data_end__);
+    PeriphInit();
     main();
 }
