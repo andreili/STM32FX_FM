@@ -9,17 +9,28 @@
 #endif
 #include "stm32_def.h"
 #include "stm32_conf.h"
+
 #include "stm32_flash.h"
 #include "stm32_rcc.h"
 #include "stm32_gpio.h"
 #include "stm32_nvic.h"
 #include "stm32_pwr.h"
-#include "stm32_sdram.h"
+#ifdef STM32_USE_SDRAM
+    #include "stm32_sdram.h"
+#endif
 #include "stm32_systick.h"
-#include "stm32_uart.h"
-#include "stm32_sd.h"
-#include "stm32_spi.h"
-#include "stm32_rtc.h"
+#ifdef STM32_USE_UART
+    #include "stm32_uart.h"
+#endif
+#ifdef STM32_USE_SD
+    #include "stm32_sd.h"
+#endif
+#ifdef STM32_USE_SPI
+    #include "stm32_spi.h"
+#endif
+#ifdef STM32_USE_RTC
+    #include "stm32_rtc.h"
+#endif
 #include "bitbanding.h"
 
 #define STM32_LOCK(HN) \
