@@ -74,7 +74,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
     #ifdef STM32_USE_UART3
     case USART3_BASE:
         STM32_RCC::enable_clk_GPIOB();
-        gpiob.set_config(GPIO_PIN_10|GPIO_PIN_11, GPIO_MODE_AF_PP, GPIO_AF7_USART3, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP);
+        gpiob::set_config(GPIO_PIN_10|GPIO_PIN_11, GPIO_MODE_AF_PP, GPIO_AF7_USART3, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP);
         break;
     #endif
     #ifdef STM32_USE_UART4
@@ -87,6 +87,8 @@ void STM32_UART::init_base(USART_TypeDef* uart)
     #endif
     #ifdef STM32_USE_UART6
     case USART6_BASE:
+        STM32_RCC::enable_clk_GPIOC();
+        gpioc::set_config(GPIO_PIN_6|GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_AF8_USART6, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP);
         break;
     #endif
     #ifdef STM32_USE_UART7
