@@ -1,8 +1,7 @@
 #ifndef __STM32_GPIO__
 #define __STM32_GPIO__
 
-#include <stdint.h>
-#include "stm32f4xx.h"
+#include "stm32_inc.h"
 
 #define GPIO_PIN_0                 ((uint16_t)0x0001U)  /* Pin 0 selected    */
 #define GPIO_PIN_1                 ((uint16_t)0x0002U)  /* Pin 1 selected    */

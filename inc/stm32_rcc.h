@@ -1,7 +1,7 @@
 #ifndef __STM32_RCC__
 #define __STM32_RCC__
 
-#include <stm32_conf.h>
+#include <stm32_inc.h>
 
 #define RCC_APB2LPENR_ADCLPEN RCC_APB2LPENR_ADC1LPEN
 #define RCC_FLAG_MASK  ((uint8_t)0x1FU)

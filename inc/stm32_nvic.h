@@ -1,7 +1,7 @@
 #ifndef STM32_NVIC_H
 #define STM32_NVIC_H
 
-#include "stm32_conf.h"
+#include "stm32_inc.h"
 
 #define NVIC_PRIORITYGROUP_0 ((uint32_t)0x07)/*!< 0 bits for pre-emption priority
                                                   4 bits for subpriority */

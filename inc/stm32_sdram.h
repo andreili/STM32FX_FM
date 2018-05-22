@@ -1,7 +1,7 @@
 #ifndef STM32_SDRAM_H
 #define STM32_SDRAM_H
 
-#include "stm32_conf.h"
+#include "stm32_inc.h"
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)

@@ -1,7 +1,7 @@
 #ifndef STM32_SYSTICK_H
 #define STM32_SYSTICK_H
 
-#include "stm32_conf.h"
+#include "stm32_inc.h"
 
 #define SYSTICK_CLKSOURCE_HCLK_DIV8    ((uint32_t)0x00000000U)
 #define SYSTICK_CLKSOURCE_HCLK         ((uint32_t)0x00000004U)

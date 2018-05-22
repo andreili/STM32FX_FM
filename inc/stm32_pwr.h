@@ -1,7 +1,7 @@
 #ifndef STM32_PWR_H
 #define STM32_PWR_H
 
-#include "stm32_conf.h"
+#include "stm32_inc.h"
 
 #define PWR_WAKEUP_PIN1                 ((uint32_t)0x00000100U)
 
