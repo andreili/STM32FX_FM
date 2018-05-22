@@ -21,4 +21,15 @@
 #include "stm32_rtc.h"
 #include "bitbanding.h"
 
+#define STM32_LOCK(HN) \
+    { \
+        if (HN == STM32_LOCKED) \
+            return STM32_RESULT_BUSY; \
+        else \
+            HN = STM32_LOCKED; \
+    }
+
+#define STM32_UNLOCK(HN) \
+    HN = STM32_UNLOCKED;
+
 #endif // STM32_INC_H

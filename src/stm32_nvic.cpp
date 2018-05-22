@@ -92,7 +92,3 @@ void ISR::HardFault()
 {
     Error_Handler();
 }
-
-void ISR::FLASH_IRQ()
-{
-}
