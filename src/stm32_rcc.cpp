@@ -8,11 +8,11 @@ uint32_t STM32_RCC::m_system_core_clock;
 uint32_t unused_reg;
 
 #define __MCO1_CLK_ENABLE()   enable_clk_GPIOA()
-#define MCO1_GPIO_PORT        STM32_GPIO<GPIOA_BASE>
+#define MCO1_GPIO_PORT        gpioa
 #define MCO1_PIN              GPIO_PIN_8
 
 #define __MCO2_CLK_ENABLE()   enable_clk_GPIOC()
-#define MCO2_GPIO_PORT        STM32_GPIO<GPIOC_BASE>
+#define MCO2_GPIO_PORT        gpioc
 #define MCO2_PIN              GPIO_PIN_9
 
 #define HSI_VALUE ((uint32_t)16000000UL)
@@ -379,14 +379,14 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
     if (RCC_MCOx == RCC_MCO1)
     {
         __MCO1_CLK_ENABLE();
-        MCO1_GPIO_PORT::set_config(MCO1_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        MCO1_GPIO_PORT.set_config(MCO1_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
     }
     #ifdef RCC_CFGR_MCO2
     else
     {
         __MCO2_CLK_ENABLE();
-        MCO2_GPIO_PORT::set_config(MCO2_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        MCO2_GPIO_PORT.set_config(MCO2_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (RCC_MCOSource | RCC_MCODiv));
     }
     #endif

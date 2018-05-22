@@ -20,8 +20,25 @@
                                                ((__GPIOx__) == (GPIOH))? 7U :\
                                                ((__GPIOx__) == (GPIOI))? 8U : 10U)
 
-template <uint32_t port>
-void STM32_GPIO<port>::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_alt, uint32_t pin_speed, uint32_t pin_pull)
+void STM32_GPIO::init_all()
+{
+    gpioa.init(GPIOA_BASE);
+    gpiob.init(GPIOB_BASE);
+    gpioc.init(GPIOC_BASE);
+    gpiod.init(GPIOD_BASE);
+    gpioe.init(GPIOE_BASE);
+    gpiof.init(GPIOF_BASE);
+    gpiog.init(GPIOG_BASE);
+    gpioh.init(GPIOH_BASE);
+    gpioi.init(GPIOI_BASE);
+}
+
+void STM32_GPIO::init(uint32_t base_addr)
+{
+    m_gpio = (GPIO_TypeDef*)base_addr;
+}
+
+void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_alt, uint32_t pin_speed, uint32_t pin_pull)
 {
     uint32_t position;
     uint32_t ioposition = 0x00U;
@@ -43,40 +60,40 @@ void STM32_GPIO<port>::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t 
             if ((pin_mode == GPIO_MODE_AF_PP) || (pin_mode == GPIO_MODE_AF_OD))
             {
                 /* Configure Alternate function mapped with the current IO */
-                temp = ((GPIO_TypeDef*)port)->AFR[position >> 3U];
+                temp = m_gpio->AFR[position >> 3U];
                 temp &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
                 temp |= ((uint32_t)(pin_alt) << (((uint32_t)position & (uint32_t)0x07U) * 4U));
-                ((GPIO_TypeDef*)port)->AFR[position >> 3U] = temp;
+                m_gpio->AFR[position >> 3U] = temp;
             }
 
             /* Configure IO Direction mode (Input, Output, Alternate or Analog) */
-            temp = ((GPIO_TypeDef*)port)->MODER;
+            temp = m_gpio->MODER;
             temp &= ~(GPIO_MODER_MODER0 << (position * 2U));
             temp |= ((pin_mode & GPIO_MODE) << (position * 2U));
-            ((GPIO_TypeDef*)port)->MODER = temp;
+            m_gpio->MODER = temp;
 
             /* In case of Output or Alternate function mode selection */
             if ((pin_mode == GPIO_MODE_OUTPUT_PP) || (pin_mode == GPIO_MODE_AF_PP) ||
                 (pin_mode == GPIO_MODE_OUTPUT_OD) || (pin_mode == GPIO_MODE_AF_OD))
             {
                 /* Configure the IO Speed */
-                temp = ((GPIO_TypeDef*)port)->OSPEEDR;
+                temp = m_gpio->OSPEEDR;
                 temp &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
                 temp |= (pin_speed << (position * 2U));
-                ((GPIO_TypeDef*)port)->OSPEEDR = temp;
+                m_gpio->OSPEEDR = temp;
 
                 /* Configure the IO Output Type */
-                temp = ((GPIO_TypeDef*)port)->OTYPER;
+                temp = m_gpio->OTYPER;
                 temp &= ~(GPIO_OTYPER_OT_0 << position) ;
                 temp |= (((pin_mode & GPIO_OUTPUT_TYPE) >> 4U) << position);
-                ((GPIO_TypeDef*)port)->OTYPER = temp;
+                m_gpio->OTYPER = temp;
             }
 
             /* Activate the Pull-up or Pull down resistor for the current IO */
-            temp = ((GPIO_TypeDef*)port)->PUPDR;
+            temp = m_gpio->PUPDR;
             temp &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
             temp |= (pin_pull << (position * 2U));
-            ((GPIO_TypeDef*)port)->PUPDR = temp;
+            m_gpio->PUPDR = temp;
 
             /*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
@@ -87,7 +104,7 @@ void STM32_GPIO<port>::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t 
 
                 temp = SYSCFG->EXTICR[position >> 2U];
                 temp &= ~(((uint32_t)0x0FU) << (4U * (position & 0x03U)));
-                temp |= ((uint32_t)(GPIO_GET_INDEX(((GPIO_TypeDef*)port))) << (4U * (position & 0x03U)));
+                temp |= ((uint32_t)(GPIO_GET_INDEX(m_gpio)) << (4U * (position & 0x03U)));
                 SYSCFG->EXTICR[position >> 2U] = temp;
 
                 /* Clear EXTI line configuration */
@@ -120,8 +137,7 @@ void STM32_GPIO<port>::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t 
     }
 }
 
-template <uint32_t port>
-void STM32_GPIO<port>::unset_config(uint32_t pin_mask)
+void STM32_GPIO::unset_config(uint32_t pin_mask)
 {
     uint32_t position;
     uint32_t ioposition = 0x00U;
@@ -140,24 +156,24 @@ void STM32_GPIO<port>::unset_config(uint32_t pin_mask)
         {
             /*------------------------- GPIO Mode Configuration --------------------*/
             /* Configure IO Direction in Input Floating Mode */
-            ((GPIO_TypeDef*)port)->MODER &= ~(GPIO_MODER_MODER0 << (position * 2U));
+            m_gpio->MODER &= ~(GPIO_MODER_MODER0 << (position * 2U));
 
             /* Configure the default Alternate Function in current IO */
-            ((GPIO_TypeDef*)port)->AFR[position >> 3U] &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
+            m_gpio->AFR[position >> 3U] &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
 
             /* Configure the default value for IO Speed */
-            ((GPIO_TypeDef*)port)->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
+            m_gpio->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
 
             /* Configure the default value IO Output Type */
-            ((GPIO_TypeDef*)port)->OTYPER  &= ~(GPIO_OTYPER_OT_0 << position) ;
+            m_gpio->OTYPER  &= ~(GPIO_OTYPER_OT_0 << position) ;
 
             /* Deactivate the Pull-up and Pull-down resistor for the current IO */
-            ((GPIO_TypeDef*)port)->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
+            m_gpio->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
 
             /*------------------------- EXTI Mode Configuration --------------------*/
             tmp = SYSCFG->EXTICR[position >> 2U];
             tmp &= (((uint32_t)0x0FU) << (4U * (position & 0x03U)));
-            if(tmp == ((uint32_t)(GPIO_GET_INDEX(((GPIO_TypeDef*)port))) << (4U * (position & 0x03U))))
+            if(tmp == ((uint32_t)(GPIO_GET_INDEX(m_gpio)) << (4U * (position & 0x03U))))
             {
                 /* Configure the External Interrupt or event for the current IO */
                 tmp = ((uint32_t)0x0FU) << (4U * (position & 0x03U));
@@ -175,12 +191,12 @@ void STM32_GPIO<port>::unset_config(uint32_t pin_mask)
     }
 }
 
-template class STM32_GPIO<GPIOA_BASE>;
-template class STM32_GPIO<GPIOB_BASE>;
-template class STM32_GPIO<GPIOC_BASE>;
-template class STM32_GPIO<GPIOD_BASE>;
-template class STM32_GPIO<GPIOE_BASE>;
-template class STM32_GPIO<GPIOF_BASE>;
-template class STM32_GPIO<GPIOG_BASE>;
-template class STM32_GPIO<GPIOH_BASE>;
-template class STM32_GPIO<GPIOI_BASE>;
+STM32_GPIO gpioa;
+STM32_GPIO gpiob;
+STM32_GPIO gpioc;
+STM32_GPIO gpiod;
+STM32_GPIO gpioe;
+STM32_GPIO gpiof;
+STM32_GPIO gpiog;
+STM32_GPIO gpioh;
+STM32_GPIO gpioi;

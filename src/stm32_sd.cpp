@@ -1012,20 +1012,20 @@ void STM32_SD::init_gpio()
 {
     STM32_RCC::enable_clk_SDIO();
 
-    STM32_GPIO<GPIOC_BASE>::set_config(GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 |
-                                       GPIO_PIN_11 | GPIO_PIN_12, GPIO_MODE_AF_PP,
-                                       GPIO_AF12_SDIO, GPIO_SPEED_FREQ_VERY_HIGH,
-                                       GPIO_NOPULL);
+    gpioc.set_config(GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 |
+                     GPIO_PIN_11 | GPIO_PIN_12, GPIO_MODE_AF_PP,
+                     GPIO_AF12_SDIO, GPIO_SPEED_FREQ_VERY_HIGH,
+                     GPIO_NOPULL);
 
-    STM32_GPIO<GPIOD_BASE>::set_config(GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_AF12_SDIO,
-                                       GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+    gpiod.set_config(GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_AF12_SDIO,
+                     GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
 }
 
 void STM32_SD::deinit_gpio()
 {
-    STM32_GPIO<GPIOC_BASE>::unset_config(GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 |
-                                         GPIO_PIN_11 | GPIO_PIN_12);
-    STM32_GPIO<GPIOD_BASE>::unset_config(GPIO_PIN_2);
+    gpioc.unset_config(GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 |
+                       GPIO_PIN_11 | GPIO_PIN_12);
+    gpiod.unset_config(GPIO_PIN_2);
 }
 
 void STM32_SD::init_low(uint32_t clock_edge, uint32_t clock_bypass,

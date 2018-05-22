@@ -191,27 +191,31 @@
   */ 
 #define GPIO_AF15_EVENTOUT      ((uint8_t)0x0FU)  /* EVENTOUT Alternate Function mapping */
 
-template <uint32_t port>
 class STM32_GPIO
 {
 public:
-    static inline uint32_t pin_read(uint32_t pin_mask) { return (((GPIO_TypeDef*)port)->IDR & pin_mask); }
+    static void init_all();
+    inline uint32_t pin_read(uint32_t pin_mask) { return (m_gpio->IDR & pin_mask); }
 
-    static inline void pin_ON(uint32_t pin_mask) { ((GPIO_TypeDef*)port)->BSRR = pin_mask; }
-    static inline void pin_OFF(uint32_t pin_mask) { ((GPIO_TypeDef*)port)->BSRR = (pin_mask << GPIO_BSRR_BR0_Pos); }
+    inline void pin_ON(uint32_t pin_mask) { m_gpio->BSRR = pin_mask; }
+    inline void pin_OFF(uint32_t pin_mask) { m_gpio->BSRR = (pin_mask << GPIO_BSRR_BR0_Pos); }
 
-    static void set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_alt, uint32_t pin_speed, uint32_t pin_pull);
-    static void unset_config(uint32_t pin_mask);
+    void set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_alt, uint32_t pin_speed, uint32_t pin_pull);
+    void unset_config(uint32_t pin_mask);
+private:
+    GPIO_TypeDef*   m_gpio;
+
+    inline void init(uint32_t base_addr);
 };
 
-#define gpioa STM32_GPIO<GPIOA_BASE>
-#define gpiob STM32_GPIO<GPIOB_BASE>
-#define gpioc STM32_GPIO<GPIOC_BASE>
-#define gpiod STM32_GPIO<GPIOD_BASE>
-#define gpioe STM32_GPIO<GPIOE_BASE>
-#define gpiof STM32_GPIO<GPIOF_BASE>
-#define gpiog STM32_GPIO<GPIOG_BASE>
-#define gpioh STM32_GPIO<GPIOH_BASE>
-#define gpioi STM32_GPIO<GPIOI_BASE>
+extern STM32_GPIO gpioa;
+extern STM32_GPIO gpiob;
+extern STM32_GPIO gpioc;
+extern STM32_GPIO gpiod;
+extern STM32_GPIO gpioe;
+extern STM32_GPIO gpiof;
+extern STM32_GPIO gpiog;
+extern STM32_GPIO gpioh;
+extern STM32_GPIO gpioi;
 
 #endif
