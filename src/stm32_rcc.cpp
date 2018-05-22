@@ -266,9 +266,9 @@ uint32_t STM32_RCC::config_osc()
         if (STM32_PLL_STATE == RCC_PLL_ON)
         {
             set_config_PLL_source((STM32_PLL_SOURCE | STM32_PLLM |
-                                  (STM32_PLLN << POSITION_VAL(RCC_PLLCFGR_PLLN)) |
-                                  (((STM32_PLLP >> 1U) - 1U) << POSITION_VAL(RCC_PLLCFGR_PLLP)) |
-                                  (STM32_PLLQ << POSITION_VAL(RCC_PLLCFGR_PLLQ))));
+                                  (STM32_PLLN << RCC_PLLCFGR_PLLN_Pos) |
+                                  (((STM32_PLLP >> 1U) - 1U) << RCC_PLLCFGR_PLLP_Pos) |
+                                  (STM32_PLLQ << RCC_PLLCFGR_PLLQ_Pos)));
             enable_PLL();
             WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) == RESET, PLL_TIMEOUT_VALUE);
         }
@@ -342,7 +342,7 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
         MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, STM32_CLOCK_APB2_DIV);
     }
 
-    m_system_core_clock = update_system_core_clock() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_HPRE)>> RCC_CFGR_HPRE_Pos];
+    update_clock();
     STM32_SYSTICK::init();
 
     return STM32_RESULT_OK;
@@ -584,4 +584,9 @@ __attribute__((weak)) void ISR::RCC_IRQ()
     {
         STM32_RCC::clear_IT(RCC_IT_CSS);
     }
+}
+
+void STM32_RCC::update_clock()
+{
+    m_system_core_clock = update_system_core_clock() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_HPRE)>> RCC_CFGR_HPRE_Pos];
 }

@@ -162,7 +162,7 @@ public:
     static inline void release_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = DISABLE; }
 
     ENDIS_REG_FLAG(PLL, RCC->CR, RCC_CR_PLLON)
-    static inline void set_config_PLL_source(uint32_t value) { MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC, value); }
+    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC->PLLCFGR, value); }
     static inline uint32_t get_source_PLL_OSC() { return RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC; }
     static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM, value); }
 
@@ -439,6 +439,8 @@ public:
 
     static inline void config_I2S(uint32_t val) { BIT_BAND_PER(RCC->CFGR, RCC_CFGR_I2SSRC) = val; }
     static inline uint32_t get_I2S_source() { return RCC->CFGR & RCC_CFGR_I2SSRC; }
+
+    static void update_clock();
 private:
     static uint32_t m_system_core_clock;
 
