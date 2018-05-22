@@ -153,6 +153,7 @@ void xprintf (			/* Put a formatted string to the default device */
 {
 	va_list arp;
 
+    outptr = 0;			/* Switch destination for device */
 
 	va_start(arp, fmt);
 	xvprintf(fmt, arp);
