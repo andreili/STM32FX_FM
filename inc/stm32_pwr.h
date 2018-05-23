@@ -1,6 +1,10 @@
 #ifndef STM32_PWR_H
 #define STM32_PWR_H
 
+/*
+ * Based on HAL-F4 v1.21.0
+ * */
+
 #include "stm32_inc.h"
 
 #define PWR_WAKEUP_PIN1                 ((uint32_t)0x00000100U)
@@ -40,21 +44,24 @@
 
 #define PWR_EXTI_LINE_PVD  ((uint32_t)EXTI_IMR_MR16)  /*!< External interrupt line 16 Connected to the PVD EXTI Line */
 
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
+    defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)
 #define PWR_MAINREGULATOR_UNDERDRIVE_ON                       PWR_CR_MRUDS
 #define PWR_LOWPOWERREGULATOR_UNDERDRIVE_ON                   ((uint32_t)(PWR_CR_LPDS | PWR_CR_LPUDS))
 
-#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
-    defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)
 #define PWR_FLAG_ODRDY                  PWR_CSR_ODRDY
 #define PWR_FLAG_ODSWRDY                PWR_CSR_ODSWRDY
 #define PWR_FLAG_UDRDY                  PWR_CSR_UDSWRDY
 #endif
 
-#define PWR_REGULATOR_VOLTAGE_SCALE1         PWR_CR_VOS             /* Scale 1 mode(default value at reset): the maximum value of fHCLK is 168 MHz. It can be extended to
-                                                                       180 MHz by activating the over-drive mode. */
-#define PWR_REGULATOR_VOLTAGE_SCALE2         PWR_CR_VOS_1           /* Scale 2 mode: the maximum value of fHCLK is 144 MHz. It can be extended to
-                                                                       168 MHz by activating the over-drive mode. */
-#define PWR_REGULATOR_VOLTAGE_SCALE3         PWR_CR_VOS_0           /* Scale 3 mode: the maximum value of fHCLK is 120 MHz. */
+#if defined(STM32F405xx) || defined(STM32F407xx) || defined(STM32F415xx) || defined(STM32F417xx)
+#define PWR_REGULATOR_VOLTAGE_SCALE1         PWR_CR_VOS
+#define PWR_REGULATOR_VOLTAGE_SCALE2         0x00000000U
+#else
+#define PWR_REGULATOR_VOLTAGE_SCALE1         PWR_CR_VOS
+#define PWR_REGULATOR_VOLTAGE_SCALE2         PWR_CR_VOS_1
+#define PWR_REGULATOR_VOLTAGE_SCALE3         PWR_CR_VOS_0
+#endif
 
 #define PWR_WAKEUP_PIN3                 ((uint32_t)0x00000040U)
 
@@ -73,6 +80,8 @@ public:
 
     static void config_PVD();
     ENDIS_REG_FLAG(PVD, PWR->CR, PWR_CR_PVDE)
+
+    static inline bool get_flag(uint32_t mask) { return (PWR->CSR & mask) == mask; }
 
     static inline void enable_wakeup_pin(uint32_t WakeUpPinx) { SET_BIT(PWR->CSR, WakeUpPinx); }
     static inline void disable_wakeup_pin(uint32_t WakeUpPinx) { CLEAR_BIT(PWR->CSR, WakeUpPinx); }
@@ -113,6 +122,8 @@ public:
 #endif
 
     static inline uint32_t get_voltage_range() { return PWR->CR & PWR_CR_VOS; }
+
+    static uint32_t control_voltage_scaling(uint32_t voltage_scaling);
 
     /* Backup regulator */
     static uint32_t enable_backup_regulator();

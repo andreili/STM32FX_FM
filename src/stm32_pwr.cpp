@@ -190,31 +190,25 @@ uint32_t STM32_PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPE
 }
 #endif
 
+uint32_t STM32_PWR::control_voltage_scaling(uint32_t voltage_scaling)
+{
+    STM32_RCC::enable_clk_PWR();
+    set_voltage_scaling_config(voltage_scaling);
+    WAIT_TIMEOUT(get_flag(PWR_FLAG_VOSRDY) == RESET, PWR_VOSRDY_TIMEOUT_VALUE);
+    return STM32_RESULT_OK;
+}
+
 uint32_t STM32_PWR::enable_backup_regulator()
 {
     BIT_BAND_PER(PWR->CSR, PWR_CSR_BRE) = SET;
-    uint32_t tickstart = STM32_SYSTICK::get_tick();
-
-    /* Wait till Backup regulator ready flag is set */
-    while((RCC->CSR & PWR_FLAG_BRR) == RESET)
-    {
-        if((STM32_SYSTICK::get_tick() - tickstart) > PWR_BKPREG_TIMEOUT_VALUE)
-            return STM32_RESULT_TIMEOUT;
-    }
+    WAIT_TIMEOUT(get_flag(PWR_FLAG_BRR) == RESET, PWR_BKPREG_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
 
 uint32_t STM32_PWR::disable_backup_regulator()
 {
     BIT_BAND_PER(PWR->CSR, PWR_CSR_BRE) = RESET;
-    uint32_t tickstart = STM32_SYSTICK::get_tick();
-
-    /* Wait till Backup regulator ready flag is set */
-    while((RCC->CSR & PWR_FLAG_BRR) == SET)
-    {
-        if((STM32_SYSTICK::get_tick() - tickstart) > PWR_BKPREG_TIMEOUT_VALUE)
-            return STM32_RESULT_TIMEOUT;
-    }
+    WAIT_TIMEOUT(get_flag(PWR_FLAG_BRR) == SET, PWR_BKPREG_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
 
