@@ -15,6 +15,9 @@
 #include "stm32_gpio.h"
 #include "stm32_nvic.h"
 #include "stm32_pwr.h"
+#ifdef STM32_USE_DMA
+    #include "stm32_dma.h"
+#endif
 #ifdef STM32_USE_SDRAM
     #include "stm32_sdram.h"
 #endif

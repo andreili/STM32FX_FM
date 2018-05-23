@@ -70,10 +70,15 @@ void PeriphInit()
     /* Other IO and peripheral initializations */
     STM32_GPIO::init_all();
     STM32_UART::init_all();
+    #ifdef STM32_USE_SPI
     STM32_SPI::init_all();
-#ifdef STM32_RTC_ENABLE
+    #endif
+    #ifdef STM32_USE_RTC
     STM32_RTC::init();
-#endif
+    #endif
+    #ifdef STM32_USE_DMA
+    STM32_DMA::init_all();
+    #endif
     #ifdef STM32_FATFS_USE
     sd_driver.init_gpio();
     #endif
