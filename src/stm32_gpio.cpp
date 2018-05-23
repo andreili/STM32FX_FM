@@ -10,6 +10,19 @@
 
 #define GPIO_NUMBER           ((uint32_t)16U)
 
+#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx)
+#define GPIO_GET_INDEX(__GPIOx__)    (uint8_t)(((__GPIOx__) == (GPIOA))? 0U :\
+                                               ((__GPIOx__) == (GPIOB))? 1U :\
+                                               ((__GPIOx__) == (GPIOC))? 2U :\
+                                               ((__GPIOx__) == (GPIOD))? 3U :\
+                                               ((__GPIOx__) == (GPIOE))? 4U :\
+                                               ((__GPIOx__) == (GPIOF))? 5U :\
+                                               ((__GPIOx__) == (GPIOG))? 6U :\
+                                               ((__GPIOx__) == (GPIOH))? 7U : 8U)
+#endif
+
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
+    defined(STM32F469xx) || defined(STM32F479xx)
 #define GPIO_GET_INDEX(__GPIOx__)    (uint8_t)(((__GPIOx__) == (GPIOA))? 0U :\
                                                ((__GPIOx__) == (GPIOB))? 1U :\
                                                ((__GPIOx__) == (GPIOC))? 2U :\
@@ -18,7 +31,57 @@
                                                ((__GPIOx__) == (GPIOF))? 5U :\
                                                ((__GPIOx__) == (GPIOG))? 6U :\
                                                ((__GPIOx__) == (GPIOH))? 7U :\
-                                               ((__GPIOx__) == (GPIOI))? 8U : 10U)
+                                               ((__GPIOx__) == (GPIOI))? 8U :\
+                                               ((__GPIOx__) == (GPIOJ))? 9U : 10U)
+#endif
+
+#if defined(STM32F429xx) || defined(STM32F439xx)
+#define IS_GPIO_AF(AF)   (((AF) == GPIO_AF0_RTC_50Hz)   || ((AF) == GPIO_AF9_TIM14)      || \
+                          ((AF) == GPIO_AF0_MCO)        || ((AF) == GPIO_AF0_TAMPER)     || \
+                          ((AF) == GPIO_AF0_SWJ)        || ((AF) == GPIO_AF0_TRACE)      || \
+                          ((AF) == GPIO_AF1_TIM1)       || ((AF) == GPIO_AF1_TIM2)       || \
+                          ((AF) == GPIO_AF2_TIM3)       || ((AF) == GPIO_AF2_TIM4)       || \
+                          ((AF) == GPIO_AF2_TIM5)       || ((AF) == GPIO_AF3_TIM8)       || \
+                          ((AF) == GPIO_AF4_I2C1)       || ((AF) == GPIO_AF4_I2C2)       || \
+                          ((AF) == GPIO_AF4_I2C3)       || ((AF) == GPIO_AF5_SPI1)       || \
+                          ((AF) == GPIO_AF5_SPI2)       || ((AF) == GPIO_AF9_TIM13)      || \
+                          ((AF) == GPIO_AF6_SPI3)       || ((AF) == GPIO_AF9_TIM12)      || \
+                          ((AF) == GPIO_AF7_USART1)     || ((AF) == GPIO_AF7_USART2)     || \
+                          ((AF) == GPIO_AF7_USART3)     || ((AF) == GPIO_AF8_UART4)      || \
+                          ((AF) == GPIO_AF8_UART5)      || ((AF) == GPIO_AF8_USART6)     || \
+                          ((AF) == GPIO_AF9_CAN1)       || ((AF) == GPIO_AF9_CAN2)       || \
+                          ((AF) == GPIO_AF10_OTG_FS)    || ((AF) == GPIO_AF10_OTG_HS)    || \
+                          ((AF) == GPIO_AF11_ETH)       || ((AF) == GPIO_AF12_OTG_HS_FS) || \
+                          ((AF) == GPIO_AF12_SDIO)      || ((AF) == GPIO_AF13_DCMI)      || \
+                          ((AF) == GPIO_AF15_EVENTOUT)  || ((AF) == GPIO_AF5_SPI4)       || \
+                          ((AF) == GPIO_AF5_SPI5)       || ((AF) == GPIO_AF5_SPI6)       || \
+                          ((AF) == GPIO_AF8_UART7)      || ((AF) == GPIO_AF8_UART8)      || \
+                          ((AF) == GPIO_AF12_FMC)       ||  ((AF) == GPIO_AF6_SAI1)      || \
+                          ((AF) == GPIO_AF14_LTDC))
+
+#endif
+
+#if defined(STM32F407xx) || defined(STM32F417xx)
+#define IS_GPIO_AF(AF)   (((AF) == GPIO_AF0_RTC_50Hz)   || ((AF) == GPIO_AF9_TIM14)      || \
+                          ((AF) == GPIO_AF0_MCO)        || ((AF) == GPIO_AF0_TAMPER)     || \
+                          ((AF) == GPIO_AF0_SWJ)        || ((AF) == GPIO_AF0_TRACE)      || \
+                          ((AF) == GPIO_AF1_TIM1)       || ((AF) == GPIO_AF1_TIM2)       || \
+                          ((AF) == GPIO_AF2_TIM3)       || ((AF) == GPIO_AF2_TIM4)       || \
+                          ((AF) == GPIO_AF2_TIM5)       || ((AF) == GPIO_AF3_TIM8)       || \
+                          ((AF) == GPIO_AF4_I2C1)       || ((AF) == GPIO_AF4_I2C2)       || \
+                          ((AF) == GPIO_AF4_I2C3)       || ((AF) == GPIO_AF5_SPI1)       || \
+                          ((AF) == GPIO_AF5_SPI2)       || ((AF) == GPIO_AF9_TIM13)      || \
+                          ((AF) == GPIO_AF6_SPI3)       || ((AF) == GPIO_AF9_TIM12)      || \
+                          ((AF) == GPIO_AF7_USART1)     || ((AF) == GPIO_AF7_USART2)     || \
+                          ((AF) == GPIO_AF7_USART3)     || ((AF) == GPIO_AF8_UART4)      || \
+                          ((AF) == GPIO_AF8_UART5)      || ((AF) == GPIO_AF8_USART6)     || \
+                          ((AF) == GPIO_AF9_CAN1)       || ((AF) == GPIO_AF9_CAN2)       || \
+                          ((AF) == GPIO_AF10_OTG_FS)    || ((AF) == GPIO_AF10_OTG_HS)    || \
+                          ((AF) == GPIO_AF11_ETH)       || ((AF) == GPIO_AF12_OTG_HS_FS) || \
+                          ((AF) == GPIO_AF12_SDIO)      || ((AF) == GPIO_AF13_DCMI)      || \
+                          ((AF) == GPIO_AF12_FSMC)      || ((AF) == GPIO_AF15_EVENTOUT))
+
+#endif
 
 void STM32_GPIO::init_all()
 {
@@ -191,6 +254,20 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
     }
 }
 
+uint32_t STM32_GPIO::pin_lock(uint32_t pin)
+{
+    __IO uint32_t tmp = GPIO_LCKR_LCKK;
+    tmp |= pin;
+    m_gpio->LCKR = tmp;
+    m_gpio->LCKR = pin;
+    m_gpio->LCKR = tmp;
+    tmp = m_gpio->LCKR;
+    if ((m_gpio->LCKR & GPIO_LCKR_LCKK) != RESET)
+        return STM32_RESULT_OK;
+    else
+        return STM32_RESULT_FAIL;
+}
+
 STM32_GPIO gpioa;
 STM32_GPIO gpiob;
 STM32_GPIO gpioc;
@@ -200,3 +277,18 @@ STM32_GPIO gpiof;
 STM32_GPIO gpiog;
 STM32_GPIO gpioh;
 STM32_GPIO gpioi;
+
+__attribute__((weak)) void EXTI_cb(uint32_t pin)
+{
+    UNUSED(pin);
+}
+
+void ISR::EXTI0_IRQ()
+{
+#warning TODO - line
+    if (STM32_GPIO::EXTI_get_IT(0))
+    {
+        STM32_GPIO::EXTI_clear_IT(0);
+        EXTI_cb(0);
+    }
+}
