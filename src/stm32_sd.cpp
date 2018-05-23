@@ -293,12 +293,6 @@
 #define SD_CCCC_WRITE_PROT              ((uint32_t)0x00000040U)
 #define SD_CCCC_ERASE                   ((uint32_t)0x00000020U)
 
-/**
-  * @brief  Following commands are SD Card Specific commands.
-  *         SDIO_APP_CMD should be sent before sending these commands.
-  */
-#define SD_SDIO_SEND_IF_COND            ((uint32_t)SD_CMD_HS_SEND_EXT_CSD)
-
 uint32_t STM32_SD::m_card_type;
 uint32_t STM32_SD::m_RCA;
 uint32_t STM32_SD::m_CSD[4];
@@ -1044,6 +1038,7 @@ SD_ErrorTypedef STM32_SD::power_ON()
     /* 1ms: required power up waiting time before starting the SD initialization sequence */
     STM32_SYSTICK::delay(1);
     enable_SDIO();
+    STM32_SYSTICK::delay(2);
 
     /* CMD0: GO_IDLE_STATE */
     send_command(0, SD_CMD_GO_IDLE_STATE, SDIO_RESPONSE_NO,
@@ -1061,10 +1056,15 @@ SD_ErrorTypedef STM32_SD::power_ON()
     - [11:8]: Supply Voltage (VHS) 0x1 (Range: 2.7-3.6 V)
     - [7:0]: Check Pattern (recommended 0xAA) */
     uint32_t sdtype = SD_STD_CAPACITY;
-    send_command(SD_CHECK_PATTERN, SD_SDIO_SEND_IF_COND, SDIO_RESPONSE_SHORT,
+    send_command(SD_CHECK_PATTERN, SD_CMD_HS_SEND_EXT_CSD, SDIO_RESPONSE_SHORT,
                  SDIO_WAIT_NO, SDIO_CPSM_ENABLE);
     errorstate = cmd_resp7_error();
-    if (errorstate == SD_OK)
+    if (errorstate != SD_OK)
+    {
+        m_card_type = STD_CAPACITY_SD_CARD_V1_1;
+        sdtype = SD_STD_CAPACITY;
+    }
+    else
     {
         /* SD Card 2.0 */
         m_card_type = STD_CAPACITY_SD_CARD_V2_0;
@@ -1113,6 +1113,8 @@ SD_ErrorTypedef STM32_SD::power_ON()
 
         if ((response & SD_HIGH_CAPACITY) == SD_HIGH_CAPACITY)
             m_card_type = HIGH_CAPACITY_SD_CARD;
+        else
+            m_card_type = STD_CAPACITY_SD_CARD_V2_0;
     } /* else MMC Card */
     else
     {
