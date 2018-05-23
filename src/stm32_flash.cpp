@@ -4,7 +4,7 @@
 
 FLASH_Procedure   STM32_FLASH::m_on_going = FLASH_Procedure::NONE;
 uint32_t          STM32_FLASH::m_nb_sector_to_erase;
-uint8_t           STM32_FLASH::m_voltage_for_erase;
+FLASH_VoltageRange STM32_FLASH::m_voltage_for_erase;
 uint32_t          STM32_FLASH::m_sector;
 uint32_t          STM32_FLASH::m_bank;
 uint32_t          STM32_FLASH::m_address;
@@ -39,7 +39,7 @@ void STM32_FLASH::reset_data_cache()
     FLASH->ACR &= ~FLASH_ACR_DCRST;
 }
 
-uint32_t STM32_FLASH::program(uint32_t type_program, uint32_t address, uint64_t data)
+uint32_t STM32_FLASH::program(FLASH_TypeProgram type_program, uint32_t address, uint64_t data)
 {
     STM32_LOCK(m_lock);
     uint32_t status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
@@ -47,16 +47,16 @@ uint32_t STM32_FLASH::program(uint32_t type_program, uint32_t address, uint64_t 
     {
         switch (type_program)
         {
-        case FLASH_TYPEPROGRAM_BYTE:
+        case FLASH_TypeProgram::BYTE:
             program_byte(address, data);
             break;
-        case FLASH_TYPEPROGRAM_HALFWORD:
+        case FLASH_TypeProgram::HALF_WORD:
             program_halfword(address, data);
             break;
-        case FLASH_TYPEPROGRAM_WORD:
+        case FLASH_TypeProgram::WORD:
             program_word(address, data);
             break;
-        case FLASH_TYPEPROGRAM_DOUBLEWORD:
+        case FLASH_TypeProgram::DOUBLE_WORD:
             program_doubleword(address, data);
             break;
         }
@@ -68,23 +68,23 @@ uint32_t STM32_FLASH::program(uint32_t type_program, uint32_t address, uint64_t 
     return status;
 }
 
-uint32_t STM32_FLASH::program_IT(uint32_t type_program, uint32_t address, uint64_t data)
+uint32_t STM32_FLASH::program_IT(FLASH_TypeProgram type_program, uint32_t address, uint64_t data)
 {
     STM32_LOCK(m_lock);
     enable_IT(FLASH_IT_EOP | FLASH_IT_ERR);
 
     switch (type_program)
     {
-    case FLASH_TYPEPROGRAM_BYTE:
+    case FLASH_TypeProgram::BYTE:
         program_byte(address, data);
         break;
-    case FLASH_TYPEPROGRAM_HALFWORD:
+    case FLASH_TypeProgram::HALF_WORD:
         program_halfword(address, data);
         break;
-    case FLASH_TYPEPROGRAM_WORD:
+    case FLASH_TypeProgram::WORD:
         program_word(address, data);
         break;
-    case FLASH_TYPEPROGRAM_DOUBLEWORD:
+    case FLASH_TypeProgram::DOUBLE_WORD:
         program_doubleword(address, data);
         break;
     }
@@ -227,7 +227,7 @@ void STM32_FLASH::set_error_code()
 #endif
 }
 
-uint32_t STM32_FLASH::erase(uint32_t type_erase, uint32_t voltage_range, uint32_t banks,
+uint32_t STM32_FLASH::erase(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range, uint32_t banks,
                             uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error)
 {
     STM32_LOCK(m_lock);
@@ -237,7 +237,7 @@ uint32_t STM32_FLASH::erase(uint32_t type_erase, uint32_t voltage_range, uint32_
     if (status == STM32_RESULT_OK)
     {
         sector_error = 0xffffffff;
-        if (type_erase == FLASH_TYPEERASE_MASSERASE)
+        if (type_erase == FLASH_TypeErase::MASS_ERASE)
         {
             mass_erase(voltage_range, banks);
             status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
@@ -267,7 +267,7 @@ uint32_t STM32_FLASH::erase(uint32_t type_erase, uint32_t voltage_range, uint32_
     return status;
 }
 
-uint32_t STM32_FLASH::erase_IT(uint32_t type_erase, uint32_t voltage_range, uint32_t banks,
+uint32_t STM32_FLASH::erase_IT(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range, uint32_t banks,
                                uint32_t sector_start, uint32_t nb_sectors)
 {
     STM32_LOCK(m_lock);
@@ -275,9 +275,9 @@ uint32_t STM32_FLASH::erase_IT(uint32_t type_erase, uint32_t voltage_range, uint
     enable_IT(FLASH_IT_EOP | FLASH_IT_ERR);
     clear_flag(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
-    if (type_erase == FLASH_TYPEERASE_MASSERASE)
+    if (type_erase == FLASH_TypeErase::MASS_ERASE)
     {
-        m_on_going = FLASH_Procedure::MASSERASE;
+        m_on_going = FLASH_Procedure::MASS_ERASE;
         m_bank = banks;
         mass_erase(voltage_range, banks);
     }
@@ -317,7 +317,7 @@ void STM32_FLASH::mass_erase(uint32_t voltage_range, uint32_t banks)
     defined(STM32F410Rx) || defined(STM32F411xE) || defined(STM32F446xx) || defined(STM32F412Zx) ||\
     defined(STM32F412Vx) || defined(STM32F412Rx) || defined(STM32F412Cx) || defined(STM32F413xx) ||\
     defined(STM32F423xx)
-void STM32_FLASH::mass_erase(uint32_t voltage_range, uint32_t banks)
+void STM32_FLASH::mass_erase(FLASH_VoltageRange voltage_range, uint32_t banks)
 {
     UNUSED(banks);
     /* If the previous operation is completed, proceed to erase all sectors */
@@ -327,14 +327,14 @@ void STM32_FLASH::mass_erase(uint32_t voltage_range, uint32_t banks)
 }
 #endif
 
-void STM32_FLASH::erase_sector(uint32_t sector, uint8_t voltage_range)
+void STM32_FLASH::erase_sector(uint32_t sector, FLASH_VoltageRange voltage_range)
 {
     uint32_t tmp_psize = 0;
-    if (voltage_range == FLASH_VOLTAGE_RANGE_1)
+    if (voltage_range == FLASH_VoltageRange::V_1P8_TO_2P1)
         tmp_psize = FLASH_PSIZE_BYTE;
-    else if (voltage_range == FLASH_VOLTAGE_RANGE_2)
+    else if (voltage_range == FLASH_VoltageRange::V_2P1_TO_2P7)
         tmp_psize = FLASH_PSIZE_HALF_WORD;
-    else if (voltage_range == FLASH_VOLTAGE_RANGE_3)
+    else if (voltage_range == FLASH_VoltageRange::V_2P7_TO_3P6)
         tmp_psize = FLASH_PSIZE_WORD;
     else
         tmp_psize = FLASH_PSIZE_DOUBLE_WORD;
@@ -385,7 +385,7 @@ void STM32_FLASH::irq_proc()
             addr = m_sector;
             m_sector = 0xffffffff;
         }
-        else if (m_on_going == FLASH_Procedure::MASSERASE)
+        else if (m_on_going == FLASH_Procedure::MASS_ERASE)
             addr = m_bank;
         else
             addr = m_address;
@@ -422,7 +422,7 @@ void STM32_FLASH::irq_proc()
         }
         else
         {
-            if (m_on_going == FLASH_Procedure::MASSERASE)
+            if (m_on_going == FLASH_Procedure::MASS_ERASE)
             {
                 flush_caches();
                 #warning TODO

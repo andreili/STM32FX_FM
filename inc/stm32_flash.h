@@ -15,10 +15,13 @@
 #define FLASH_ERROR_WRP          0x00000010U    /*!< Write protection error        */
 #define FLASH_ERROR_OPERATION    0x00000020U    /*!< Operation Error               */
 
-#define FLASH_TYPEPROGRAM_BYTE        0x00000000U  /*!< Program byte (8-bit) at a specified address           */
-#define FLASH_TYPEPROGRAM_HALFWORD    0x00000001U  /*!< Program a half-word (16-bit) at a specified address   */
-#define FLASH_TYPEPROGRAM_WORD        0x00000002U  /*!< Program a word (32-bit) at a specified address        */
-#define FLASH_TYPEPROGRAM_DOUBLEWORD  0x00000003U  /*!< Program a double word (64-bit) at a specified address */
+enum class FLASH_TypeProgram
+{
+    BYTE,
+    HALF_WORD,
+    WORD,
+    DOUBLE_WORD,
+};
 
 #define FLASH_FLAG_EOP                 FLASH_SR_EOP            /*!< FLASH End of Operation flag               */
 #define FLASH_FLAG_OPERR               FLASH_SR_SOP            /*!< FLASH operation Error flag                */
@@ -46,13 +49,19 @@
 #define FLASH_OPT_KEY1           0x08192A3BU
 #define FLASH_OPT_KEY2           0x4C5D6E7FU
 
-#define FLASH_TYPEERASE_SECTORS         0x00000000U  /*!< Sectors erase only          */
-#define FLASH_TYPEERASE_MASSERASE       0x00000001U  /*!< Flash Mass erase activation */
+enum class FLASH_TypeErase
+{
+    SECTORS,
+    MASS_ERASE,
+};
 
-#define FLASH_VOLTAGE_RANGE_1        0x00000000U  /*!< Device operating range: 1.8V to 2.1V                */
-#define FLASH_VOLTAGE_RANGE_2        0x00000001U  /*!< Device operating range: 2.1V to 2.7V                */
-#define FLASH_VOLTAGE_RANGE_3        0x00000002U  /*!< Device operating range: 2.7V to 3.6V                */
-#define FLASH_VOLTAGE_RANGE_4        0x00000003U  /*!< Device operating range: 2.7V to 3.6V + External Vpp */
+enum class FLASH_VoltageRange
+{
+    V_1P8_TO_2P1 = 0,
+    V_2P1_TO_2P7 = 1,
+    V_2P7_TO_3P6 = 2,
+    V_2P7_TO_3P6_EXT = 3,
+};
 
 #define OB_WRPSTATE_DISABLE       0x00000000U  /*!< Disable the write protection of the desired bank 1 sectors */
 #define OB_WRPSTATE_ENABLE        0x00000001U  /*!< Enable the write protection of the desired bank 1 sectors  */
@@ -499,7 +508,7 @@ enum class FLASH_Procedure
 {
   NONE = 0U,
   SECTERASE,
-  MASSERASE,
+  MASS_ERASE,
   PROGRAM
 };
 
@@ -534,8 +543,10 @@ public:
     static inline uint8_t get_flag(uint32_t flag_mask) { return FLASH->SR & flag_mask; }
     static inline void clear_flag(uint32_t flag_mask) { FLASH->SR = flag_mask; }
 
-    static uint32_t erase(uint32_t type_erase, uint32_t voltage_range, uint32_t banks, uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error);
-    static uint32_t erase_IT(uint32_t type_erase, uint32_t voltage_range, uint32_t banks, uint32_t sector_start, uint32_t nb_sectors);
+    static uint32_t erase(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range,
+                          uint32_t banks, uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error);
+    static uint32_t erase_IT(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range,
+                             uint32_t banks, uint32_t sector_start, uint32_t nb_sectors);
 
     /*static inline uint8_t OB_get_RDP() { return ((FLASH_OPTCR_Typedef*)&FLASH->OPTCR)->RDP; }
     static inline void OB_set_RDP(uint8_t level) { ((FLASH_OPTCR_Typedef*)&FLASH->OPTCR)->RDP = level; }
@@ -567,11 +578,11 @@ public:
    static  uint16_t OB_get_bank2_WRP();
 #endif /* STM32F427xx || STM32F437xx || STM32F429xx|| STM32F439xx || STM32F469xx || STM32F479xx */
 
-   static void erase_sector(uint32_t sector, uint8_t voltage_range);
+   static void erase_sector(uint32_t sector, FLASH_VoltageRange voltage_range);
    static void flush_caches();
 
-   static uint32_t program(uint32_t type_program, uint32_t address, uint64_t data);
-   static uint32_t program_IT(uint32_t type_program, uint32_t address, uint64_t data);
+   static uint32_t program(FLASH_TypeProgram type_program, uint32_t address, uint64_t data);
+   static uint32_t program_IT(FLASH_TypeProgram type_program, uint32_t address, uint64_t data);
 
    static uint32_t unlock();
    static void lock();
@@ -587,7 +598,7 @@ public:
 private:
    static FLASH_Procedure   m_on_going;
    static uint32_t          m_nb_sector_to_erase;
-   static uint8_t           m_voltage_for_erase;
+   static FLASH_VoltageRange m_voltage_for_erase;
    static uint32_t          m_sector;
    static uint32_t          m_bank;
    static uint32_t          m_address;
@@ -601,7 +612,7 @@ private:
 
    static void set_error_code();
 
-   static void mass_erase(uint32_t voltage_range, uint32_t banks);
+   static void mass_erase(FLASH_VoltageRange voltage_range, uint32_t banks);
 
    static inline void reset_PG() { FLASH->CR &= ~(FLASH_CR_PG); }
 };
