@@ -617,4 +617,7 @@ private:
    static inline void reset_PG() { FLASH->CR &= ~(FLASH_CR_PG); }
 };
 
+void FLASH_end_of_operation_cb(uint32_t return_value);
+void FLASH_operation_error_cb(uint32_t return_value);
+
 #endif

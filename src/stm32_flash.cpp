@@ -392,8 +392,7 @@ void STM32_FLASH::irq_proc()
 
         set_error_code();
 
-        #warning TODO
-        //operation_error_cb(addr);
+        FLASH_operation_error_cb(addr);
 
         m_on_going = FLASH_Procedure::NONE;
     }
@@ -407,8 +406,7 @@ void STM32_FLASH::irq_proc()
         {
             if ((--m_nb_sector_to_erase) != 0)
             {
-                #warning TODO
-                //end_of_operation_cb(m_sector);
+                FLASH_end_of_operation_cb(m_sector);
                 erase_sector(++m_sector, m_voltage_for_erase);
             }
             else
@@ -416,8 +414,7 @@ void STM32_FLASH::irq_proc()
                 m_sector = 0xffffffff;
                 m_on_going = FLASH_Procedure::NONE;
                 flush_caches();
-                #warning TODO
-                //end_of_operation_cb(0xffffffff);
+                FLASH_end_of_operation_cb(0xffffffff);
             }
         }
         else
@@ -425,13 +422,11 @@ void STM32_FLASH::irq_proc()
             if (m_on_going == FLASH_Procedure::MASS_ERASE)
             {
                 flush_caches();
-                #warning TODO
-                //end_of_operation_cb(m_bank);
+                FLASH_end_of_operation_cb(m_bank);
             }
             else
             {
-                #warning TODO
-                //end_of_operation_cb(m_address);
+                FLASH_end_of_operation_cb(m_address);
             }
             m_on_going = FLASH_Procedure::NONE;
         }
@@ -452,4 +447,14 @@ void ISR::FLASH_IRQ()
 #else
     while (1);
 #endif
+}
+
+__attribute__((weak)) void FLASH_end_of_operation_cb(uint32_t return_value)
+{
+    UNUSED(return_value);
+}
+
+__attribute__((weak)) void FLASH_operation_error_cb(uint32_t return_value)
+{
+    UNUSED(return_value);
 }
