@@ -1,6 +1,10 @@
 #ifndef __STM32_RCC__
 #define __STM32_RCC__
 
+/*
+ * Based on HAL-F4 v1.21.0
+ * */
+
 #include <stm32_inc.h>
 
 #define RCC_APB2LPENR_ADCLPEN RCC_APB2LPENR_ADC1LPEN

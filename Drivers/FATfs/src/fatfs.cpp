@@ -5,7 +5,7 @@
 DiskDrv FAT_FS::m_disk;
 
 extern STM32_FATFS_DRIVER sd_driver;
-char SD_path[4];
+TCHAR SD_path[4];
 
 void FAT_FS::init()
 {
@@ -49,7 +49,7 @@ DSTATUS FAT_FS::disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 }
 #endif
 
-void FAT_FS::link_driver(DiskIODriver *drv, char *path, uint8_t lun)
+void FAT_FS::link_driver(DiskIODriver *drv, TCHAR *path, uint8_t lun)
 {
     if (m_disk.nbr <= _VOLUMES)
     {

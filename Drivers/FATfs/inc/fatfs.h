@@ -2,6 +2,7 @@
 #define FATFS_H
 
 #include "ffconf.h"
+#include "ff.h"
 #include "integer.h"
 
 #define _USE_WRITE	1	/* 1: Enable disk_write function */
@@ -79,7 +80,7 @@ public:
 private:
     static DiskDrv  m_disk;
 
-    static void link_driver(DiskIODriver *drv, char *path, uint8_t lun);
+    static void link_driver(DiskIODriver *drv, TCHAR *path, uint8_t lun);
 };
 
 #endif

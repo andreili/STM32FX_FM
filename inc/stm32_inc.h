@@ -7,8 +7,8 @@
 #ifdef STM32F407xx
 #include "ISRstm32f407xx.h"
 #endif
-#include "stm32_def.h"
 #include "stm32_conf.h"
+#include "stm32_def.h"
 
 #include "stm32_flash.h"
 #include "stm32_rcc.h"

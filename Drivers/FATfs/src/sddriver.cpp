@@ -5,21 +5,6 @@ SDDriver sd_driver;
 /* Block Size in Bytes */
 #define BLOCK_SIZE                512
 
-#define CHECK_CARD_DETECT() \
-    (STM32_FATFS_CARD_DETECT_PORT::pin_read(STM32_FATFS_CARD_DETECT_PIN) == RESET)
-
-void SDDriver::init_gpio()
-{
-    STM32_FATFS_CARD_DETECT_PORT::set_config(STM32_FATFS_CARD_DETECT_PIN,
-                                             GPIO_MODE_INPUT, 0,
-                                             GPIO_SPEED_FREQ_LOW, GPIO_PULLUP);
-}
-
-bool SDDriver::is_card_present()
-{
-    return CHECK_CARD_DETECT();
-}
-
 uint8_t SDDriver::init(uint8_t)
 {
     uint8_t sd_state = SD_OK;

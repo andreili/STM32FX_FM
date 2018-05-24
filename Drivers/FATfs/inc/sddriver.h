@@ -11,9 +11,12 @@
 class SDDriver
 {
 public:
-    void init_gpio();
+    static inline void init_gpio() { STM32_RCC::STM32_FATFS_CARD_EN_CLK();
+                                     STM32_FATFS_CARD_DETECT_PORT.set_config(STM32_FATFS_CARD_DETECT_PIN,
+                                                                      GPIO_MODE_INPUT, 0,
+                                                                      GPIO_SPEED_FREQ_LOW, GPIO_PULLUP); }
 
-    static bool is_card_present();
+    static inline bool is_card_present() { return (STM32_FATFS_CARD_DETECT_PORT.pin_read(STM32_FATFS_CARD_DETECT_PIN) == RESET); }
 
     uint8_t init(uint8_t);
     uint8_t status(uint8_t);

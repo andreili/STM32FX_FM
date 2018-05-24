@@ -70,4 +70,13 @@ enum class TXRX_MODE
     DMA,
 };
 
+#ifdef STM32_DEBUG
+#include "xprintf.h"
+#define debug_out(s) uart6.send_str(s, TXRX_MODE::DIRECT)
+#define debug_printf(s, ...) xprintf(s, __VA_ARGS__)
+#else
+#define debug_out(s) UNUSED(s)
+#define debug_printf(s, ...) UNUSED(s); UNUSED(__VA_ARGS__)
+#endif
+
 #endif
