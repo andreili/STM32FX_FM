@@ -40,6 +40,45 @@ void STM32_NVIC::init_vectors()
     #ifdef STM32_USE_UART8
     enable_and_set_prior_IRQ(USART8_IRQn, 0, 0);
     #endif
+    #ifdef STM32_USE_SPI1
+    enable_and_set_prior_IRQ(SPI1_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_SPI2
+    enable_and_set_prior_IRQ(SPI2_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_SPI3
+    enable_and_set_prior_IRQ(SPI3_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_SPI4
+    enable_and_set_prior_IRQ(SPI4_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_SPI5
+    enable_and_set_prior_IRQ(SPI5_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_SPI6
+    enable_and_set_prior_IRQ(SPI6_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI0
+    enable_and_set_prior_IRQ(EXTI0_IRQn, 4, 0);
+    #endif
+    #ifdef STM32_USE_EXTI1
+    enable_and_set_prior_IRQ(EXTI1_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI2
+    enable_and_set_prior_IRQ(EXTI2_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI3
+    enable_and_set_prior_IRQ(EXTI3_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI4
+    enable_and_set_prior_IRQ(EXTI4_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI9_5
+    enable_and_set_prior_IRQ(EXTI9_5_IRQn, 0, 0);
+    #endif
+    #ifdef STM32_USE_EXTI15_10
+    enable_and_set_prior_IRQ(EXTI15_10_IRQn, 0, 0);
+    #endif
 }
 
 void ISR::NMI()

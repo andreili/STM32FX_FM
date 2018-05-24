@@ -268,6 +268,12 @@ uint32_t STM32_GPIO::pin_lock(uint32_t pin)
         return STM32_RESULT_FAIL;
 }
 
+void STM32_GPIO::EXTI_IRQ_Handler(uint32_t pin)
+{
+    STM32_GPIO::EXTI_clear_IT(pin);
+    EXTI_cb(pin);
+}
+
 STM32_GPIO gpioa;
 STM32_GPIO gpiob;
 STM32_GPIO gpioc;
@@ -283,12 +289,60 @@ __attribute__((weak)) void EXTI_cb(uint32_t pin)
     UNUSED(pin);
 }
 
-void ISR::EXTI0_IRQ()
+#ifdef STM32_USE_EXTI0
+/*void ISR::EXTI0_IRQ()
 {
-#warning TODO - line
-    if (STM32_GPIO::EXTI_get_IT(0))
-    {
-        STM32_GPIO::EXTI_clear_IT(0);
-        EXTI_cb(0);
-    }
+    STM32_GPIO::EXTI_clear_IT(GPIO_PIN_0);
+    EXTI_cb(GPIO_PIN_0);
+}*/
+#endif
+
+#ifdef STM32_USE_EXTI1
+void ISR::EXTI1_IRQ()
+{
+    STM32_GPIO::EXTI_clear_IT(GPIO_PIN_1);
+    EXTI_cb(GPIO_PIN_1);
 }
+#endif
+
+#ifdef STM32_USE_EXTI2
+void ISR::EXTI2_IRQ()
+{
+    STM32_GPIO::EXTI_clear_IT(GPIO_PIN_2);
+    EXTI_cb(GPIO_PIN_2);
+}
+#endif
+
+#ifdef STM32_USE_EXTI3
+void ISR::EXTI3_IRQ()
+{
+    STM32_GPIO::EXTI_clear_IT(GPIO_PIN_3);
+    EXTI_cb(GPIO_PIN_3);
+}
+#endif
+
+#ifdef STM32_USE_EXTI4
+void ISR::EXTI4_IRQ()
+{
+    STM32_GPIO::EXTI_clear_IT(GPIO_PIN_4);
+    EXTI_cb(GPIO_PIN_4);
+}
+#endif
+
+#ifdef STM32_USE_EXTI9_5
+void ISR::EXTI9_5_IRQ()
+{
+    __IO uint32_t pin_mask = STM32_GPIO::EXTI_get_IT(GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 |
+                                                     GPIO_PIN_8 | GPIO_PIN_9);
+    STM32_GPIO::EXTI_IRQ_Handler(pin_mask);
+}
+#endif
+
+#ifdef STM32_USE_EXTI15_10
+void ISR::EXTI15_10_IRQ()
+{
+    __IO uint32_t pin_mask = STM32_GPIO::EXTI_get_IT(GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 |
+                                                     GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+    STM32_GPIO::EXTI_IRQ_Handler(pin_mask);
+}
+#endif

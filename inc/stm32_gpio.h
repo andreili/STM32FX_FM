@@ -312,12 +312,15 @@ public:
     inline void pin_OFF(uint32_t pin_mask) { m_gpio->BSRR = (pin_mask << GPIO_BSRR_BR0_Pos); }
 
     inline bool pin_read(uint32_t pin) { return ((m_gpio->IDR & pin) != 0); }
+    inline uint32_t pins_read(uint32_t pin) { return (m_gpio->IDR & pin); }
+    inline void pins_write(uint32_t data) { m_gpio->ODR = data; }
     inline void pin_toggle(uint32_t pin) { m_gpio->ODR ^= pin; }
     uint32_t pin_lock(uint32_t pin);
 
     static inline bool EXTI_get_IT(uint32_t line) { return EXTI->PR & line; }
     static inline void EXTI_clear_IT(uint32_t line) { EXTI->PR = line; }
     static inline void EXTI_generate_swit(uint32_t line) { EXTI->SWIER |= line; }
+    static inline void EXTI_IRQ_Handler(uint32_t pin);
 private:
     GPIO_TypeDef*   m_gpio;
 

@@ -54,13 +54,13 @@ void SystemInit()
 {
     base_init();
     // system initialization
-    //__enable_fault_irq();
-    //__enable_irq();
     STM32_RCC::init();
     STM32_SYSTICK::init();
 
     /* Initialize interrupt vectors for a peripheral */
     STM32_NVIC::init_vectors();
+    __enable_fault_irq();
+    __enable_irq();
 }
 
 void PeriphInit()
