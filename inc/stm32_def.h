@@ -16,6 +16,16 @@ extern uint32_t unused_reg;
 #define STM32_UNLOCKED 0
 #define STM32_LOCKED   1
 
+#define STM32_USB_FS_PORT gpioa
+#define STM32_USB_FS_EN_CLK enable_clk_GPIOA
+#define STM32_USB_FS_DM_PIN GPIO_PIN_11
+#define STM32_USB_FS_DP_PIN GPIO_PIN_12
+
+#define STM32_USB_HS_PORT gpiob
+#define STM32_USB_HS_EN_CLK enable_clk_GPIOB
+#define STM32_USB_HS_DM_PIN GPIO_PIN_14
+#define STM32_USB_HS_DP_PIN GPIO_PIN_15
+
 #define FORCE_INLINE __attribute__((always_inline))
 
 #define ENDIS_REG_FLAG(name, reg, mask) \

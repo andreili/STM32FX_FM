@@ -34,6 +34,9 @@
 #ifdef STM32_USE_RTC
     #include "stm32_rtc.h"
 #endif
+#ifdef STM32_USE_USB
+#include "stm32_hcd.h"
+#endif
 #include "bitbanding.h"
 
 #define STM32_LOCK(HN) \

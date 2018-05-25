@@ -240,6 +240,9 @@ public:
     static inline void enable_clk_USB_FS() { RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN; enable_clk_SYSCFG(); }
     static inline void disable_clk_USB_FS() { RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN; }
 
+    static inline void enable_clk_USB_HS() { RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN; enable_clk_SYSCFG(); }
+    static inline void disable_clk_USB_HS() { RCC->AHB1ENR &= ~RCC_AHB1ENR_OTGHSEN; }
+
 #ifdef RCC_AHB3ENR_FMCEN
     CLK_ENDIS(AHB3, FMC)
 #endif
