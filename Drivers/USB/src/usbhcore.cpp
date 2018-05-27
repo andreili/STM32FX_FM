@@ -468,14 +468,14 @@ void USBHCore::LL_init()
     if (m_id == HOST_FS)
     {
         m_hcd = &usb_fs;
-        if (usb_fs.init(USB_OTG_FS) != STM32_RESULT_OK)
+        if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_fs.get_current_frame());
     }
     else
     {
         m_hcd = &usb_hs;
-        if (usb_hs.init(USB_OTG_HS) != STM32_RESULT_OK)
+        if (usb_hs.init(USB_OTG_HS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_hs.get_current_frame());
     }

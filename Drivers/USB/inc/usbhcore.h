@@ -395,22 +395,22 @@ private:
 
     // LL Driver
     void LL_init();
-    inline uint32_t LL_deInit() { return m_hcd->deInit(); }
+    inline void LL_deInit() { m_hcd->deInit(); }
     inline uint32_t LL_start() { return m_hcd->start(); }
     inline uint32_t LL_stop() { return m_hcd->stop(); }
 
     void LL_connect();
     void LL_disconnect();
     inline EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
-    inline uint32_t LL_reset_port() { return m_hcd->reset_port(); }
+    inline void LL_reset_port() { m_hcd->reset_port(); }
     inline uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
     void LL_driver_VBUS(uint8_t state);
 
-    inline uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, uint8_t ep_type, uint16_t mps)
+    inline uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
         { return m_hcd->HC_init(pipe_num, ep_num, dev_address, speed, ep_type, mps); }
     inline uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
-    inline uint32_t LL_submit_URB(uint8_t pipe, uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
-        { return m_hcd->HC_submit_request(pipe, direction, ep_type, token, pbuff, length, do_ping); }
+    inline void LL_submit_URB(uint8_t pipe, bool is_in, EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
+        { m_hcd->HC_submit_request(pipe, is_in, ep_type, token, pbuff, length, do_ping); }
     inline EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
 
 #if (USBH_USE_OS == 1)
