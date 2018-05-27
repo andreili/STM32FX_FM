@@ -307,13 +307,8 @@ typedef struct
     USBHCfgDesc_t   CfgDesc;
 } USBHDevice_t;
 
-#define USBH_PID_SETUP                            0
-#define USBH_PID_DATA                             1
-
-#define USBH_EP_CONTROL                           0
-#define USBH_EP_ISO                               1
-#define USBH_EP_BULK                              2
-#define USBH_EP_INTERRUPT                         3
+#define USBH_PID_SETUP                            false
+#define USBH_PID_DATA                             true
 
 #define USBH_SETUP_PKT_SIZE                       8
 
@@ -425,24 +420,35 @@ private:
     inline void LL_inc_timer() { ++m_timer; handle_SOF(); }
 
     /* Pipes */
-    uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, uint8_t ep_type, uint16_t mps);
-    uint32_t close_pipe(uint8_t pipe_num);
-    uint32_t alloc_pipe(uint8_t ep_addr);
-    uint32_t free_pipe(uint8_t idx);
+    inline uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
+        { return m_hcd->HC_init(ch_num, epnum, dev_addr, speed, ep_type, mps); }
+    inline uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
+    uint8_t alloc_pipe(uint8_t ep_addr);
+    uint16_t get_free_pipe();
+    inline void free_pipe(uint8_t idx) { if (idx < 11) { m_pipes[idx] &= 0x7fff; } }
 
     /* IOreq */
-    uint32_t ctrl_send_setup(uint8_t buff, uint8_t hc_num);
-    uint32_t ctrl_send_data(uint8_t* buff, uint16_t length, uint8_t hc_num, uint8_t do_ping);
-    uint32_t ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t hc_num);
-    uint32_t bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t hc_num);
-    uint32_t bulk_send_data(uint8_t* buff, uint16_t length, uint8_t hc_num, uint8_t do_ping);
-    uint32_t interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t hc_num);
-    uint32_t interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t hc_num);
-    uint32_t isoc_recieve_data(uint8_t* buff, uint32_t length, uint8_t hc_num);
-    uint32_t isoc_send_data(uint8_t* buff, uint32_t length, uint8_t hc_num);
+    inline void ctrl_send_setup(uint8_t* buff, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_SETUP, buff, USBH_SETUP_PKT_SIZE, false); }
+    inline void ctrl_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, bool do_ping)
+        { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
+    inline void ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, EEPType::CTRL, USBH_PID_DATA, buff, length, false); }
+    inline void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, EEPType::BULK, USBH_PID_DATA, buff, length, false); }
+    inline void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
+        { m_hcd->HC_submit_request(ch_num, false, EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
+    inline void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+    inline void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, false, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+    inline void isoc_recieve_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
+    inline void isoc_send_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, false, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
 
     /* CtrlReq */
-    uint32_t ctr_req(uint8_t* buff, uint16_t length);
+    uint32_t ctl_req(uint8_t* buff, uint16_t length);
     uint32_t get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
     uint32_t get_dev_desc(uint16_t length);
     uint32_t get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length);
@@ -452,6 +458,14 @@ private:
     uint32_t set_interface(uint8_t ep_num, uint8_t alt_setting);
     uint32_t clr_feature(uint8_t ep_num);
     USBHDescHeader_t* get_next_desc(uint8_t* buff, uint16_t* ptr);
+
+    void parse_dev_desc(uint8_t *buf, uint16_t length);
+    void parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length);
+    void parse_cfg_desc(uint8_t *buf, uint16_t length);
+    void parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf);
+    void parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf);
+
+    uint32_t handle_control();
 };
 
 #ifdef STM32_USE_USB_HS

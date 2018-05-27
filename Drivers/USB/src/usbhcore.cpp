@@ -11,6 +11,8 @@ static void USBH_Process_OS(void const * argument)
 }
 #endif
 
+uint8_t USBH_CfgDesc[512];
+
 void USBHCore::init(void (*puser)(USBHCore *,EHostUser), uint8_t id)
 {
     m_id = id;
@@ -167,14 +169,14 @@ void USBHCore::process()
                   0x80,
                   m_device.address,
                   m_device.speed,
-                  USBH_EP_CONTROL,
+                  EEPType::CTRL,
                   m_control.pipe_size);
 
         open_pipe(m_control.pipe_out,
                   0x00,
                   m_device.address,
                   m_device.speed,
-                  USBH_EP_CONTROL,
+                  EEPType::CTRL,
                   m_control.pipe_size);
 #if (USBH_USE_OS == 1)
         osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -298,14 +300,14 @@ uint32_t USBHCore::handle_enum()
                       0x80,
                       m_device.address,
                       m_device.speed,
-                      USBH_EP_CONTROL,
+                      EEPType::CTRL,
                       m_control.pipe_size);
 
             open_pipe(m_control.pipe_out,
                       0x00,
                       m_device.address,
                       m_device.speed,
-                      USBH_EP_CONTROL,
+                      EEPType::CTRL,
                       m_control.pipe_size);
         }
         break;
@@ -329,14 +331,14 @@ uint32_t USBHCore::handle_enum()
                       0x80,
                       m_device.address,
                       m_device.speed,
-                      USBH_EP_CONTROL,
+                      EEPType::CTRL,
                       m_control.pipe_size);
 
             open_pipe(m_control.pipe_out,
                       0x00,
                       m_device.address,
                       m_device.speed,
-                      USBH_EP_CONTROL,
+                      EEPType::CTRL,
                       m_control.pipe_size);
         }
         break;
@@ -520,6 +522,187 @@ void USBHCore::process_OS()
     }
 }
 #endif
+
+uint8_t USBHCore::alloc_pipe(uint8_t ep_addr)
+{
+    uint16_t pipe = get_free_pipe();
+    if (pipe != 0xffff)
+        m_pipes[pipe] = 0x8000 | ep_addr;
+    return pipe;
+}
+
+uint16_t USBHCore::get_free_pipe()
+{
+    for (uint8_t idx=0 ; idx<11 ; ++idx)
+        if ((m_pipes[idx] & 0x8000) == 0)
+            return idx;
+    return 0xffff;
+}
+
+uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
+{
+    uint32_t status = STM32_RESULT_BUSY;
+    switch (m_request_state)
+    {
+    case ECMDState::SEND:
+        m_control.buff = buff;
+        m_control.length = length;
+        m_control.state = ECTRLState::SETUP;
+        m_request_state = ECMDState::WAIT;
+#if (USBH_USE_OS == 1)
+        osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        break;
+    case ECMDState::WAIT:
+        status = handle_control();
+        if (status == STM32_RESULT_OK)
+        {
+            m_request_state = ECMDState::SEND;
+            m_control.state = ECTRLState::IDLE;
+        }
+        else
+        {
+            m_request_state = ECMDState::SEND;
+            status = STM32_RESULT_FAIL;
+        }
+        break;
+    case ECMDState::IDLE:
+        break;
+    }
+    return status;
+}
+
+uint32_t USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length)
+{
+    if (m_request_state == ECMDState::SEND)
+    {
+        m_control.setup.b.bmRequestType = USB_D2H | req_type;
+        m_control.setup.b.bRequest = USB_REQ_GET_DESCRIPTOR;
+        m_control.setup.b.wValue.w = value_idx;
+
+        if ((value_idx & 0xff00) == USB_DESC_STRING)
+            m_control.setup.b.wIndex.w = 0x0409;
+        else
+            m_control.setup.b.wIndex.w = 0;
+        m_control.setup.b.wLength.w = 0;
+    }
+    return ctl_req(buff, length);
+}
+
+uint32_t USBHCore::get_dev_desc(uint16_t length)
+{
+    uint32_t status = get_descriptor(USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,
+                                     USB_DESC_DEVICE, m_device.Data, length);
+    if (status == STM32_RESULT_OK)
+        parse_dev_desc(m_device.Data, length);
+    return status;
+}
+
+uint32_t USBHCore::get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length)
+{
+    uint32_t status = get_descriptor(USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,
+                                     USB_DESC_STRING | string_index, m_device.Data, length);
+    if (status == STM32_RESULT_OK)
+        parse_string_desc(m_device.Data, buff, length);
+    return status;
+}
+
+uint32_t USBHCore::set_cfg(uint16_t config_val)
+{
+    if (m_request_state == ECMDState::SEND)
+    {
+        m_control.setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD;
+        m_control.setup.b.bRequest = USB_REQ_SET_CONFIGURATION;
+        m_control.setup.b.wValue.w = config_val;
+        m_control.setup.b.wIndex.w = 0;
+        m_control.setup.b.wLength.w = 0;
+    }
+    return ctl_req(nullptr, 0);
+}
+
+uint32_t USBHCore::get_cfg_desc(uint16_t length)
+{
+    uint8_t* pData;
+#if (USBH_KEEP_CFG_DESCRIPTOR == 1)
+    pData = m_device.CfgDesc_Raw;
+#else
+    pData = m_device.Data;
+#endif
+    uint32_t status = get_descriptor(USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,
+                                     USB_DESC_CONFIGURATION, m_device.Data, length);
+    if (status == STM32_RESULT_OK)
+        parse_cfg_desc(pData, length);
+    return status;
+}
+
+uint32_t USBHCore::set_address(uint8_t dev_address)
+{
+    if (m_request_state == ECMDState::SEND)
+    {
+        m_control.setup.b.bmRequestType = USB_D2H | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD;
+        m_control.setup.b.bRequest = USB_REQ_SET_ADDRESS;
+        m_control.setup.b.wValue.w = dev_address;
+        m_control.setup.b.wIndex.w = 0;
+        m_control.setup.b.wLength.w = 0;
+    }
+    return ctl_req(nullptr, 0);
+}
+
+uint32_t USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
+{
+    if (m_request_state == ECMDState::SEND)
+    {
+        m_control.setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_INTERFACE | USB_REQ_TYPE_STANDARD;
+        m_control.setup.b.bRequest = USB_REQ_SET_INTERFACE;
+        m_control.setup.b.wValue.w = alt_setting;
+        m_control.setup.b.wIndex.w = ep_num;
+        m_control.setup.b.wLength.w = 0;
+    }
+    return ctl_req(nullptr, 0);
+}
+
+uint32_t USBHCore::clr_feature(uint8_t ep_num)
+{
+    if (m_request_state == ECMDState::SEND)
+    {
+        m_control.setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_INTERFACE | USB_REQ_TYPE_STANDARD;
+        m_control.setup.b.bRequest = USB_REQ_CLEAR_FEATURE;
+        m_control.setup.b.wValue.w = FEATURE_SELECTOR_ENDPOINT;
+        m_control.setup.b.wIndex.w = ep_num;
+        m_control.setup.b.wLength.w = 0;
+    }
+    return ctl_req(nullptr, 0);
+}
+
+void USBHCore::parse_dev_desc(uint8_t *buf, uint16_t length)
+{
+#warning
+}
+
+void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
+{
+#warning
+}
+
+void USBHCore::parse_cfg_desc(uint8_t *buf, uint16_t length)
+{
+#warning
+}
+
+void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
+{
+#warning
+}
+
+void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
+{
+#warning
+}
+
+uint32_t USBHCore::handle_control()
+{
+#warning
+}
 
 #ifdef STM32_USE_USB_HS
 USBHCore usb_HS;
