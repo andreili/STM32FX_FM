@@ -3,7 +3,7 @@
 
 #include "stm32_inc.h"
 
-#define UART_BUF_SIZE 127
+#define UART_BUF_SIZE 1024
 
 enum class UART_MODE
 {
