@@ -1209,15 +1209,19 @@ STM32_HCD usb_fs;
 STM32_HCD usb_hs;
 #endif
 
+#ifdef STM32_USE_USB_FS
 void ISR::OTG_FS_IRQ()
 {
     usb_fs.IRQ_handler();
 }
+#endif
 
+#ifdef STM32_USE_USB_HS
 void ISR::OTG_HS_IRQ()
 {
     usb_hs.IRQ_handler();
 }
+#endif
 
 __attribute__((weak)) void disconnect_callback(STM32_HCD *hcd)
 {
