@@ -228,7 +228,6 @@ public:
     uint8_t get_toggle(uint8_t pipe);
 
     void reset_port();
-    inline void reset_port_LL() { m_regs->ports[0] &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG); }
     inline void reset_port_st1(uint32_t val) { m_regs->ports[0] = val; }
     uint32_t start();
     uint32_t stop();
@@ -277,7 +276,7 @@ private:
     uint32_t core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable);
     inline void power_down() { m_regs->global.GCCFG &= ~USB_OTG_GCCFG_PWRDWN; }
     inline void power_up() { m_regs->global.GCCFG = USB_OTG_GCCFG_PWRDWN; }
-    inline void init_phy_ULPI() { m_regs->global.GCCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL); }
+    inline void init_phy_ULPI() { m_regs->global.GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL); }
     inline void init_phy_embedded() { m_regs->global.GUSBCFG |= USB_OTG_GUSBCFG_PHYSEL; }
     inline void reset_ULPI_VBUS() { m_regs->global.GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI); }
     inline void set_ULPI_VBUS() { m_regs->global.GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD; }
@@ -333,9 +332,10 @@ private:
     void activate_dedicated_endpoint(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket, uint8_t ep_type);
 
     inline void set_ep_IT_mask(uint32_t mask) { m_regs->device.DAINTMSK |= mask; }
+    inline void set_ded_ep_IT_mask(uint32_t mask) { m_regs->device.DEACHMSK |= mask; }
     inline void clear_ep_IT_mask(uint32_t mask) { m_regs->device.DAINTMSK &= ~mask; }
 
-    inline bool is_ep_in_active(uint8_t ep_num) { return (m_regs->in_eps[ep_num].DIEPCTL & USB_OTG_DIEPCTL_USBAEP) == 0; }
+    inline bool is_ep_in_active(uint8_t ep_num) { return (m_regs->in_eps[ep_num].DIEPCTL & USB_OTG_DIEPCTL_USBAEP) == USB_OTG_DIEPCTL_USBAEP; }
     inline void deactivate_ep_in(uint8_t ep_num) { m_regs->in_eps[ep_num].DIEPCTL &= ~USB_OTG_DIEPCTL_USBAEP; }
     inline void set_NAK_ep_in(uint8_t ep_num) { m_regs->in_eps[ep_num].DIEPCTL = USB_OTG_DIEPCTL_SNAK; }
     inline bool is_ep_in_disabled(uint8_t ep_num) { return (m_regs->in_eps[ep_num].DIEPINT & USB_OTG_DIEPCTL_EPDIS) == USB_OTG_DIEPCTL_EPDIS; }
@@ -343,10 +343,11 @@ private:
     inline void undisable_ep_in(uint8_t ep_num) { m_regs->in_eps[ep_num].DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS; }
     inline void activate_ep_in(uint8_t ep_num, uint32_t ep_maxpacket, uint8_t ep_type)
         { m_regs->in_eps[ep_num].DIEPCTL |= (ep_maxpacket & USB_OTG_DIEPCTL_MPSIZ) |
-                                            (ep_type << 18) | (ep_num << 22) |
+                                            (ep_type << USB_OTG_DIEPCTL_EPTYP_Pos) |
+                                            (ep_num << USB_OTG_DIEPCTL_TXFNUM_Pos) |
                                             USB_OTG_DIEPCTL_SD0PID_SEVNFRM | USB_OTG_DIEPCTL_USBAEP; }
 
-    inline bool is_ep_out_active(uint8_t ep_num) { return (m_regs->out_eps[ep_num].DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0; }
+    inline bool is_ep_out_active(uint8_t ep_num) { return (m_regs->out_eps[ep_num].DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == USB_OTG_DOEPCTL_USBAEP; }
     inline void deactivate_ep_out(uint8_t ep_num) { m_regs->out_eps[ep_num].DOEPCTL &= ~USB_OTG_DOEPCTL_USBAEP; }
     inline void set_NAK_ep_out(uint8_t ep_num) { m_regs->out_eps[ep_num].DOEPCTL = USB_OTG_DOEPCTL_SNAK; }
     inline bool is_ep_out_disabled(uint8_t ep_num) { return (m_regs->out_eps[ep_num].DOEPINT & USB_OTG_DOEPINT_OTEPDIS) == USB_OTG_DOEPINT_OTEPDIS; }
@@ -355,14 +356,15 @@ private:
     inline void clear_global_NAK() { m_regs->device.DCTL |= USB_OTG_DCTL_CGONAK; }
     inline void activate_ep_out(uint8_t ep_num, uint32_t ep_maxpacket, uint8_t ep_type)
         { m_regs->out_eps[ep_num].DOEPCTL |= (ep_maxpacket & USB_OTG_DOEPCTL_MPSIZ) |
-                                             (ep_type << 18) | (ep_num << 22) |
+                                             (ep_type << USB_OTG_DOEPCTL_EPTYP_Pos) |
+                                             (ep_num << 22) |
                                              USB_OTG_DIEPCTL_SD0PID_SEVNFRM | USB_OTG_DOEPCTL_USBAEP; }
 
     void EP_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket,
                        uint8_t* xfer_buff, uint16_t xfer_len, EEPType ep_type,
                        bool dma, uint32_t dma_addr);
     void EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket,
-                        uint8_t* xfer_buff, uint16_t xfer_len, EEPType ep_type,
+                        uint8_t* xfer_buff, uint16_t xfer_len,
                         bool dma, uint32_t dma_addr);
     inline void set_dev_empty_mask(uint32_t ep_num) { m_regs->device.DIEPEMPMSK |= (1 << ep_num); }
 
@@ -371,7 +373,7 @@ private:
             m_regs->in_eps[ep_num].DIEPTSIZ &= ~USB_OTG_DIEPTSIZ_XFRSIZ;
             m_regs->in_eps[ep_num].DIEPTSIZ &= ~USB_OTG_DIEPTSIZ_PKTCNT;
         }
-    inline void Xfer_in_pkt_size(uint8_t ep_num, uint32_t len) {  m_regs->in_eps[ep_num].DIEPTSIZ |= (USB_OTG_DIEPTSIZ_PKTCNT & (len << 19)); }
+    inline void Xfer_in_pkt_size(uint8_t ep_num, uint32_t len) {  m_regs->in_eps[ep_num].DIEPTSIZ |= (USB_OTG_DIEPTSIZ_PKTCNT & (len << USB_OTG_DIEPTSIZ_PKTCNT_Pos)); }
     inline void Xfer_in_pkt_end(uint8_t ep_num, uint32_t len) { m_regs->in_eps[ep_num].DIEPTSIZ |= (USB_OTG_DIEPTSIZ_XFRSIZ & len); }
     inline void Xfer_in_pkt_multi(uint8_t ep_num)
         {
@@ -388,7 +390,7 @@ private:
             m_regs->out_eps[ep_num].DOEPTSIZ &= ~USB_OTG_DIEPTSIZ_XFRSIZ;
             m_regs->out_eps[ep_num].DOEPTSIZ &= ~USB_OTG_DOEPTSIZ_PKTCNT;
         }
-    inline void Xfer_out_pkt_size(uint8_t ep_num, uint32_t len) { m_regs->out_eps[ep_num].DOEPTSIZ |= (USB_OTG_DOEPTSIZ_PKTCNT & (len << 19)); }
+    inline void Xfer_out_pkt_size(uint8_t ep_num, uint32_t len) { m_regs->out_eps[ep_num].DOEPTSIZ |= (USB_OTG_DOEPTSIZ_PKTCNT & (len << USB_OTG_DOEPTSIZ_PKTCNT_Pos)); }
     inline void Xfer_out_pkt_end(uint8_t ep_num, uint32_t len) { m_regs->out_eps[ep_num].DOEPTSIZ |= (USB_OTG_DOEPTSIZ_XFRSIZ & len); }
     inline void Xfer_out_enable_DMA(uint8_t ep_num, uint32_t dma_addr) { m_regs->out_eps[ep_num].DOEPDMA = dma_addr; }
     inline void Xfer_out_set_odd_frame(uint8_t ep_num) { m_regs->out_eps[ep_num].DOEPCTL |= USB_OTG_DOEPCTL_SODDFRM; }

@@ -500,16 +500,16 @@ void USBHCore::LL_driver_VBUS(uint8_t state)
     if (this->m_id == HOST_FS)
     {
         if (state == RESET)
-            STM32_USB_PWR_FS_PORT.pin_OFF(STM32_USB_PWR_FS_PIN);
-        else
             STM32_USB_PWR_FS_PORT.pin_ON(STM32_USB_PWR_FS_PIN);
+        else
+            STM32_USB_PWR_FS_PORT.pin_OFF(STM32_USB_PWR_FS_PIN);
     }
     else
     {
         if (state == RESET)
-            STM32_USB_PWR_HS_PORT.pin_OFF(STM32_USB_PWR_HS_PIN);
-        else
             STM32_USB_PWR_HS_PORT.pin_ON(STM32_USB_PWR_HS_PIN);
+        else
+            STM32_USB_PWR_HS_PORT.pin_OFF(STM32_USB_PWR_HS_PIN);
     }
     STM32_SYSTICK::delay(200);
 }
