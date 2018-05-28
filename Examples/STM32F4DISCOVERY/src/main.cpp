@@ -60,6 +60,7 @@ int main()
     BTN_PORT.set_config(BTN_PIN, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_LOW, GPIO_PULLDOWN);
 
     STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, GPIO_MODE_OUTPUT_PP, 0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
+    STM32_USB_PWR_FS_PORT.pin_ON(STM32_USB_PWR_FS_PIN);
 
     uart6.init(STM32_BRATE_UART6);
 
@@ -67,6 +68,7 @@ int main()
                    "\n\r\tBased on C++ framework\n\r", TXRX_MODE::INTERRUPT);
 
     usb_FS.init(usb_fs_proc, HOST_FS);
+    usb_FS.start();
 
     uint32_t ticks;
     while (1)
