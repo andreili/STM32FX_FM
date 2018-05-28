@@ -1,5 +1,7 @@
 #include "sddriver.h"
 
+#ifdef STM32_FATFS_USE
+
 SDDriver sd_driver;
 
 /* Block Size in Bytes */
@@ -52,3 +54,5 @@ uint8_t SDDriver::ioctl(uint8_t, uint8_t, void*)
 }
 
 #endif
+
+#endif //STM32_FATFS_USE

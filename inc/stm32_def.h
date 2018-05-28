@@ -5,6 +5,8 @@
 #include "stm32f4xx.h"
 #include "bitbanding.h"
 
+#define RAMFUNC __attribute__ ((long_call, section (".ramfunctions")))
+
 extern uint32_t unused_reg;
 #define UNUSED(x) (void)(x)
 

@@ -6,6 +6,9 @@
  * */
 
 #include "stm32_inc.h"
+
+#ifdef STM32_USE_USB
+
 #include "usbh_config.h"
 #include "usbh_class.h"
 
@@ -322,7 +325,6 @@ typedef struct
 #define ENDPOINT_DESC_TYPE                0x05
 #define INTERFACE_DESC_SIZE               0x09
 
-
 class USBHCore
 {
 public:
@@ -341,9 +343,13 @@ public:
     void stop();
     void re_enumerate();
     void process();
+
+    void LL_connect();
+    void LL_disconnect();
+    inline void LL_inc_timer() { ++m_timer; handle_SOF(); }
 private:
     __IO EHostState     m_gstate;
-    EUSBState           m_state;
+    EUSBState           m_enum_state;
     ECMDState           m_request_state;
     USBHCtrl_t          m_control;
     USBHDevice_t        m_device;
@@ -370,8 +376,6 @@ private:
     inline uint32_t LL_start() { return m_hcd->start(); }
     inline uint32_t LL_stop() { return m_hcd->stop(); }
 
-    void LL_connect();
-    void LL_disconnect();
     inline EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
     inline void LL_reset_port() { m_hcd->reset_port(); }
     inline uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
@@ -393,7 +397,6 @@ private:
 
     /* USBH Time base */
     inline void LL_set_timer(uint32_t time) { m_timer = time; }
-    inline void LL_inc_timer() { ++m_timer; handle_SOF(); }
 
     /* Pipes */
     inline uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
@@ -450,6 +453,8 @@ extern USBHCore usb_HS;
 
 #ifdef STM32_USE_USB_FS
 extern USBHCore usb_FS;
+#endif
+
 #endif
 
 #endif

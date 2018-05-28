@@ -181,6 +181,7 @@ SECTIONS
 
         KEEP(*(.jcr*))
         . = ALIGN(4);
+        *(.ramfunctions)
         /* All data end */
         _edata = .;        /* define a global symbol at data end */
         __data_end__ = .;

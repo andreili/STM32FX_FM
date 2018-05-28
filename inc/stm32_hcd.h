@@ -190,6 +190,9 @@ public:
     uint32_t init(USB_OTG_GlobalTypeDef *regs_addr, EOTG_PHY phy, bool use_ext_vbus, bool dma_enable, EOTGSpeed speed, uint32_t host_channels);
     void deInit();
 
+    inline void set_data(void* data) { m_data = data; }
+    inline void* get_data() { return m_data; }
+
     inline void enable() { enable_global_int(); }
     inline void disable() { disable_global_int(); }
 

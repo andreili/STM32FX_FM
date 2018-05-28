@@ -311,7 +311,7 @@ public:
     inline void pin_ON(uint32_t pin_mask) { m_gpio->BSRR = pin_mask; }
     inline void pin_OFF(uint32_t pin_mask) { m_gpio->BSRR = (pin_mask << GPIO_BSRR_BR0_Pos); }
 
-    inline bool pin_read(uint32_t pin) { return ((m_gpio->IDR & pin) != 0); }
+    inline bool pin_read(uint32_t pin) { return ((m_gpio->IDR & pin) == pin); }
     inline uint32_t pins_read(uint32_t pin) { return (m_gpio->IDR & pin); }
     inline void pins_write(uint32_t data) { m_gpio->ODR = data; }
     inline void pin_toggle(uint32_t pin) { m_gpio->ODR ^= pin; }

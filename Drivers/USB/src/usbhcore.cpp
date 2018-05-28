@@ -1,4 +1,7 @@
 #include "usbhcore.h"
+#include "my_func.h"
+
+#ifdef STM32_USE_USB
 
 #define USBH_ADDRESS_DEFAULT                     0
 #define USBH_ADDRESS_ASSIGNED                    1
@@ -288,13 +291,13 @@ void USBHCore::process()
 uint32_t USBHCore::handle_enum()
 {
     __IO uint32_t status = STM32_RESULT_BUSY;
-    switch (m_state)
+    switch (m_enum_state)
     {
     case EUSBState::IDLE:
         if (get_dev_desc(8) == STM32_RESULT_OK)
         {
             m_control.pipe_size = m_device.DevDesc.bMaxPacketSize;
-            m_state = EUSBState::GET_FULL_DEV_DESC;
+            m_enum_state = EUSBState::GET_FULL_DEV_DESC;
 
             open_pipe(m_control.pipe_in,
                       0x80,
@@ -316,7 +319,7 @@ uint32_t USBHCore::handle_enum()
         {
             USBH_UsrLog("PID: %xh", m_device.DevDesc.idProduct );
             USBH_UsrLog("VID: %xh", m_device.DevDesc.idVendor );
-            m_state = EUSBState::SET_ADDR;
+            m_enum_state = EUSBState::SET_ADDR;
         }
         break;
     case EUSBState::SET_ADDR:
@@ -325,7 +328,7 @@ uint32_t USBHCore::handle_enum()
             STM32_SYSTICK::delay(2);
             m_device.address = USBH_DEVICE_ADDRESS;
             USBH_UsrLog("Address (#%d) assigned.", m_device.address);
-            m_state = EUSBState::GET_CFG_DESC;
+            m_enum_state = EUSBState::GET_CFG_DESC;
 
             open_pipe(m_control.pipe_in,
                       0x80,
@@ -344,11 +347,11 @@ uint32_t USBHCore::handle_enum()
         break;
     case EUSBState::GET_CFG_DESC:
         if (get_cfg_desc(m_device.CfgDesc.wTotalLength) == STM32_RESULT_OK)
-            m_state = EUSBState::GET_FULL_CFG_DESC;
+            m_enum_state = EUSBState::GET_FULL_CFG_DESC;
         break;
     case EUSBState::GET_FULL_CFG_DESC:
         if (get_cfg_desc(USB_CONFIGURATION_DESC_SIZE) == STM32_RESULT_OK)
-            m_state = EUSBState::GET_MFC_STRING_DESC;
+            m_enum_state = EUSBState::GET_MFC_STRING_DESC;
         break;
     case EUSBState::GET_MFC_STRING_DESC:
         if (m_device.DevDesc.iManufacturer != 0)
@@ -363,7 +366,7 @@ uint32_t USBHCore::handle_enum()
         {
             USBH_UsrLog("Manufacturer : N/A");
         }
-        m_state = EUSBState::GET_PRODUCT_STRING_DESC;
+        m_enum_state = EUSBState::GET_PRODUCT_STRING_DESC;
 #if (USBH_USE_OS == 1)
         osMessagePut( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
 #endif
@@ -381,7 +384,7 @@ uint32_t USBHCore::handle_enum()
         {
             USBH_UsrLog("Product : N/A");
         }
-        m_state = EUSBState::GET_SERIALNUM_STRING_DESC;
+        m_enum_state = EUSBState::GET_SERIALNUM_STRING_DESC;
 #if (USBH_USE_OS == 1)
         osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
 #endif
@@ -422,7 +425,7 @@ void USBHCore::deInit_state_machine()
     for (int i=0 ; i<USBH_MAX_DATA_BUFFER ; ++i)
         m_device.Data[i] = 0;
     m_gstate = EHostState::IDLE;
-    m_state = EUSBState::IDLE;
+    m_enum_state = EUSBState::IDLE;
     m_request_state = ECMDState::SEND;
     m_timer = 0;
 
@@ -468,19 +471,28 @@ void USBHCore::LL_disconnect()
 void USBHCore::LL_init()
 {
     if (m_id == HOST_FS)
+#ifdef STM32_USE_USB_FS
     {
         m_hcd = &usb_fs;
         if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_fs.get_current_frame());
     }
+#else
+    {}
+#endif //STM32_USE_USB_FS
     else
+#ifdef STM32_USE_USB_HS
     {
         m_hcd = &usb_hs;
         if (usb_hs.init(USB_OTG_HS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_hs.get_current_frame());
     }
+#else
+    {}
+#endif // STM32_USE_USB_HS
+    m_hcd->set_data((void*)this);
 }
 
 void USBHCore::LL_driver_VBUS(uint8_t state)
@@ -488,24 +500,16 @@ void USBHCore::LL_driver_VBUS(uint8_t state)
     if (this->m_id == HOST_FS)
     {
         if (state == RESET)
-        {
-#warning disable FS power
-        }
+            STM32_USB_PWR_FS_PORT.pin_OFF(STM32_USB_PWR_FS_PIN);
         else
-        {
-#warning enable FS power
-        }
+            STM32_USB_PWR_FS_PORT.pin_ON(STM32_USB_PWR_FS_PIN);
     }
     else
     {
         if (state == RESET)
-        {
-#warning disable HS power
-        }
+            STM32_USB_PWR_HS_PORT.pin_OFF(STM32_USB_PWR_HS_PIN);
         else
-        {
-#warning enable HS power
-        }
+            STM32_USB_PWR_HS_PORT.pin_ON(STM32_USB_PWR_HS_PIN);
     }
     STM32_SYSTICK::delay(200);
 }
