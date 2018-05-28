@@ -239,7 +239,7 @@ uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
 
 void STM32_HCD::IRQ_handler()
 {
-    GPIOD->BSRR = GPIO_BSRR_BR15;
+    GPIOD->BSRR = GPIO_BSRR_BS15;
     if (get_mode() == EOTGDeviceMode::HOST)
     {
         if (is_invalid_IT())
@@ -299,7 +299,7 @@ void STM32_HCD::init_gpio()
                                      GPIO_AF10_OTG_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         STM32_RCC::STM32_USB_FS_EN_CLK();
         STM32_RCC::enable_clk_USB_FS();
-        STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 0, 0);
+        STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 5, 0);
     }
     else
     {
@@ -307,7 +307,7 @@ void STM32_HCD::init_gpio()
                                      GPIO_AF10_OTG_HS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         STM32_RCC::STM32_USB_HS_EN_CLK();
         STM32_RCC::enable_clk_USB_HS();
-        STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 0, 0);
+        STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 5, 0);
     }
 }
 
@@ -1215,6 +1215,7 @@ STM32_HCD usb_hs;
 #ifdef STM32_USE_USB_FS
 void ISR::OTG_FS_IRQ()
 {
+    GPIOD->BSRR = GPIO_BSRR_BS15;
     usb_fs.IRQ_handler();
 }
 #endif
@@ -1222,6 +1223,7 @@ void ISR::OTG_FS_IRQ()
 //#ifdef STM32_USE_USB_HS
 void ISR::OTG_HS_IRQ()
 {
+    GPIOD->BSRR = GPIO_BSRR_BS15;
     usb_hs.IRQ_handler();
 }
 //#endif
