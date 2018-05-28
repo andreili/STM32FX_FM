@@ -64,7 +64,7 @@ int main()
     uart6.init(STM32_BRATE_UART6);
 
     uart6.send_str("\n\rSTM32F4DISCOVERY demo project"
-                   "\n\r\tBased on C++ frameork\n\r", TXRX_MODE::INTERRUPT);
+                   "\n\r\tBased on C++ framework\n\r", TXRX_MODE::INTERRUPT);
 
     usb_FS.init(usb_fs_proc, HOST_FS);
 
