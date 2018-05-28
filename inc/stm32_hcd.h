@@ -7,14 +7,14 @@
 
 #include "stm32_inc.h"
 
-enum class EOTGDeviceMode
+enum class EOTGDeviceMode: uint32_t
 {
     DEVICE = 0,
     HOST = 1,
     DRD = 2,
 };
 
-enum class EURBState
+enum class EURBState: uint32_t
 {
     IDLE = 0,
     DONE,
@@ -24,7 +24,7 @@ enum class EURBState
     STALL,
 };
 
-enum class EHCState
+enum class EHCState: uint32_t
 {
     IDLE = 0,
     XFRC,
@@ -37,7 +37,7 @@ enum class EHCState
     DATATGLERR,
 };
 
-enum class EOTGSpeed
+enum class EOTGSpeed: uint32_t
 {
     HIGH = 0,
     HIGH_IN_FULL = 1,
@@ -45,7 +45,7 @@ enum class EOTGSpeed
     FULL = 3,
 };
 
-enum class EOTG_PHY
+enum class EOTG_PHY: uint32_t
 {
     ULPI = 1,
     EMBEDDED = 2,
@@ -74,7 +74,7 @@ enum class EOTG_PHY
 #define EP_SPEED_FULL                          1U
 #define EP_SPEED_HIGH                          2U
 
-enum class EEPType
+enum class EEPType: uint32_t
 {
     CTRL = 0,
     ISOC,
@@ -89,7 +89,7 @@ enum class EEPType
 #define STS_SETUP_COMP                         4U
 #define STS_SETUP_UPDT                         6U
 
-enum class EClockSpeed
+enum class EClockSpeed: uint32_t
 {
     _30_60_MHZ = 0,
     _48_MHZ,
@@ -122,7 +122,7 @@ enum class EClockSpeed
 #define USB_PCGCCTL_COUNT ((USB_OTG_FIFO_BASE - USB_OTG_PCGCCTL_BASE) / sizeof(uint32_t))
 #define USB_DFIFO_COUNT (USB_OTG_FIFO_SIZE / sizeof(uint32_t))
 
-enum class EHCDState
+enum class EHCDState: uint32_t
 {
     RESET_ = 0,
     READY,

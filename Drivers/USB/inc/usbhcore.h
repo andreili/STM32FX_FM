@@ -109,7 +109,7 @@
 #define CONFIG_DESC_wTOTAL_LENGTH (ConfigurationDescriptorData.ConfigDescfield.\
                                           ConfigurationDescriptor.wTotalLength)
 
-enum class EHostUser
+enum class EHostUser: uint32_t
 {
     SELECT_CONFIGURATION = 1,
     CLASS_ACTIVE,
@@ -119,7 +119,7 @@ enum class EHostUser
     UNRECOVERED_ERROR,
 };
 
-enum class EHostState
+enum class EHostState: uint32_t
 {
     IDLE = 0,
     DEV_WAIT_FOR_ATTACHMENT,
@@ -136,7 +136,7 @@ enum class EHostState
     ABORT_STATE,
 };
 
-enum class EUSBState
+enum class EUSBState: uint32_t
 {
     IDLE = 0,
     GET_FULL_DEV_DESC,
@@ -148,14 +148,14 @@ enum class EUSBState
     GET_SERIALNUM_STRING_DESC,
 };
 
-enum class ECMDState
+enum class ECMDState: uint32_t
 {
     IDLE = 0,
     SEND,
     WAIT,
 };
 
-enum class EUSBHStatus
+enum class EUSBHStatus: uint32_t
 {
     OK = 0,
     BUSY,
@@ -165,7 +165,7 @@ enum class EUSBHStatus
     ERROR_SPEED_UNKNOWN,
 };
 
-enum class ECTRLState
+enum class ECTRLState: uint32_t
 {
     IDLE =0,
     SETUP,
@@ -183,7 +183,7 @@ enum class ECTRLState
     COMPLETE,
 };
 
-enum class EOsEvent
+enum class EOsEvent: uint32_t
 {
     PORT_EVENT = 1,
     URB_EVENT,
@@ -348,7 +348,7 @@ public:
     void LL_disconnect();
     inline void LL_inc_timer() { ++m_timer; handle_SOF(); }
 private:
-    __IO EHostState     m_gstate;
+    EHostState          m_gstate;
     EUSBState           m_enum_state;
     ECMDState           m_request_state;
     USBHCtrl_t          m_control;
@@ -357,7 +357,7 @@ private:
     USBHClass*          m_active_class;
     uint32_t            m_class_number;
     uint32_t            m_pipes[15];
-    __IO uint32_t       m_timer;
+    uint32_t            m_timer;
     uint8_t             m_id;
     STM32_HCD*          m_hcd;
     void                (*m_user)(USBHCore*,EHostUser);
