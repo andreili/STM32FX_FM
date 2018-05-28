@@ -337,7 +337,7 @@ public:
     uint8_t find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol);
     uint8_t find_interface_index(uint8_t interface_number, uint8_t alt_settings);
 
-    inline uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
+    FORCE_INLINE uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
 
     void start();
     void stop();
@@ -346,7 +346,7 @@ public:
 
     void LL_connect();
     void LL_disconnect();
-    inline void LL_inc_timer() { ++m_timer; handle_SOF(); }
+    FORCE_INLINE void LL_inc_timer() { ++m_timer; handle_SOF(); }
 private:
     EHostState          m_gstate;
     EUSBState           m_enum_state;
@@ -372,58 +372,58 @@ private:
 
     // LL Driver
     void LL_init();
-    inline void LL_deInit() { m_hcd->deInit(); }
-    inline uint32_t LL_start() { return m_hcd->start(); }
-    inline uint32_t LL_stop() { return m_hcd->stop(); }
+    FORCE_INLINE void LL_deInit() { m_hcd->deInit(); }
+    FORCE_INLINE uint32_t LL_start() { return m_hcd->start(); }
+    FORCE_INLINE uint32_t LL_stop() { return m_hcd->stop(); }
 
-    inline EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
-    inline void LL_reset_port() { m_hcd->reset_port(); }
-    inline uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
+    FORCE_INLINE EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
+    FORCE_INLINE void LL_reset_port() { m_hcd->reset_port(); }
+    FORCE_INLINE uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
     void LL_driver_VBUS(uint8_t state);
 
-    inline uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
+    FORCE_INLINE uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
         { return m_hcd->HC_init(pipe_num, ep_num, dev_address, speed, ep_type, mps); }
-    inline uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
-    inline void LL_submit_URB(uint8_t pipe, bool is_in, EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
+    FORCE_INLINE uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
+    FORCE_INLINE void LL_submit_URB(uint8_t pipe, bool is_in, EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
         { m_hcd->HC_submit_request(pipe, is_in, ep_type, token, pbuff, length, do_ping); }
-    inline EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
+    FORCE_INLINE EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
 
 #if (USBH_USE_OS == 1)
     void process_OS();
-    inline void LL_notify_URB_change() { osMessagePut(m_event, USBH_URB_EVENT, 0); }
+    FORCE_INLINE void LL_notify_URB_change() { osMessagePut(m_event, USBH_URB_EVENT, 0); }
 #endif
-    inline void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
-    inline uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }
+    FORCE_INLINE void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
+    FORCE_INLINE uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }
 
     /* USBH Time base */
-    inline void LL_set_timer(uint32_t time) { m_timer = time; }
+    FORCE_INLINE void LL_set_timer(uint32_t time) { m_timer = time; }
 
     /* Pipes */
-    inline uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
+    FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
         { return m_hcd->HC_init(ch_num, epnum, dev_addr, speed, ep_type, mps); }
-    inline uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
+    FORCE_INLINE uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
     uint8_t alloc_pipe(uint8_t ep_addr);
     uint16_t get_free_pipe();
-    inline void free_pipe(uint8_t idx) { if (idx < 11) { m_pipes[idx] &= 0x7fff; } }
+    FORCE_INLINE void free_pipe(uint8_t idx) { if (idx < 11) { m_pipes[idx] &= 0x7fff; } }
 
     /* IOreq */
-    inline void ctrl_send_setup(uint8_t* buff, uint8_t ch_num)
+    FORCE_INLINE void ctrl_send_setup(uint8_t* buff, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_SETUP, buff, USBH_SETUP_PKT_SIZE, false); }
-    inline void ctrl_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, bool do_ping)
+    FORCE_INLINE void ctrl_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, bool do_ping)
         { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
-    inline void ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+    FORCE_INLINE void ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, EEPType::CTRL, USBH_PID_DATA, buff, length, false); }
-    inline void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+    FORCE_INLINE void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, EEPType::BULK, USBH_PID_DATA, buff, length, false); }
-    inline void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
+    FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
         { m_hcd->HC_submit_request(ch_num, false, EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
-    inline void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+    FORCE_INLINE void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
-    inline void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+    FORCE_INLINE void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, false, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
-    inline void isoc_recieve_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
+    FORCE_INLINE void isoc_recieve_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
-    inline void isoc_send_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
+    FORCE_INLINE void isoc_send_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, false, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
 
     /* CtrlReq */
