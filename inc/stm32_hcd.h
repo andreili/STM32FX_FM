@@ -131,19 +131,23 @@ enum class EHCDState
     TIMEOUT,
 };
 
+#pragma pack(push, 1)
 typedef struct
 {
     USB_OTG_GlobalTypeDef       global;
-    uint32_t                    HPRT0;
+    uint32_t                    dummy0[176];
     USB_OTG_HostTypeDef         host;
+    uint32_t                    dummy1[9];
     uint32_t                    ports[USB_HOST_PORTS_COUNT];
     USB_OTG_HostChannelTypeDef  channels[USB_HOST_CHANNELS_COUNT];
     USB_OTG_DeviceTypeDef       device;
+    uint32_t                    dummy2[30];
     USB_OTG_INEndpointTypeDef   in_eps[USB_IN_EP_COUNT];
     USB_OTG_OUTEndpointTypeDef  out_eps[USB_OUT_EP_COUNT];
     uint32_t                    PCGCCTL[USB_PCGCCTL_COUNT];
     uint32_t                    DFIFO[USB_DFIFO_COUNT];
 } OTGRegs_t;
+#pragma pack(pop)
 
 typedef struct
 {
@@ -224,8 +228,8 @@ public:
     uint8_t get_toggle(uint8_t pipe);
 
     void reset_port();
-    inline void reset_port_LL() { m_regs->HPRT0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG); }
-    inline void reset_port_st1(uint32_t val) { m_regs->HPRT0 = val; }
+    inline void reset_port_LL() { m_regs->ports[0] &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG); }
+    inline void reset_port_st1(uint32_t val) { m_regs->ports[0] = val; }
     uint32_t start();
     uint32_t stop();
 
@@ -451,7 +455,7 @@ private:
 
     void drive_VBUS(uint8_t state);
 
-    inline EOTGSpeed get_host_speed() { return (EOTGSpeed)((m_regs->HPRT0 & USB_OTG_HPRT_PSPD) >> USB_OTG_HPRT_PSPD_Pos); }
+    inline EOTGSpeed get_host_speed() { return (EOTGSpeed)((m_regs->ports[0] & USB_OTG_HPRT_PSPD) >> USB_OTG_HPRT_PSPD_Pos); }
 
     void HC_start_Xfer(OTG_HC_t *hc, bool dma);
     inline uint32_t HC_get_Xfer_size(uint8_t ch_num) { return m_regs->channels[ch_num].HCTSIZ; }

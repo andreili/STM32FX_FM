@@ -46,7 +46,7 @@ uint8_t STM32_HCD::get_toggle(uint8_t pipe)
 
 void STM32_HCD::reset_port()
 {
-    uint32_t val = m_regs->HPRT0;
+    uint32_t val = m_regs->ports[0];
     reset_port_LL();
     reset_port_st1(USB_OTG_HPRT_PRST | val);
     STM32_SYSTICK::delay(10);
@@ -880,7 +880,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 
 void STM32_HCD::drive_VBUS(uint8_t state)
 {
-    uint32_t val = m_regs->HPRT0;
+    uint32_t val = m_regs->ports[0];
     reset_port_LL();
     if (((val & USB_OTG_HPRT_PPWR) == 0) && (state == 0))
         reset_port_st1(USB_OTG_HPRT_PPWR | val);
@@ -1160,7 +1160,7 @@ void STM32_HCD::RXQLVL_IRQ_handler()
 void STM32_HCD::port_IRQ_handler()
 {
     uint32_t hprt0, hprt0_dup;
-    hprt0 = hprt0_dup = m_regs->HPRT0;
+    hprt0 = hprt0_dup = m_regs->ports[0];
 
     hprt0_dup &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
                    USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
