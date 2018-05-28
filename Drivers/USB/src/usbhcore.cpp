@@ -594,7 +594,7 @@ uint32_t USBHCore::get_dev_desc(uint16_t length)
     uint32_t status = get_descriptor(USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,
                                      USB_DESC_DEVICE, m_device.Data, length);
     if (status == STM32_RESULT_OK)
-        parse_dev_desc(m_device.Data, length);
+        parse_dev_desc(&m_device.DevDesc, m_device.Data, length);
     return status;
 }
 
@@ -631,7 +631,7 @@ uint32_t USBHCore::get_cfg_desc(uint16_t length)
     uint32_t status = get_descriptor(USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,
                                      USB_DESC_CONFIGURATION, m_device.Data, length);
     if (status == STM32_RESULT_OK)
-        parse_cfg_desc(pData, length);
+        parse_cfg_desc(&m_device.CfgDesc, pData, length);
     return status;
 }
 
@@ -674,34 +674,271 @@ uint32_t USBHCore::clr_feature(uint8_t ep_num)
     return ctl_req(nullptr, 0);
 }
 
-void USBHCore::parse_dev_desc(uint8_t *buf, uint16_t length)
+void USBHCore::parse_dev_desc(USBHDevDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
-#warning
+    if (length > 8)
+        memcpy((uint8_t*)pdesc, buf, 18);
+    else
+        memcpy((uint8_t*)pdesc, buf, 8);
+    pdesc->bcdUSB = __builtin_bswap16(pdesc->bcdUSB);
 }
 
 void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
 {
-#warning
+    if (psrc[1] == USB_DESC_TYPE_STRING)
+    {
+        uint16_t strl = (((psrc[0] - 2) <= length) ? (psrc[0] - 1) : length);
+        psrc += 2;
+        for (uint16_t idx=0 ; idx<strl ; ++idx)
+            *(pdst++) = psrc[idx];
+        *pdst = 0;
+    }
 }
 
-void USBHCore::parse_cfg_desc(uint8_t *buf, uint16_t length)
+void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
-#warning
+    memcpy((uint8_t*)pdesc, buf, 9);
+    pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
+    if (length > USB_CONFIGURATION_DESC_SIZE)
+    {
+        int8_t if_idx = 0;
+        uint16_t ptr = USB_LEN_CFG_DESC;
+        USBHDescHeader_t* pheader = (USBHDescHeader_t*)buf;
+        while ((if_idx < USBH_MAX_NUM_INTERFACES) && (ptr < pdesc->wTotalLength))
+        {
+            pheader = get_next_desc(buf, &ptr);
+            if (pheader->bDescriptorType == USB_DESC_TYPE_INTERFACE)
+            {
+                USBHInterfaceDesc_t* pif = &pdesc->Itf_Desc[if_idx];
+                parse_interface_desc(pif, buf);
+
+                int8_t ep_idx = 0;
+                USBHEpDesc_t* pep = nullptr;
+                while ((ep_idx < pif->bNumEndpoints) && (ptr < pdesc->wTotalLength))
+                {
+                    pheader = get_next_desc(buf, &ptr);
+                    if (pheader->bDescriptorType == USB_DESC_TYPE_ENDPOINT)
+                    {
+                        pep = &pif->Ep_Desc[ep_idx];
+                        parse_ep_desc(pep, buf);
+                        ++ep_idx;
+                    }
+                }
+                ++if_idx;
+            }
+        }
+    }
 }
 
 void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
 {
-#warning
+    memcpy((uint8_t*)ep_desc, buf, 7);
+    ep_desc->wMaxPacketSize = __builtin_bswap16(ep_desc->wMaxPacketSize);
 }
 
 void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
 {
-#warning
+    memcpy((uint8_t*)if_desc, buf, 9);
+}
+
+USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr)
+{
+    USBHDescHeader_t* pnext = (USBHDescHeader_t*)buff;
+    *ptr += pnext->bLength;
+    pnext = (USBHDescHeader_t*)((buff + pnext->bLength));
+    return pnext;
 }
 
 uint32_t USBHCore::handle_control()
 {
-#warning
+    EURBState urb_state = EURBState::IDLE;
+    uint8_t direction;
+    uint32_t status = STM32_RESULT_BUSY;
+    switch (m_control.state)
+    {
+    case ECTRLState::SETUP:
+        ctrl_send_setup((uint8_t*)m_control.setup.d8, m_control.pipe_out);
+        m_control.state = ECTRLState::SETUP_WAIT;
+        break;
+    case ECTRLState::SETUP_WAIT:
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        if (urb_state == EURBState::DONE)
+        {
+            direction = (m_control.setup.b.bmRequestType & USB_REQ_DIR_MASK);
+            if (m_control.setup.b.wLength.w != 0)
+            {
+                if (direction == USB_D2H)
+                    m_control.state = ECTRLState::DATA_IN;
+                else
+                    m_control.state = ECTRLState::DATA_OUT;
+            }
+            else
+            {
+                if (direction == USB_D2H)
+                    m_control.state = ECTRLState::STATUS_OUT;
+                else
+                    m_control.state = ECTRLState::STATUS_IN;
+            }
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::ERROR)
+        {
+            m_control.state = ECTRLState::ERROR;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        break;
+    case ECTRLState::DATA_IN:
+        m_control.timer = m_timer;
+        ctrl_recieve_data(m_control.buff, m_control.length, m_control.pipe_in);
+        m_control.state = ECTRLState::DATA_IN_WAIT;
+        break;
+    case ECTRLState::DATA_IN_WAIT:
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        if (urb_state == EURBState::DONE)
+        {
+            m_control.state = ECTRLState::STATUS_OUT;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::STALL)
+        {
+            status = STM32_RESULT_FAIL;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::ERROR)
+        {
+            m_control.state = ECTRLState::ERROR;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        break;
+    case ECTRLState::DATA_OUT:
+        m_control.timer = m_timer;
+        ctrl_send_data(m_control.buff, m_control.length, m_control.pipe_out, true);
+        m_control.state = ECTRLState::DATA_OUT_WAIT;
+        break;
+    case ECTRLState::DATA_OUT_WAIT:
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        if (urb_state == EURBState::DONE)
+        {
+            m_control.state = ECTRLState::STATUS_IN;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::STALL)
+        {
+            m_control.state = ECTRLState::STALLED;
+            status = STM32_RESULT_FAIL;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::NOT_READY)
+        {
+            m_control.state = ECTRLState::DATA_OUT;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::ERROR)
+        {
+            m_control.state = ECTRLState::ERROR;
+            status = STM32_RESULT_FAIL;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        break;
+    case ECTRLState::STATUS_IN:
+        m_control.timer = m_timer;
+        ctrl_recieve_data(nullptr, 0, m_control.pipe_in);
+        m_control.state = ECTRLState::STATUS_IN_WAIT;
+        break;
+    case ECTRLState::STATUS_IN_WAIT:
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        if (urb_state == EURBState::DONE)
+        {
+            m_control.state = ECTRLState::COMPLETE;
+            status = STM32_RESULT_OK;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::STALL)
+        {
+            status = STM32_RESULT_FAIL;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::ERROR)
+        {
+            m_control.state = ECTRLState::ERROR;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        break;
+    case ECTRLState::STATUS_OUT:
+        m_control.timer = m_timer;
+        ctrl_recieve_data(nullptr, 0, m_control.pipe_out);
+        m_control.state = ECTRLState::STATUS_OUT_WAIT;
+        break;
+    case ECTRLState::STATUS_OUT_WAIT:
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        if (urb_state == EURBState::DONE)
+        {
+            m_control.state = ECTRLState::COMPLETE;
+            status = STM32_RESULT_OK;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::NOT_READY)
+        {
+            m_control.state = ECTRLState::STATUS_OUT;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        else if (urb_state == EURBState::ERROR)
+        {
+            m_control.state = ECTRLState::ERROR;
+#if (USBH_USE_OS == 1)
+            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+#endif
+        }
+        break;
+    case ECTRLState::ERROR:
+        if (++m_control.errorcount <= USBH_MAX_ERROR_COUNT)
+        {
+            m_hcd->stop();
+            m_control.state = ECTRLState::SETUP;
+            m_request_state = ECMDState::SEND;
+        }
+        else
+        {
+            m_user(this, EHostUser::UNRECOVERED_ERROR);
+            m_control.errorcount = 0;
+            USBH_ErrLog("Control error");
+            status = STM32_RESULT_FAIL;
+        }
+        break;
+    case ECTRLState::IDLE:
+    case ECTRLState::STALLED:
+    case ECTRLState::COMPLETE:
+        break;
+    }
+    return status;
 }
 
 #ifdef STM32_USE_USB_HS
@@ -710,4 +947,6 @@ USBHCore usb_HS;
 
 #ifdef STM32_USE_USB_FS
 USBHCore usb_FS;
+#endif
+
 #endif

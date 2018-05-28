@@ -227,6 +227,7 @@ typedef struct
     uint8_t     errorcount;
 } USBHCtrl_t;
 
+#pragma pack(push, 1)
 typedef struct
 {
     uint8_t  bLength;
@@ -292,6 +293,7 @@ typedef struct
     uint8_t   bMaxPower;            /*Maximum Power Consumption */
     USBHInterfaceDesc_t  Itf_Desc[USBH_MAX_NUM_INTERFACES];
 } USBHCfgDesc_t;
+#pragma pack(pop)
 
 typedef struct
 {
@@ -320,32 +322,6 @@ typedef struct
 #define ENDPOINT_DESC_TYPE                0x05
 #define INTERFACE_DESC_SIZE               0x09
 
-#define  LE16(addr)             (((uint16_t)(*((uint8_t *)(addr))))\
-                                + (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
-
-#define  LE16S(addr)              (uint16_t)(LE16((addr)))
-
-#define  LE32(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 3))) << 24)))
-
-#define  LE64(addr)              ((((uint64_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 1))) <<  8) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 2))) << 16) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 3))) << 24) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 4))) << 32) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 5))) << 40) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 6))) << 48) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 7))) << 56)))
-
-
-#define  LE24(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16)))
-
-
-#define  LE32S(addr)              (int32_t)(LE32((addr)))
 
 class USBHCore
 {
@@ -459,9 +435,9 @@ private:
     uint32_t clr_feature(uint8_t ep_num);
     USBHDescHeader_t* get_next_desc(uint8_t* buff, uint16_t* ptr);
 
-    void parse_dev_desc(uint8_t *buf, uint16_t length);
+    void parse_dev_desc(USBHDevDesc_t* pdesc, uint8_t *buf, uint16_t length);
     void parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length);
-    void parse_cfg_desc(uint8_t *buf, uint16_t length);
+    void parse_cfg_desc(USBHCfgDesc_t* pdesc, uint8_t *buf, uint16_t length);
     void parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf);
     void parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf);
 
