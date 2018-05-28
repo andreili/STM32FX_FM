@@ -1,0 +1,3 @@
+#QT project files
+build-*
+*.user
