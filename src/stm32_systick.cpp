@@ -38,6 +38,11 @@ void STM32_SYSTICK::delay(__IO uint32_t delay_ms)
     while(m_tick < tick_end) {}
 }
 
+void STM32_SYSTICK::delay_to(__IO uint32_t delay_ms)
+{
+    while(m_tick < delay_ms) {}
+}
+
 void ISR::SysTickTimer()
 {
     STM32_SYSTICK::on_tick();
