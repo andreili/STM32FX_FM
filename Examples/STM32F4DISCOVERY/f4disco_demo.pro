@@ -21,6 +21,7 @@ linux:QMAKE_LFLAGS += -L/usr/lib/gcc/arm-none-eabi/7.2.0/
 
 createlist.target = all
 createlist.commands += arm-none-eabi-objdump -S $${OUT_PWD}/$${APP}$${EXT} > $$join(APP,,,".lst")
+createlist.commands += && arm-none-eabi-nm -nSC $${OUT_PWD}/$${APP}$${EXT} > $$join(APP,,,".map")
 createlist.commands += && arm-none-eabi-objcopy -Obinary $${OUT_PWD}/$${APP}$${EXT} $${OUT_PWD}/$${APP}.bin
 !win32:createlist.commands += && arm-none-eabi-nm -nalS --size-sort $${OUT_PWD}/$${APP}$${EXT} | grep " T " | tail
 createlist.commands += && arm-none-eabi-size $${OUT_PWD}/$${APP}$${EXT}
