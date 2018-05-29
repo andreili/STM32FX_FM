@@ -8,8 +8,8 @@ void STM32_NVIC::init()
     set_priority(UsageFault_IRQn, 0, 0);
     set_priority(SVCall_IRQn, 0, 0);
     set_priority(DebugMonitor_IRQn, 0, 0);
-    set_priority(PendSV_IRQn, 0, 0);
-    set_priority(SysTick_IRQn, 0, 0);
+    set_priority(PendSV_IRQn, 15, 0);
+    set_priority(SysTick_IRQn, 15, 0);
     set_priority(FLASH_IRQn, 0, 0);
     enable_IRQ(FLASH_IRQn);
 }
