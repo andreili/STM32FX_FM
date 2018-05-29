@@ -485,14 +485,14 @@ void USBHCore::LL_init()
 #ifdef STM32_USE_USB_HS
     {
         m_hcd = &usb_hs;
-        if (usb_hs.init(USB_OTG_HS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
+        m_hcd->set_data((void*)this);
+        if (usb_hs.init(USB_OTG_HS, EOTG_PHY::EMBEDDED, false, false, EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_hs.get_current_frame());
     }
 #else
     {}
 #endif // STM32_USE_USB_HS
-    m_hcd->set_data((void*)this);
 }
 
 void USBHCore::LL_driver_VBUS(uint8_t state)

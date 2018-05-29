@@ -131,7 +131,7 @@ enum class EHCDState: uint32_t
     TIMEOUT,
 };
 
-#pragma pack(push, 1)
+#pragma pack(push, 4)
 typedef struct
 {
     USB_OTG_GlobalTypeDef       global;
@@ -282,9 +282,9 @@ private:
     FORCE_INLINE void set_ULPI_VBUS() { m_regs->global.GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD; }
     FORCE_INLINE void enable_DMA() { m_regs->global.GAHBCFG |= (USB_OTG_GAHBCFG_HBSTLEN_2 | USB_OTG_GAHBCFG_DMAEN); }
     void dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed, uint32_t ep_count, bool dma_enable, bool sof_enable);
-    ENDIS_REG_FLAG_NAME(VBUS_A, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSASEN)
-    ENDIS_REG_FLAG_NAME(VBUS_B, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSBSEN)
-    ENDIS_REG_FLAG_NAME(VBUS, m_regs->global.GCCFG, USB_OTG_GCCFG_NOVBUSSENS)
+    ENDIS_REG_FLAG_NAME_SL(VBUS_A, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSASEN)
+    ENDIS_REG_FLAG_NAME_SL(VBUS_B, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSBSEN)
+    ENDIS_REG_FLAG_NAME_SL(VBUS, m_regs->global.GCCFG, USB_OTG_GCCFG_NOVBUSSENS)
     FORCE_INLINE void restart_phy_clock() { m_regs->PCGCCTL[0] = 0; }
     FORCE_INLINE void mode_device_configuration() { m_regs->device.DCFG |= DCFG_FRAME_INTERVAL_80; }
     FORCE_INLINE void clear_all_ITs() { clear_in_IT();       clear_out_IT();
@@ -446,13 +446,13 @@ private:
     FORCE_INLINE bool is_core_reseted() { return ((m_regs->global.GRSTCTL & USB_OTG_GRSTCTL_CSRST) != USB_OTG_GRSTCTL_CSRST); }
 
     void host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enable);
-    ENDIS_REG_FLAG_NAME(FS_LS_only, m_regs->host.HCFG, USB_OTG_HCFG_FSLSS)
+    ENDIS_REG_FLAG_NAME_SL(FS_LS_only, m_regs->host.HCFG, USB_OTG_HCFG_FSLSS)
     FORCE_INLINE void set_RX_FIFO_size(uint32_t size) { m_regs->global.GRXFSIZ = size; }
     FORCE_INLINE void set_RX_EP0_FIFO_size(uint32_t s0, uint32_t size) { m_regs->global.DIEPTXF0_HNPTXFSIZ = (((s0 << USB_OTG_NPTXFD_Pos) & USB_OTG_NPTXFD) | size); }
     FORCE_INLINE void set_TX_FIFO_size(uint32_t s0, uint32_t s1) { m_regs->global.HPTXFSIZ = (((s0 << USB_OTG_HPTXFSIZ_PTXFD_Pos) & USB_OTG_HPTXFSIZ_PTXFD) | s1); }
 
     void init_FSLSPClk_sel(EClockSpeed freq);
-    ENDIS_REG_FLAG_NAME(FS_LS_clock_sel, m_regs->host.HCFG, USB_OTG_HCFG_FSLSPCS)
+    ENDIS_REG_FLAG_NAME_SL(FS_LS_clock_sel, m_regs->host.HCFG, USB_OTG_HCFG_FSLSPCS)
     FORCE_INLINE void set_FSLSPClk(uint32_t val) { m_regs->host.HFIR = val; }
 
     void drive_VBUS(uint8_t state);

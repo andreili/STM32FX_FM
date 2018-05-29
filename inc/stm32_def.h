@@ -40,6 +40,9 @@ extern uint32_t unused_reg;
 #define ENDIS_REG_FLAG_NAME(name, reg, mask) \
     inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = ENABLE; } \
     inline void disable_ ## name() { BIT_BAND_PER(reg, mask) = DISABLE; }
+#define ENDIS_REG_FLAG_NAME_SL(name, reg, mask) \
+    inline void enable_ ## name() { reg |= mask; } \
+    inline void disable_ ## name() { reg &= ~mask; }
 
 #define CLK_ENDIS(enr, name) \
     ENDIS_REG_FLAG(clk_ ## name, RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## name ## EN) \

@@ -492,7 +492,7 @@ uint32_t STM32_HCD::deactivate_endpoint(bool ep_is_in, uint8_t ep_num)
         {
             if (++count > 200*1000)
                 return STM32_RESULT_TIMEOUT;
-        } while (!is_ep_in_disabled(ep_num));
+        } while (is_ep_in_disabled(ep_num));
 
         flush_TX_FIFO(TX_FIFO_COUNT);
         clear_ep_IT_mask(USB_OTG_DAINTMSK_IEPM & (1 << ep_num));
@@ -507,7 +507,7 @@ uint32_t STM32_HCD::deactivate_endpoint(bool ep_is_in, uint8_t ep_num)
         {
             if (++count > 200*1000)
                 return STM32_RESULT_TIMEOUT;
-        } while (!is_ep_out_disabled(ep_num));
+        } while (is_ep_out_disabled(ep_num));
 
         clear_global_NAK();
         clear_ep_IT_mask(USB_OTG_DAINTMSK_OEPM & ((1 << ep_num) << USB_OTG_DAINTMSK_OEPM_Pos));
