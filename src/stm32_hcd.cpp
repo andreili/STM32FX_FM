@@ -56,6 +56,7 @@ void STM32_HCD::reset_port()
 uint32_t STM32_HCD::start()
 {
     STM32_LOCK(m_lock);
+    enable();
     drive_VBUS(SET);
     STM32_UNLOCK(m_lock);
     return STM32_RESULT_OK;
@@ -239,7 +240,6 @@ uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
 
 void STM32_HCD::IRQ_handler()
 {
-    GPIOD->BSRR = GPIO_BSRR_BS15;
     if (get_mode() == EOTGDeviceMode::HOST)
     {
         if (is_invalid_IT())
@@ -1215,7 +1215,6 @@ STM32_HCD usb_hs;
 #ifdef STM32_USE_USB_FS
 void ISR::OTG_FS_IRQ()
 {
-    GPIOD->BSRR = GPIO_BSRR_BS15;
     usb_fs.IRQ_handler();
 }
 #endif
@@ -1223,7 +1222,6 @@ void ISR::OTG_FS_IRQ()
 //#ifdef STM32_USE_USB_HS
 void ISR::OTG_HS_IRQ()
 {
-    GPIOD->BSRR = GPIO_BSRR_BS15;
     usb_hs.IRQ_handler();
 }
 //#endif
