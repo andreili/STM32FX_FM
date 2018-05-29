@@ -474,7 +474,8 @@ void USBHCore::LL_init()
 #ifdef STM32_USE_USB_FS
     {
         m_hcd = &usb_fs;
-        if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, true, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
+        m_hcd->set_data((void*)this);
+        if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, false, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_fs.get_current_frame());
     }
