@@ -10,6 +10,13 @@ void STM32_SYSTICK::init()
     m_tick = 0;
 }
 
+void STM32_SYSTICK::deinit()
+{
+    SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
+}
+
 void STM32_SYSTICK::update_freq()
 {
     SysTick_Config(STM32_RCC::get_HCLK_freq() / 1000 - 1);

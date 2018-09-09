@@ -12,6 +12,7 @@ class STM32_SYSTICK
 {
 public:
     static void init();
+    static void deinit();
     static void update_freq();
     static void set_clock_source(uint32_t src);
 
