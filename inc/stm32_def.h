@@ -89,6 +89,7 @@ enum class TXRX_MODE
 #include "xprintf.h"
 #define debug_out(s) uart6.send_str(s, TXRX_MODE::DIRECT)
 #define debug_printf(s, ...) xprintf(s, __VA_ARGS__)
+#define debug_fn() xprintf(__PRETTY_FUNCTION__); xprintf("\n\r")
 #else
 #define debug_out(s) UNUSED(s)
 #define debug_printf(s, ...) UNUSED(s); UNUSED(__VA_ARGS__)
