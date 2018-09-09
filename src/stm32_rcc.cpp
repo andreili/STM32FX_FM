@@ -280,8 +280,6 @@ uint32_t STM32_RCC::config_osc()
     return STM32_RESULT_OK;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtautological-compare"
 uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
 {
     if (flash_latency > STM32_FLASH::get_latency())
@@ -349,7 +347,6 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
 
     return STM32_RESULT_OK;
 }
-#pragma GCC diagnostic pop
 
 bool STM32_RCC::get_flag(uint32_t value)
 {

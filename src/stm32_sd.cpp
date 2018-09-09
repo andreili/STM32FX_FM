@@ -311,6 +311,12 @@ uint32_t STM32_SD::init()
 
     SD_ErrorTypedef errorstate;
 
+    disable_SDIO();
+    power_state_ON();
+    STM32_SYSTICK::delay(1);
+    enable_SDIO();
+    STM32_SYSTICK::delay(2);
+
     if ((errorstate = power_ON()) != SD_OK)
         return errorstate;
 
@@ -1033,13 +1039,6 @@ void STM32_SD::init_low(uint32_t clock_edge, uint32_t clock_bypass,
 
 SD_ErrorTypedef STM32_SD::power_ON()
 {
-    disable_SDIO();
-    power_state_ON();
-    /* 1ms: required power up waiting time before starting the SD initialization sequence */
-    STM32_SYSTICK::delay(1);
-    enable_SDIO();
-    STM32_SYSTICK::delay(2);
-
     /* CMD0: GO_IDLE_STATE */
     send_command(0, SD_CMD_GO_IDLE_STATE, SDIO_RESPONSE_NO,
                  SDIO_WAIT_NO, SDIO_CPSM_ENABLE);
@@ -1260,7 +1259,7 @@ SD_ErrorTypedef STM32_SD::cmd_resp1_error(uint32_t SD_CMD)
 
     /* Check response received is of desired command */
     if (get_cmd_response() != SD_CMD)
-        return SD_ILLEGAL_CMD;
+        return SD_CMD_CRC_FAIL;
 
     /* Clear all the static flags */
     clear_flag(SDIO_STATIC_FLAGS);
