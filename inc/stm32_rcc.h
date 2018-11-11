@@ -2,7 +2,7 @@
 #define __STM32_RCC__
 
 /*
- * Based on HAL-F4 v1.21.0
+ * Based on HAL v1.21.0(F4), v1.6.1(F1)
  * */
 
 #include <stm32_inc.h>
@@ -130,7 +130,7 @@ class STM32_RCC
 {
 public:
     static void init();
-    static void deinit();
+    static uint32_t deinit();
 
     ENDIS_REG_FLAG(HSI, RCC->CR, RCC_CR_HSION)
     static inline void set_calibration_value_HSI(uint32_t value) { MODIFY_REG(RCC->CR, RCC_CR_HSITRIM,
@@ -139,8 +139,11 @@ public:
 
     static inline void on_HSE() { BIT_BAND_PER(RCC->CR, RCC_CR_HSEON) = ENABLE; }
     static inline void on_HSE_BYPASS() { RCC->CR |= (RCC_CR_HSEBYP | RCC_CR_HSEON); }
+		static inline bool HSE_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSERDY); }
     static inline void off_HSE() { RCC->CR &= ~(RCC_CR_HSEBYP | RCC_CR_HSEON); }
     static void config_HSE(uint32_t state);
+		
+		static inline bool HSI_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSIRDY); }
 
     static inline void on_LSE() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_LSEON) = ENABLE; }
     static inline void on_LSE_BYPASS() { RCC->BDCR |= (RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
@@ -149,8 +152,10 @@ public:
 
     ENDIS_REG_FLAG(RTC, RCC->BDCR, RCC_BDCR_RTCEN)
     static inline bool get_enabled_RTC() { return ((RCC->BDCR & RCC_BDCR_RTCEN) == RCC_BDCR_RTCEN); }
+    #ifdef STM32F4
     static void set_prescaler_RTC(uint32_t value);
     static inline uint32_t get_prescaler_RTC() { return RCC->CFGR & (RCC_CFGR_RTCPRE | RCC_BDCR_RTCSEL); }
+    #endif
     static void set_config_RTC(uint32_t value);
     static inline uint32_t get_RTC_source() { return RCC->BDCR & RCC_BDCR_RTCSEL; }
 
@@ -166,18 +171,30 @@ public:
     static inline void release_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = DISABLE; }
 
     ENDIS_REG_FLAG(PLL, RCC->CR, RCC_CR_PLLON)
+    static inline bool PLL_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_PLLRDY); }
+    #if defined(STM32F1)
+    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC->CFGR, value); }
+    static inline uint32_t get_source_PLL_OSC() { return RCC->CFGR & RCC_CFGR_PLLSRC; }
+    static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC->CFGR, RCC_CFGR_PLLMULL, value); }
+    #elif defined(STM32F4)
     static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC->PLLCFGR, value); }
     static inline uint32_t get_source_PLL_OSC() { return RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC; }
     static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM, value); }
+    #endif
 
     static inline void set_config_SYSCLK(uint32_t value) { MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, value); }
     static inline uint32_t get_source_SYSCLK() { return (RCC->CFGR & RCC_CFGR_SWS); }
 
+    #if defined(STM32F1)
+    static inline void set_config_MCO1(uint32_t source, uint32_t div)
+        { MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, (source | div)); }
+    #else // STM32F1
     static inline void set_config_MCO1(uint32_t source, uint32_t div)
         { MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (source | div)); }
 
     static inline void set_config_MCO2(uint32_t source, uint32_t div)
         { MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (source | (div << 3))); }
+    #endif // STM32F1
 
     static inline void enable_IT(uint32_t value) { *((__IO uint8_t*)(RCC_BASE + RCC_CIR_OFFSET + 1)) |= value; }
     static inline void disable_IT(uint32_t value) { *((__IO uint8_t*)(RCC_BASE + RCC_CIR_OFFSET + 1)) &= ~value; }
@@ -199,6 +216,30 @@ public:
 
     ENDIS_REG_FLAG(CSS, RCC->CR, RCC_CR_CSSON)
 
+#if defined(STM32F1)
+    CLK_ENDIS(AHB, DMA1)
+    CLK_ENDIS(AHB, SRAM)
+    CLK_ENDIS(AHB, FLITF)
+    CLK_ENDIS(AHB, CRC)
+
+    CLK_ENDIS(APB1, TIM2)
+    CLK_ENDIS(APB1, TIM3)
+    CLK_ENDIS(APB1, WWDG)
+    CLK_ENDIS(APB1, USART2)
+    CLK_ENDIS(APB1, I2C1)
+    CLK_ENDIS(APB1, BKP)
+    CLK_ENDIS(APB1, PWR)
+
+    CLK_ENDIS(APB2, AFIO)
+    CLK_ENDIS_EX(APB2, GPIOA, IOPA)
+    CLK_ENDIS_EX(APB2, GPIOB, IOPB)
+    CLK_ENDIS_EX(APB2, GPIOC, IOPC)
+    CLK_ENDIS_EX(APB2, GPIOD, IOPD)
+    CLK_ENDIS(APB2, ADC1)
+    CLK_ENDIS(APB2, TIM1)
+    CLK_ENDIS(APB2, SPI1)
+    CLK_ENDIS(APB2, USART1)
+#else // STM32F1
     CLK_ENDIS(AHB1, GPIOA)
     CLK_ENDIS(AHB1, GPIOB)
     CLK_ENDIS(AHB1, GPIOC)
@@ -234,6 +275,7 @@ public:
     CLK_ENDIS(AHB2, DCMI)
     CLK_ENDIS(AHB2, RNG)
 
+#ifdef STM32F4
     static inline void enable_clk_eth() { enable_clk_ETHMAC(); enable_clk_ETHMACTX(); enable_clk_ETHMACRX(); }
     static inline void disable_clk_eth() { disable_clk_ETHMAC(); disable_clk_ETHMACTX(); disable_clk_ETHMACRX(); }
 
@@ -242,6 +284,7 @@ public:
 
     static inline void enable_clk_USB_HS() { RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN; enable_clk_SYSCFG(); }
     static inline void disable_clk_USB_HS() { RCC->AHB1ENR &= ~RCC_AHB1ENR_OTGHSEN; }
+#endif // STM32F4
 
 #ifdef RCC_AHB3ENR_FMCEN
     CLK_ENDIS(AHB3, FMC)
@@ -313,7 +356,32 @@ public:
 #ifdef RCC_APB2ENR_SAI1EN
     CLK_ENDIS(APB2, SAI1)
 #endif
+#endif // STM32F1
 
+#if defined(STM32F1)
+    static inline void force_reset_APB1() { RCC->APB1RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB1() { RCC->APB1RSTR = 0x00U; }
+    PER_RESET(APB1, TIM2)
+    PER_RESET(APB1, TIM3)
+    PER_RESET(APB1, WWDG)
+    PER_RESET(APB1, USART2)
+    PER_RESET(APB1, I2C1)
+    PER_RESET(APB1, BKP)
+    PER_RESET(APB1, PWR)
+
+    static inline void force_reset_APB2() { RCC->APB2RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB2() { RCC->APB2RSTR = 0x00U; }
+    PER_RESET(APB2, AFIO)
+    PER_RESET_EX(APB2, GPIOA, IOPA)
+    PER_RESET_EX(APB2, GPIOB, IOPB)
+    PER_RESET_EX(APB2, GPIOC, IOPC)
+    PER_RESET_EX(APB2, GPIOD, IOPD)
+    PER_RESET(APB2, ADC1)
+    PER_RESET(APB2, TIM1)
+    PER_RESET(APB2, SPI1)
+    PER_RESET(APB2, USART1)
+	
+#else
     static inline void force_reset_AHB1() { RCC->AHB1RSTR = 0xFFFFFFFFU; }
     static inline void release_reset_AHB1() { RCC->AHB1RSTR = 0x00U; }
     PER_RESET_SLEEP(AHB1, GPIOA)
@@ -413,11 +481,14 @@ public:
 #ifdef DSI
     PER_RESET_SLEEP(APB2, DSI)
 #endif
+#endif // STM32F1
 
     static void NMI_IRQ_Handler();
 
+    #if defined(STM32F4)
     /* RCCex */
     static uint32_t periph_CLK_config(RCC_Periph_Clock_Source *sources);
+    #endif
 
 #if defined(STM32F429xx)
     ENDIS_REG_FLAG_NAME(PLLSAI_IT, RCC->CIR, RCC_CIR_PLLSAIRDYIE)
@@ -439,6 +510,7 @@ public:
 
     ENDIS_REG_FLAG(PLLSAI, RCC->CR, RCC_CR_PLLSAION)
 #endif
+#ifdef STM32F4
     ENDIS_REG_FLAG(PLLI2S, RCC->CR, RCC_CR_PLLI2SON)
     static inline void PLLSAI_config(uint32_t sn, uint32_t sr)
         { RCC->PLLI2SCFGR = (sn << RCC_PLLI2SCFGR_PLLI2SN_Pos) |
@@ -446,6 +518,7 @@ public:
 
     static inline void config_I2S(uint32_t val) { BIT_BAND_PER(RCC->CFGR, RCC_CFGR_I2SSRC) = val; }
     static inline uint32_t get_I2S_source() { return RCC->CFGR & RCC_CFGR_I2SSRC; }
+#endif // STM32F4
 
     static void update_clock();
 private:

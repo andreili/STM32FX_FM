@@ -94,6 +94,27 @@ void STM32_SPI::init()
     {
     #ifdef STM32_USE_SPI1
     case SPI1_BASE:
+        STM32_RCC::enable_clk_SPI1();
+        gpiof.set_config(GPIO_PIN_5 | GPIO_PIN_7,
+                         GPIO_MODE_INPUT, 0,
+                         GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+        gpiof.set_config(GPIO_PIN_6,
+                         GPIO_MODE_AF_PP, 0,
+                         GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+        STM32_NVIC::enable_and_set_prior_IRQ(SPI1_IRQn, 0, 0);
+
+        disable();
+
+        WRITE_REG(m_spi->CR1, (STM32_SPI1_MODE | STM32_SPI1_DIRECTION | STM32_SPI1_DATA_SIZE |
+                  STM32_SPI1_CLK_POL | STM32_SPI1_CLK_PH | (STM32_SPI1_NSS & SPI_CR1_SSM) |
+                  STM32_SPI1_BRP | STM32_SPI1_FIRST_BIT  | STM32_SPI1_CRC));
+        WRITE_REG(m_spi->CR2, (((STM32_SPI1_NSS >> 16U) & SPI_CR2_SSOE) | STM32_SPI1_TI_MODE));
+
+        m_mode = STM32_SPI1_MODE;
+        m_direction = STM32_SPI1_DIRECTION;
+        m_crc_calc = STM32_SPI1_CRC;
+        m_data_size = STM32_SPI1_DATA_SIZE;
+        break;
         break;
     #endif
     #ifdef STM32_USE_SPI2

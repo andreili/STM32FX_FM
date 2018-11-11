@@ -3,6 +3,7 @@
 uint32_t STM32_HCD::init(USB_OTG_GlobalTypeDef* regs_addr, EOTG_PHY phy, bool use_ext_vbus, bool dma_enable,
                          EOTGSpeed speed, uint32_t host_channels)
 {
+    debug_fn();
     m_state = EHCDState::BUSY;
     m_regs = (OTGRegs_t*)regs_addr;
     m_dma_enable = dma_enable;
@@ -22,6 +23,7 @@ uint32_t STM32_HCD::init(USB_OTG_GlobalTypeDef* regs_addr, EOTG_PHY phy, bool us
 
 void STM32_HCD::deInit()
 {
+    debug_fn();
     m_state = EHCDState::BUSY;
     deInit_gpio();
     disable();
@@ -30,6 +32,7 @@ void STM32_HCD::deInit()
 
 void STM32_HCD::set_toggle(uint8_t pipe, uint8_t toggle)
 {
+    debug_fn();
     if (m_HC[pipe].ep_is_in)
         m_HC[pipe].toggle_in = toggle;
     else
@@ -38,6 +41,7 @@ void STM32_HCD::set_toggle(uint8_t pipe, uint8_t toggle)
 
 uint8_t STM32_HCD::get_toggle(uint8_t pipe)
 {
+    debug_fn();
     if (m_HC[pipe].ep_is_in)
         return m_HC[pipe].toggle_in;
     else
@@ -46,6 +50,7 @@ uint8_t STM32_HCD::get_toggle(uint8_t pipe)
 
 void STM32_HCD::reset_port()
 {
+    debug_fn();
     uint32_t val = m_regs->ports[0];
     val &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
     reset_port_st1(USB_OTG_HPRT_PRST | val);
@@ -55,6 +60,7 @@ void STM32_HCD::reset_port()
 
 uint32_t STM32_HCD::start()
 {
+    debug_fn();
     STM32_LOCK(m_lock);
     enable();
     drive_VBUS(SET);
@@ -64,6 +70,7 @@ uint32_t STM32_HCD::start()
 
 uint32_t STM32_HCD::stop()
 {
+    debug_fn();
     STM32_LOCK(m_lock);
     stop_host();
     STM32_UNLOCK(m_lock);
@@ -72,6 +79,7 @@ uint32_t STM32_HCD::stop()
 
 uint32_t STM32_HCD::HC_init(uint8_t ch_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
 {
+    debug_fn();
     STM32_LOCK(m_lock);
 
     bool is_in = ((ep_num & 0x80) == 0x80);
@@ -135,6 +143,7 @@ uint32_t STM32_HCD::HC_init(uint8_t ch_num, uint8_t ep_num, uint8_t dev_address,
 
 void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, bool do_ping)
 {
+    debug_fn();
     m_HC[ch_num].ep_is_in = is_in;
     m_HC[ch_num].ep_type = ep_type;
 
@@ -210,6 +219,7 @@ void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, b
 
 uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
 {
+    debug_fn();
     STM32_LOCK(m_lock);
 
     uint32_t FIFO_queue = 0;
@@ -240,6 +250,7 @@ uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
 
 void STM32_HCD::IRQ_handler()
 {
+    debug_fn();
     if (get_mode() == EOTGDeviceMode::HOST)
     {
         if (is_invalid_IT())
@@ -293,6 +304,7 @@ void STM32_HCD::IRQ_handler()
 
 void STM32_HCD::init_gpio()
 {
+    debug_fn();
     if (m_regs == (OTGRegs_t*)USB_OTG_FS)
     {
         STM32_USB_FS_PORT.set_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN, GPIO_MODE_AF_PP,
@@ -300,19 +312,24 @@ void STM32_HCD::init_gpio()
         STM32_RCC::STM32_USB_FS_EN_CLK();
         STM32_RCC::enable_clk_USB_FS();
         STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 5, 0);
+        STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, GPIO_MODE_OUTPUT_PP,
+                                         0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
     }
     else
     {
         STM32_USB_HS_PORT.set_config(STM32_USB_HS_DM_PIN | STM32_USB_HS_DP_PIN, GPIO_MODE_AF_PP,
-                                     GPIO_AF10_OTG_HS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+                                     GPIO_AF12_OTG_HS_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         STM32_RCC::STM32_USB_HS_EN_CLK();
         STM32_RCC::enable_clk_USB_HS();
         STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 5, 0);
+        STM32_USB_PWR_HS_PORT.set_config(STM32_USB_PWR_HS_PIN, GPIO_MODE_OUTPUT_PP,
+                                         0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
     }
 }
 
 void STM32_HCD::deInit_gpio()
 {
+    debug_fn();
     if (m_regs == (OTGRegs_t*)USB_OTG_FS)
     {
         STM32_RCC::disable_clk_OTGFS();
@@ -329,6 +346,7 @@ void STM32_HCD::deInit_gpio()
 
 uint32_t STM32_HCD::core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable)
 {
+    debug_fn();
     if (phy == EOTG_PHY::ULPI)
     {
         power_down();
@@ -354,6 +372,7 @@ uint32_t STM32_HCD::core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable)
 void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed, uint32_t ep_count,
                          bool dma_enable, bool sof_enable)
 {
+    debug_fn();
     if (!vbus_sending_enable)
         disable_VBUS();
     else
@@ -416,6 +435,7 @@ void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed
 
 void STM32_HCD::set_current_mode(EOTGDeviceMode mode)
 {
+    debug_fn();
     reset_mode();
     if (mode == EOTGDeviceMode::HOST)
         set_mode_host();
@@ -426,6 +446,7 @@ void STM32_HCD::set_current_mode(EOTGDeviceMode mode)
 
 EOTGSpeed STM32_HCD::get_dev_speed()
 {
+    debug_fn();
     uint32_t speed = get_dev_speed_RAW();
     switch (speed)
     {
@@ -442,6 +463,7 @@ EOTGSpeed STM32_HCD::get_dev_speed()
 
 uint32_t STM32_HCD::flush_RX_FIFO()
 {
+    debug_fn();
     m_regs->global.GRSTCTL = USB_OTG_GRSTCTL_RXFFLSH;
     uint32_t count = 0;
     do
@@ -454,6 +476,7 @@ uint32_t STM32_HCD::flush_RX_FIFO()
 
 uint32_t STM32_HCD::flush_TX_FIFO(uint32_t num)
 {
+    debug_fn();
     m_regs->global.GRSTCTL = USB_OTG_GRSTCTL_TXFFLSH | (num << USB_OTG_GRSTCTL_TXFNUM_Pos);
     uint32_t count = 0;
     do
@@ -466,6 +489,7 @@ uint32_t STM32_HCD::flush_TX_FIFO(uint32_t num)
 
 void STM32_HCD::activate_endpoint(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket, uint8_t ep_type)
 {
+    debug_fn();
     if (ep_is_in)
     {
         set_ep_IT_mask(USB_OTG_DAINTMSK_IEPM & (1 << ep_num));
@@ -482,6 +506,7 @@ void STM32_HCD::activate_endpoint(bool ep_is_in, uint8_t ep_num, uint32_t ep_max
 
 uint32_t STM32_HCD::deactivate_endpoint(bool ep_is_in, uint8_t ep_num)
 {
+    debug_fn();
     if (ep_is_in)
     {
         deactivate_ep_in(ep_num);
@@ -517,6 +542,7 @@ uint32_t STM32_HCD::deactivate_endpoint(bool ep_is_in, uint8_t ep_num)
 
 void STM32_HCD::activate_dedicated_endpoint(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket, uint8_t ep_type)
 {
+    debug_fn();
     if (ep_is_in)
     {
         if (!is_ep_in_active(ep_num))
@@ -535,6 +561,7 @@ void STM32_HCD::EP_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpack
                               uint8_t* xfer_buff, uint16_t xfer_len, EEPType ep_type,
                               bool dma, uint32_t dma_addr)
 {
+    debug_fn();
     if (ep_is_in)
     {
         if (xfer_len == 0)
@@ -596,6 +623,7 @@ void STM32_HCD::EP_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpack
 void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket,
                                uint8_t* xfer_buff, uint16_t xfer_len, bool dma, uint32_t dma_addr)
 {
+    debug_fn();
     if (ep_is_in)
     {
         if (xfer_len == 0)
@@ -633,6 +661,7 @@ void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpac
 
 void STM32_HCD::write_packet(uint8_t* src, uint8_t ch_ep_num, uint16_t len, uint8_t dma)
 {
+    debug_fn();
     if (!dma)
     {
         uint32_t count32b = (len + 3) >> 2;
@@ -643,6 +672,7 @@ void STM32_HCD::write_packet(uint8_t* src, uint8_t ch_ep_num, uint16_t len, uint
 
 void* STM32_HCD::read_packet(uint8_t* dest, uint16_t len)
 {
+    debug_fn();
     uint32_t count32b = (len + 3) >> 2;
     for (uint32_t i=0 ; i<count32b ; ++i, dest+=4)
         *((__attribute__((__packed__))uint32_t *)dest) = read_FIFO(0);
@@ -651,6 +681,7 @@ void* STM32_HCD::read_packet(uint8_t* dest, uint16_t len)
 
 void STM32_HCD::EP_set_stall(bool ep_is_in, uint8_t ep_num)
 {
+    debug_fn();
     if (ep_is_in)
     {
         if (!is_in_endpoint_enable(ep_num))
@@ -667,6 +698,7 @@ void STM32_HCD::EP_set_stall(bool ep_is_in, uint8_t ep_num)
 
 void STM32_HCD::EP_clear_stall(bool ep_is_in, uint8_t ep_num, EEPType ep_type)
 {
+    debug_fn();
     if (ep_is_in)
     {
         ep_in_clear_stall(ep_num);
@@ -683,12 +715,14 @@ void STM32_HCD::EP_clear_stall(bool ep_is_in, uint8_t ep_num, EEPType ep_type)
 
 void STM32_HCD::set_dev_address(uint8_t address)
 {
+    debug_fn();
     clear_dev_address();
     set_dev_addr_RAW(address);
 }
 
 void STM32_HCD::stop_device()
 {
+    debug_fn();
     for (int i=0 ; i<15 ; ++i)
     {
         clear_in_ep_intr(i, 0xff);
@@ -702,6 +736,7 @@ void STM32_HCD::stop_device()
 
 void STM32_HCD::activate_setup()
 {
+    debug_fn();
     reset_max_pkt_size();
     if (get_dev_speed_RAW() == DSTS_ENUMSPD_LS_PHY_6MHZ)
         set_in_max_pkt_size(3);
@@ -710,6 +745,7 @@ void STM32_HCD::activate_setup()
 
 void STM32_HCD::EP0_out_start(uint8_t dma, uint8_t* psetup)
 {
+    debug_fn();
     out_endpoint_reset_Xfer_size(0);
     Xfer_out_pkt_size(0, 1);
     Xfer_out_pkt_end(0, 3*8);
@@ -723,6 +759,7 @@ void STM32_HCD::EP0_out_start(uint8_t dma, uint8_t* psetup)
 
 uint32_t STM32_HCD::core_reset()
 {
+    debug_fn();
     uint32_t count = 0;
     do
     {
@@ -741,6 +778,7 @@ uint32_t STM32_HCD::core_reset()
 
 void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enable)
 {
+    debug_fn();
     restart_phy_clock();
     /* Activate VBUS Sensing B */
     disable_VBUS_A();
@@ -784,6 +822,7 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enab
 
 void STM32_HCD::init_FSLSPClk_sel(EClockSpeed freq)
 {
+    debug_fn();
     disable_FS_LS_clock_sel();
     enable_FS_LS_clock_sel();
     switch (freq)
@@ -802,6 +841,7 @@ void STM32_HCD::init_FSLSPClk_sel(EClockSpeed freq)
 #pragma GCC optimize ("O0")
 void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 {
+    debug_fn();
     if ((m_regs != (OTGRegs_t*)USB_OTG_FS) && (hc->speed == EOTGSpeed::HIGH))
     {
         if ((!dma) && hc->do_ping)
@@ -877,6 +917,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 
 void STM32_HCD::drive_VBUS(uint8_t state)
 {
+    debug_fn();
     uint32_t val = m_regs->ports[0];
     val &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
     if (((val & USB_OTG_HPRT_PPWR) == 0) && (state == 0))
@@ -887,12 +928,14 @@ void STM32_HCD::drive_VBUS(uint8_t state)
 
 void STM32_HCD::do_ping(uint8_t ch_num)
 {
+    debug_fn();
     do_ping_LL(ch_num);
     HC_reactivate(ch_num);
 }
 
 void STM32_HCD::stop_host()
 {
+    debug_fn();
     disable_global_int();
     flush_TX_FIFO(0x10);
     flush_RX_FIFO();
@@ -926,6 +969,7 @@ void STM32_HCD::stop_host()
 
 void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
 {
+    debug_fn();
     if (is_HC_int(chnum, USB_OTG_HCINT_AHBERR))
     {
         clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
@@ -1022,6 +1066,7 @@ void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
 
 void STM32_HCD::HC_out_IRQ_handler(uint8_t chnum)
 {
+    debug_fn();
     if (is_HC_int(chnum, USB_OTG_HCINT_AHBERR))
     {
         clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
@@ -1132,6 +1177,7 @@ void STM32_HCD::HC_out_IRQ_handler(uint8_t chnum)
 
 void STM32_HCD::RXQLVL_IRQ_handler()
 {
+    debug_fn();
     uint32_t tmp = m_regs->global.GRXSTSP;
     uint8_t ch_num = tmp & USB_OTG_GRXSTSP_EPNUM;
     uint32_t pktsts = (tmp & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos;
@@ -1162,6 +1208,7 @@ void STM32_HCD::RXQLVL_IRQ_handler()
 
 void STM32_HCD::port_IRQ_handler()
 {
+    debug_fn();
     uint32_t hprt0, hprt0_dup;
     hprt0 = hprt0_dup = m_regs->ports[0];
 
@@ -1215,16 +1262,17 @@ STM32_HCD usb_hs;
 #ifdef STM32_USE_USB_FS
 void ISR::OTG_FS_IRQ()
 {
+    debug_fn();
     usb_fs.IRQ_handler();
 }
 #endif
 
-//#ifdef STM32_USE_USB_HS
+#ifdef STM32_USE_USB_HS
 void ISR::OTG_HS_IRQ()
 {
     usb_hs.IRQ_handler();
 }
-//#endif
+#endif
 
 __attribute__((weak)) void disconnect_callback(STM32_HCD *hcd)
 {

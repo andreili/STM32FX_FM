@@ -6,9 +6,9 @@
  *
  **/
 #include "ISRstm32f10x_md.h"
-__attribute__((naked, noreturn)) void ISR::DefaultHandler()
+__attribute__((noreturn)) void ISR::DefaultHandler()
 {
-   for(;;);
+   while (1);
 }
 
 extern uint32_t _estack;

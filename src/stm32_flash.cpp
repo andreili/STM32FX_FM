@@ -11,6 +11,11 @@ uint32_t          STM32_FLASH::m_address;
 uint32_t          STM32_FLASH::m_error_code;
 uint8_t           STM32_FLASH::m_lock = STM32_UNLOCKED;
 
+#define FLASH_SIZE_DATA_REGISTER     0x1FFFF7E0U
+#define OBR_REG_INDEX                1U
+#define SR_FLAG_MASK                 ((uint32_t)(FLASH_SR_BSY | FLASH_SR_PGERR | FLASH_SR_WRPRTERR | FLASH_SR_EOP))
+ #define FLASH_FLAG_OPTVERR         ((OBR_REG_INDEX << 8U | FLASH_OBR_OPTERR)) /*!< Option Byte Error        */
+
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) ||\
     defined(STM32F469xx) || defined(STM32F479xx)
 #define FLASH_BANK_1     1U /*!< Bank 1   */
@@ -27,6 +32,7 @@ uint8_t           STM32_FLASH::m_lock = STM32_UNLOCKED;
 #endif /* STM32F40xxx || STM32F41xxx || STM32F401xx || STM32F410xx || STM32F411xE || STM32F446xx || STM32F412Zx || STM32F412Vx || STM32F412Rx || STM32F412Cx
           STM32F413xx || STM32F423xx */
 
+#if defined(STM32F4)
 void STM32_FLASH::reset_instruction_cache()
 {
     FLASH->ACR |= FLASH_ACR_ICRST;
@@ -38,18 +44,22 @@ void STM32_FLASH::reset_data_cache()
     FLASH->ACR |= FLASH_ACR_DCRST;
     FLASH->ACR &= ~FLASH_ACR_DCRST;
 }
+#endif
 
 uint32_t STM32_FLASH::program(FLASH_TypeProgram type_program, uint32_t address, uint64_t data)
 {
+	uint32_t status;
     STM32_LOCK(m_lock);
-    uint32_t status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
+	status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
     if (status ==  STM32_RESULT_OK)
     {
         switch (type_program)
         {
+		#if defined(STM32F4)
         case FLASH_TypeProgram::BYTE:
             program_byte(address, data);
             break;
+		#endif
         case FLASH_TypeProgram::HALF_WORD:
             program_halfword(address, data);
             break;
@@ -75,9 +85,11 @@ uint32_t STM32_FLASH::program_IT(FLASH_TypeProgram type_program, uint32_t addres
 
     switch (type_program)
     {
+	#if defined(STM32F4)
     case FLASH_TypeProgram::BYTE:
         program_byte(address, data);
         break;
+	#endif
     case FLASH_TypeProgram::HALF_WORD:
         program_halfword(address, data);
         break;
@@ -141,12 +153,14 @@ uint32_t STM32_FLASH::wait_for_last_operation(uint32_t timeout)
     if (get_flag(FLASH_FLAG_EOP) != RESET)
         clear_flag(FLASH_FLAG_EOP);
 
-    #if defined(FLASH_SR_RDERR)
+#if defined(FLASH_SR_RDERR)
     if (get_glag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_RDERR) != RESET)
-#else
+#elif defined(STM32F4)
     if (get_flag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR) != RESET)
+#elsif defined(STM32F1)
+	if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_OPTVERR) || get_flag(FLASH_FLAG_PGERR))
 #endif
     {
         set_error_code();
@@ -158,38 +172,48 @@ uint32_t STM32_FLASH::wait_for_last_operation(uint32_t timeout)
 
 void STM32_FLASH::program_doubleword(uint32_t address, uint64_t data)
 {
+#if defined(STM32F4)
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_DOUBLE_WORD;
     FLASH->CR |= FLASH_CR_PG;
 
     *(__IO uint64_t*)address = data;
+#endif
 }
 
 void STM32_FLASH::program_word(uint32_t address, uint32_t data)
 {
+#if defined(STM32F4)
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_WORD;
     FLASH->CR |= FLASH_CR_PG;
 
     *(__IO uint32_t*)address = data;
+#endif
 }
 
 void STM32_FLASH::program_halfword(uint32_t address, uint16_t data)
 {
+#if defined(STM32F1)
+	SET_BIT(FLASH->CR, FLASH_CR_PG);
+    *(__IO uint16_t*)address = data;
+#elif defined(STM32F4)
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_HALF_WORD;
     FLASH->CR |= FLASH_CR_PG;
-
     *(__IO uint16_t*)address = data;
+#endif
 }
 
 void STM32_FLASH::program_byte(uint32_t address, uint8_t data)
 {
+#if defined(STM32F4)
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_BYTE;
     FLASH->CR |= FLASH_CR_PG;
 
     *(__IO uint8_t*)address = data;
+#endif
 }
 
 void STM32_FLASH::set_error_code()
@@ -200,6 +224,19 @@ void STM32_FLASH::set_error_code()
         clear_flag(FLASH_FLAG_WRPERR);
     }
 
+	#if defined(STM32F1)
+    if (get_flag(FLASH_FLAG_PGERR) != RESET)
+    {
+        m_error_code |= FLASH_FLAG_PGERR;
+        clear_flag(FLASH_FLAG_PGERR);
+    }
+	
+    if (get_flag(FLASH_FLAG_OPTVERR) != RESET)
+    {
+        m_error_code |= FLASH_FLAG_OPTVERR;
+        clear_flag(FLASH_FLAG_PGERR);
+    }
+	#elif defined(STM32F4)
     if (get_flag(FLASH_FLAG_PGAERR) != RESET)
     {
         m_error_code |= FLASH_ERROR_PGA;
@@ -217,6 +254,7 @@ void STM32_FLASH::set_error_code()
         m_error_code |= FLASH_ERROR_PGS;
         clear_flag(FLASH_FLAG_PGSERR);
     }
+	#endif
 
 #if defined(FLASH_SR_RDERR)
     if (get_flag(FLASH_FLAG_OPERR) != RESET)
@@ -227,6 +265,7 @@ void STM32_FLASH::set_error_code()
 #endif
 }
 
+#if defined(STM32F4)
 uint32_t STM32_FLASH::erase(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range, uint32_t banks,
                             uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error)
 {
@@ -294,6 +333,7 @@ uint32_t STM32_FLASH::erase_IT(FLASH_TypeErase type_erase, FLASH_VoltageRange vo
 
     return STM32_RESULT_OK;
 }
+#endif // STM32F4
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx)
 void STM32_FLASH::mass_erase(uint32_t voltage_range, uint32_t banks)
@@ -327,8 +367,23 @@ void STM32_FLASH::mass_erase(FLASH_VoltageRange voltage_range, uint32_t banks)
 }
 #endif
 
+#if defined(STM32F1)
+void STM32_FLASH::mass_erase(FLASH_VoltageRange voltage_range, uint32_t banks)
+{
+	UNUSED(voltage_range);
+	UNUSED(banks);
+    FLASH->CR |= FLASH_CR_MER;
+    FLASH->CR |= FLASH_CR_STRT;
+}
+#endif
+
 void STM32_FLASH::erase_sector(uint32_t sector, FLASH_VoltageRange voltage_range)
 {
+#ifdef STM32F1
+	SET_BIT(FLASH->CR, FLASH_CR_PER);
+    WRITE_REG(FLASH->AR, sector);
+    SET_BIT(FLASH->CR, FLASH_CR_STRT);
+#else
     uint32_t tmp_psize = 0;
     if (voltage_range == FLASH_VoltageRange::V_1P8_TO_2P1)
         tmp_psize = FLASH_PSIZE_BYTE;
@@ -348,8 +403,10 @@ void STM32_FLASH::erase_sector(uint32_t sector, FLASH_VoltageRange voltage_range
     CLEAR_BIT(FLASH->CR, FLASH_CR_SNB);
     FLASH->CR |= FLASH_CR_SER | (sector << FLASH_CR_SNB_Pos);
     FLASH->CR |= FLASH_CR_STRT;
+#endif
 }
 
+#ifdef STM32F4
 void STM32_FLASH::flush_caches()
 {
     if (READ_BIT(FLASH->ACR, FLASH_ACR_ICEN) != RESET)
@@ -366,6 +423,7 @@ void STM32_FLASH::flush_caches()
         enable_data_cache();
     }
 }
+#endif
 
 void STM32_FLASH::irq_proc()
 {
@@ -374,8 +432,12 @@ void STM32_FLASH::irq_proc()
     if (get_glag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_RDERR) != RESET)
 #else
+#if defined(STM32F1)
+	if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_PGERR))
+#elif defined(STM32F4)
     if (get_flag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR) != RESET)
+#endif // STM32F1, STM32F4
 #endif
     {
         uint32_t addr;
@@ -413,7 +475,9 @@ void STM32_FLASH::irq_proc()
             {
                 m_sector = 0xffffffff;
                 m_on_going = FLASH_Procedure::NONE;
+				#ifdef STM32F4
                 flush_caches();
+				#endif
                 FLASH_end_of_operation_cb(0xffffffff);
             }
         }
@@ -421,7 +485,9 @@ void STM32_FLASH::irq_proc()
         {
             if (m_on_going == FLASH_Procedure::MASS_ERASE)
             {
+				#ifdef STM32F4
                 flush_caches();
+				#endif
                 FLASH_end_of_operation_cb(m_bank);
             }
             else
@@ -434,7 +500,11 @@ void STM32_FLASH::irq_proc()
 
     if (m_on_going == FLASH_Procedure::NONE)
     {
+		#if defined(STM32F1)
+        CLEAR_BIT(FLASH->CR, (FLASH_CR_PG | FLASH_CR_PER));
+		#elif defined(STM32F4)
         CLEAR_BIT(FLASH->CR, (FLASH_CR_PG | FLASH_CR_SER | FLASH_CR_SNB | FLASH_MER_BIT));
+		#endif
         disable_IT(FLASH_IT_EOP | FLASH_IT_ERR);
         STM32_UNLOCK(m_lock);
     }

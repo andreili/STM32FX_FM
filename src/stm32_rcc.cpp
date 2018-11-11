@@ -11,9 +11,11 @@ uint32_t unused_reg;
 #define MCO1_GPIO_PORT        gpioa
 #define MCO1_PIN              GPIO_PIN_8
 
+#if defined(STM32F4)
 #define __MCO2_CLK_ENABLE()   enable_clk_GPIOC()
 #define MCO2_GPIO_PORT        gpioc
 #define MCO2_PIN              GPIO_PIN_9
+#endif // STM32F4
 
 #define HSI_VALUE ((uint32_t)16000000UL)
 #define HSE_VALUE ((uint32_t) 8000000UL)
@@ -39,8 +41,14 @@ uint32_t unused_reg;
 #define RCC_PLLP_DIV6                    ((uint32_t)0x00000006U)
 #define RCC_PLLP_DIV8                    ((uint32_t)0x00000008U)
 
-#define RCC_PLLSOURCE_HSI                RCC_PLLCFGR_PLLSRC_HSI
-#define RCC_PLLSOURCE_HSE                RCC_PLLCFGR_PLLSRC_HSE
+#if defined(STM32F1)
+	#define RCC_PLLSOURCE_HSI_DIV2           0x00000000U
+	#define RCC_PLLSOURCE_HSE                RCC_CFGR_PLLSRC
+#elif defined(STM32F4)
+	#define RCC_PLLSOURCE_HSI                RCC_PLLCFGR_PLLSRC_HSI
+	#define RCC_PLLSOURCE_HSE                RCC_PLLCFGR_PLLSRC_HSE
+#endif
+
 
 #define RCC_CLOCKTYPE_SYSCLK             ((uint32_t)0x00000001U)
 #define RCC_CLOCKTYPE_HCLK               ((uint32_t)0x00000002U)
@@ -109,6 +117,17 @@ uint32_t unused_reg;
 const uint8_t APBAHBPrescTable[16] = {0U, 0U, 0U, 0U, 1U, 2U, 3U, 4U, 1U, 2U, 3U, 4U, 6U, 7U, 8U, 9U};
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
+#if defined(RCC_CFGR2_PREDIV1SRC)
+  const uint8_t aPLLMULFactorTable[14] = {0, 0, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 13};
+  const uint8_t aPredivFactorTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+#else
+  const uint8_t aPLLMULFactorTable[16] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16};
+#if defined(RCC_CFGR2_PREDIV1)
+  const uint8_t aPredivFactorTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+#else
+  const uint8_t aPredivFactorTable[2] = {1, 2};
+#endif /*RCC_CFGR2_PREDIV1*/
+#endif
 
 #define PLLI2S_TIMEOUT_VALUE       ((uint32_t)2)  /* Timeout value fixed to 2 ms  */
 #define PLLSAI_TIMEOUT_VALUE       ((uint32_t)2)  /* Timeout value fixed to 2 ms  */
@@ -116,11 +135,23 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
 void STM32_RCC::init()
 {
     enable_clk_PWR();
+    #if defined(STM32F4)
     STM32_PWR::set_voltage_scaling_config(PWR_REGULATOR_VOLTAGE_SCALE1);
+    #endif
     if (config_osc() != STM32_RESULT_OK)
         Error_Handler();
+    #if defined(STM32F1)
+    #if defined(FLASH_ACR_LATENCY)
+    if (config_clock(FLASH_ACR_LATENCY) != STM32_RESULT_OK)
+        Error_Handler();
+    #else // FLASH_ACR_LATENCY
+    if (config_clock(0) != STM32_RESULT_OK)
+        Error_Handler();
+    #endif // FLASH_ACR_LATENCY
+    #else
     if (config_clock(FLASH_ACR_LATENCY_5WS) != STM32_RESULT_OK)
         Error_Handler();
+    #endif
 
     #ifdef STM32_RTC_ENABLE
     RCC_Periph_Clock_Source sources;
@@ -137,21 +168,53 @@ void STM32_RCC::init()
     STM32_SYSTICK::update_freq();
 }
 
-void STM32_RCC::deinit()
+uint32_t STM32_RCC::deinit()
 {
     m_system_core_clock = HSI_VALUE;
+    #if defined (STM32F4)
     RCC->CR |= RCC_CR_HSION | RCC_CR_HSITRIM_4;
+    #elif defined(STM32F1)
+    RCC->CR |= RCC_CR_HSION;
+    #endif
+    // wait till HSI is ready
+    WAIT_TIMEOUT(!HSI_ready(), HSI_TIMEOUT_VALUE);
+    #if defined(STM32F1)
+    set_calibration_value_HSI(STM32_HSI_CALIBRATION);
+    #endif
+
+    // Reset CFGR register
     RCC->CFGR = 0;
-    RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_PLLON | RCC_CR_PLLI2SON);
-    
+    WAIT_TIMEOUT((get_source_SYSCLK() != RESET), HSI_TIMEOUT_VALUE);
+
+    m_system_core_clock = HSI_VALUE;
+    STM32_SYSTICK::update_freq();
+
+    RCC->CR &= ~(RCC_CR_PLLON
+			#if defined (STM32F4)
+			| RCC_CR_PLLI2SON);
+			#else
+			);
+			#endif
+    WAIT_TIMEOUT((PLL_ready() != RESET), PLL_TIMEOUT_VALUE);
+    RCC->CFGR = 0;
+
+    RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_CSSON);
+    WAIT_TIMEOUT((HSE_ready() != RESET), HSE_TIMEOUT_VALUE);
+
+    #if defined (STM32F4)
     RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
     
     RCC->PLLI2SCFGR = RCC_PLLI2SCFGR_PLLI2SN_6 | RCC_PLLI2SCFGR_PLLI2SN_7 | RCC_PLLI2SCFGR_PLLI2SR_1;
+    #endif // ST<32F4
 
-    RCC->CR &= ~RCC_CR_HSEBYP;
+    CLEAR_BIT(RCC->CR, RCC_CR_HSEBYP);
+    SET_BIT(RCC->CSR, RCC_CSR_RMVF);
     RCC->CIR = 0;
     
+    STM32_SYSTICK::update_freq();
     m_system_core_clock = update_system_core_clock();
+
+    return STM32_RESULT_OK;
 }
 
 void STM32_RCC::config_HSE(uint32_t state)
@@ -186,6 +249,7 @@ void STM32_RCC::config_LSE(uint32_t state)
     }
 }
 
+#if defined(STM32F4)
 void STM32_RCC::set_prescaler_RTC(uint32_t value)
 {
     if ((value & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL)
@@ -193,11 +257,14 @@ void STM32_RCC::set_prescaler_RTC(uint32_t value)
     else
         BIT_BAND_PER(RCC->CFGR, RCC_CFGR_RTCPRE) = DISABLE;
 }
+#endif
 
 void STM32_RCC::set_config_RTC(uint32_t value)
 {
+		#ifdef STM32F4
     set_prescaler_RTC(value);
-    RCC->BDCR |= value & 0x00000FFFU;
+		#endif
+		RCC->BDCR |= value & RCC_BDCR_RTCSEL;
 }
 
 uint32_t STM32_RCC::get_PCLK1_freq()
@@ -265,10 +332,14 @@ uint32_t STM32_RCC::config_osc()
         WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) != RESET, PLL_TIMEOUT_VALUE);
         if (STM32_PLL_STATE == RCC_PLL_ON)
         {
+						#if defined(STM32F4)
             set_config_PLL_source((STM32_PLL_SOURCE | STM32_PLLM |
                                   (STM32_PLLN << RCC_PLLCFGR_PLLN_Pos) |
                                   (((STM32_PLLP >> 1U) - 1U) << RCC_PLLCFGR_PLLP_Pos) |
                                   (STM32_PLLQ << RCC_PLLCFGR_PLLQ_Pos)));
+						#elif defined(STM32F1)
+						set_config_PLL_source(STM32_PLL_SOURCE | STM32_PLLM);
+						#endif
             enable_PLL();
             WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) == RESET, PLL_TIMEOUT_VALUE);
         }
@@ -282,12 +353,16 @@ uint32_t STM32_RCC::config_osc()
 
 uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
 {
+    #if defined(FLASH_ACR_LATENCY)
     if (flash_latency > STM32_FLASH::get_latency())
     {
         STM32_FLASH::set_latency(flash_latency);
         if (STM32_FLASH::get_latency() != flash_latency)
             return STM32_RESULT_FAIL;
     }
+    else
+    (void)(flash_latency);
+    #endif
 
     if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_HCLK) == RCC_CLOCKTYPE_HCLK)
     {
@@ -325,12 +400,14 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
         }
     }
 
+		#if defined(FLASH_ACR_LATENCY)
     if (flash_latency < STM32_FLASH::get_latency())
     {
         STM32_FLASH::set_latency(flash_latency);
         if (STM32_FLASH::get_latency() != flash_latency)
             return STM32_RESULT_FAIL;
     }
+		#endif
 
     if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK1)
     {
@@ -379,8 +456,14 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
     if (RCC_MCOx == RCC_MCO1)
     {
         __MCO1_CLK_ENABLE();
+				#if defined(STM3F1)
+				UNUSED(RCC_MCODiv);
+				MCO1_GPIO_PORT.set_config(MCO1_PIN, GPIO_MODE_AF_PP, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+        MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, RCC_MCOSource);
+				#elif defined(STM32F4)
         MCO1_GPIO_PORT.set_config(MCO1_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
+				#endif
     }
     #ifdef RCC_CFGR_MCO2
     else
@@ -401,6 +484,7 @@ void STM32_RCC::NMI_IRQ_Handler()
     }
 }
 
+#if defined(STM32F4)
 uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
 {
     uint32_t tmpreg1 = 0U;
@@ -528,6 +612,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
 
     return STM32_RESULT_OK;
 }
+#endif // STM32F4
 
 uint32_t STM32_RCC::update_system_core_clock()
 {
@@ -535,6 +620,7 @@ uint32_t STM32_RCC::update_system_core_clock()
             pllvco = 0,
             pllp = 2,
             pllsource = 0,
+						prediv = 0,
             pllm = 2;
     uint32_t sysclockfreq = 0U;
 
@@ -550,6 +636,47 @@ uint32_t STM32_RCC::update_system_core_clock()
         sysclockfreq = HSE_VALUE;
         break;
     case RCC_CFGR_SWS_PLL:  /* PLL used as system clock source */
+			#if defined(STM32F1)
+        pllsource = get_source_PLL_OSC() >> 22;
+        pllm = RCC->CFGR & RCC_CFGR_PLLMULL;
+				if (get_source_PLL_OSC() != RCC_PLLSOURCE_HSI_DIV2)
+				{
+						#if defined(RCC_CFGR2_PREDIV1)
+						prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR2 & RCC_CFGR2_PREDIV1) >> RCC_CFGR2_PREDIV1_Pos];
+						#else
+						prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR & RCC_CFGR_PLLXTPRE) >> RCC_CFGR_PLLXTPRE_Pos];
+						#endif /*RCC_CFGR2_PREDIV1*/
+					
+						#if defined(RCC_CFGR2_PREDIV1SRC)
+						if(HAL_IS_BIT_SET(RCC->CFGR2, RCC_CFGR2_PREDIV1SRC))
+						{
+								/* PLL2 selected as Prediv1 source */
+								/* PLLCLK = PLL2CLK / PREDIV1 * PLLMUL with PLL2CLK = HSE/PREDIV2 * PLL2MUL */
+								prediv2 = ((RCC->CFGR2 & RCC_CFGR2_PREDIV2) >> RCC_CFGR2_PREDIV2_Pos) + 1;
+								pll2mul = ((RCC->CFGR2 & RCC_CFGR2_PLL2MUL) >> RCC_CFGR2_PLL2MUL_Pos) + 2;
+								pllclk = (uint32_t)(((uint64_t)HSE_VALUE * (uint64_t)pll2mul * (uint64_t)pllmul) / ((uint64_t)prediv2 * (uint64_t)prediv));
+						}
+						else
+						{
+								/* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
+								pllclk = (uint32_t)((HSE_VALUE * pllmul) / prediv);
+						}
+
+						/* If PLLMUL was set to 13 means that it was to cover the case PLLMUL 6.5 (avoid using float) */
+						/* In this case need to divide pllclk by 2 */
+						if (pllmul == aPLLMULFactorTable[(uint32_t)(RCC_CFGR_PLLMULL6_5) >> RCC_CFGR_PLLMULL_Pos])
+								pllclk = pllclk / 2;
+						#else
+						/* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
+						sysclockfreq = (uint32_t)((HSE_VALUE  * pllm) / prediv);
+						#endif /*RCC_CFGR2_PREDIV1SRC*/
+				}
+				else
+				{
+						/* HSI used as PLL clock source : PLLCLK = HSI/2 * PLLMUL */
+						sysclockfreq = (uint32_t)((HSI_VALUE >> 1) * pllm);
+				}				
+			#elif defined(STM32F4)
         pllsource = get_source_PLL_OSC() >> 22;
         pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
         if (pllsource != 0)
@@ -564,6 +691,7 @@ uint32_t STM32_RCC::update_system_core_clock()
         }
         pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >>16) + 1 ) *2;
         sysclockfreq = pllvco/pllp;
+				#endif
         break;
     default:
         sysclockfreq = HSI_VALUE;

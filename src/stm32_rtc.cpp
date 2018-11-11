@@ -1,5 +1,7 @@
 #include "stm32_rtc.h"
 
+#ifdef STM32_USE_RTC
+
 #define RTC_TIMEOUT_VALUE       1000
 
 #define RTC_EXTI_LINE_ALARM_EVENT      ((uint32_t)EXTI_IMR_MR17)
@@ -74,6 +76,12 @@
                                                                         comparison.Only SS[13:0] are compared  */
 #define RTC_ALARMSUBSECONDMASK_NONE        ((uint32_t)0x0F000000U)  /*!< SS[14:0] are compared and must match
                                                                         to activate alarm. */
+#if defined(STM32F1)
+#define RTC_IT_OW            RTC_CRH_OWIE       /*!< Overflow interrupt */
+#define RTC_IT_ALRA          RTC_CRH_ALRIE      /*!< Alarm interrupt */
+#define RTC_IT_SEC           RTC_CRH_SECIE      /*!< Second interrupt */
+#define RTC_IT_TAMP1         BKP_CSR_TPIE       /*!< TAMPER Pin interrupt enable */ 
+#elif defined(STM32F4) 
 #define RTC_IT_TS                         ((uint32_t)0x00008000U)
 #define RTC_IT_WUT                        ((uint32_t)0x00004000U)
 #define RTC_IT_ALRB                       ((uint32_t)0x00002000U)
@@ -81,7 +89,16 @@
 #define RTC_IT_TAMP                       ((uint32_t)0x00000004U) /* Used only to Enable the Tamper Interrupt */
 #define RTC_IT_TAMP1                      ((uint32_t)0x00020000U)
 #define RTC_IT_TAMP2                      ((uint32_t)0x00040000U)
+#endif
 
+#if defined(STM32F1)
+#define RTC_FLAG_RTOFF       RTC_CRL_RTOFF      /*!< RTC Operation OFF flag */
+#define RTC_FLAG_RSF         RTC_CRL_RSF        /*!< Registers Synchronized flag */
+#define RTC_FLAG_OW          RTC_CRL_OWF        /*!< Overflow flag */
+#define RTC_FLAG_ALRAF       RTC_CRL_ALRF       /*!< Alarm flag */
+#define RTC_FLAG_SEC         RTC_CRL_SECF       /*!< Second flag */
+#define RTC_FLAG_TAMP1F      BKP_CSR_TEF        /*!< Tamper Interrupt Flag */
+#elif defined(STM32F4)
 #define RTC_FLAG_RECALPF                  ((uint32_t)0x00010000U)
 #define RTC_FLAG_TAMP2F                   ((uint32_t)0x00004000U)
 #define RTC_FLAG_TAMP1F                   ((uint32_t)0x00002000U)
@@ -97,6 +114,7 @@
 #define RTC_FLAG_WUTWF                    ((uint32_t)0x00000004U)
 #define RTC_FLAG_ALRBWF                   ((uint32_t)0x00000002U)
 #define RTC_FLAG_ALRAWF                   ((uint32_t)0x00000001U)
+#endif
 
 #define RTC_INIT_MASK           ((uint32_t)0xFFFFFFFFU)
 #define RTC_RSF_MASK            ((uint32_t)0xFFFFFF5FU)
@@ -109,8 +127,10 @@
 uint32_t STM32_RTC::init()
 {
     STM32_RCC::enable_clk_PWR();
+		#ifdef STM32F4
     STM32_RCC::enable_clk_BKPSRAM();
     STM32_PWR::enable_backup_regulator();
+		#endif
 
     if (!STM32_RCC::get_enabled_RTC())
     {
@@ -121,6 +141,9 @@ uint32_t STM32_RTC::init()
 
         /* Disable the write protection for RTC registers */
         write_protect_disable();
+			
+				if (wait_for_synchro() != STM32_RESULT_OK)
+            return STM32_RESULT_FAIL;
 
         if (enter_init_mode() != STM32_RESULT_OK)
         {
@@ -129,6 +152,14 @@ uint32_t STM32_RTC::init()
             return STM32_RESULT_FAIL;
         }
 
+				#if defined(STM32F1)
+				CLEAR_BIT(RTC->CRL, (RTC_FLAG_OW | RTC_FLAG_ALRAF | RTC_FLAG_SEC));
+				/* Set the signal which will be routed to RTC Tamper pin*/
+				MODIFY_REG(BKP->RTCCR, (BKP_RTCCR_CCO | BKP_RTCCR_ASOE | BKP_RTCCR_ASOS), 0);	// TODO
+				
+				///// TODO!!!
+				
+				#elif defined(STM32F4)
         /* Clear RTC_CR FMT, OSEL and POL Bits */
         RTC->CR &= ~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL);
         /* Set RTC_CR register */
@@ -143,6 +174,7 @@ uint32_t STM32_RTC::init()
 
         RTC->TAFCR &= ~RTC_TAFCR_ALARMOUTTYPE;
         RTC->TAFCR |= STM32_RTC_OUTPUT_TYPE;
+				#endif
 
         /* Enable the write protection for RTC registers */
         write_protect_enable();
@@ -165,6 +197,19 @@ uint32_t STM32_RTC::deinit()
     }
     else
     {
+				#if defined(STM32F1)
+				CLEAR_REG(RTC->CNTL);
+				CLEAR_REG(RTC->CNTH);
+				WRITE_REG(RTC->PRLL, 0x00008000U);
+				CLEAR_REG(RTC->PRLH);
+				/* Reset All CRH/CRL bits */
+				CLEAR_REG(RTC->CRH);
+				CLEAR_REG(RTC->CRL);
+			
+				exit_init_mode();
+				wait_for_synchro();
+				
+				#elif defined(STM32F4)
         /* Reset TR, DR and CR registers */
         RTC->TR = (uint32_t)0x00000000U;
         RTC->DR = (uint32_t)0x00002101U;
@@ -211,6 +256,7 @@ uint32_t STM32_RTC::deinit()
                 return STM32_RESULT_FAIL;
             }
         }
+				#endif
     }
 
     /* Enable the write protection for RTC registers */
@@ -228,24 +274,41 @@ uint32_t STM32_RTC::set_time(STM32_RTC_Time *time, ERTCFormat format)
 
     if(format == ERTCFormat::BIN)
     {
+				#ifdef STM32F4
         if ((RTC->CR & RTC_CR_FMT) == RESET)
             time->TimeFormat = 0x00U;
+				#endif
 
-        tmpreg = (((uint32_t)RTC_ByteToBcd2(time->Hours) << 16U) |
-                  ((uint32_t)RTC_ByteToBcd2(time->Minutes) << 8U) |
-                  ((uint32_t)RTC_ByteToBcd2(time->Seconds)) |
-                  (((uint32_t)time->TimeFormat) << 16U));
-    }
-    else
-    {
-        if ((RTC->CR & RTC_CR_FMT) != RESET)
-            tmpreg = RTC_Bcd2ToByte(time->Hours);
-        else
-            time->TimeFormat = 0x00U;
+				#if defined(STM32F1)
+				tmpreg = (time->Hours * 3600) +
+								 (time->Minutes * 60) +
+								 time->Seconds;
+				#elif defined(STM32F4)
         tmpreg = (((uint32_t)(time->Hours) << 16U) |
                   ((uint32_t)(time->Minutes) << 8U) |
                   ((uint32_t)time->Seconds) |
                   ((uint32_t)(time->TimeFormat) << 16U));
+				#endif
+    }
+    else
+    {
+				#ifdef STM32F4
+        if ((RTC->CR & RTC_CR_FMT) != RESET)
+            tmpreg = RTC_Bcd2ToByte(time->Hours);
+        else
+            time->TimeFormat = 0x00U;
+				#endif
+				
+				#if defined(STM32F1)
+				tmpreg = (RTC_ByteToBcd2(time->Hours) * 3600) +
+								 (RTC_ByteToBcd2(time->Minutes) * 60) +
+								 RTC_ByteToBcd2(time->Seconds);
+				#elif defined(STM32F4)
+        tmpreg = (((uint32_t)RTC_ByteToBcd2(time->Hours) << 16U) |
+                  ((uint32_t)RTC_ByteToBcd2(time->Minutes) << 8U) |
+                  ((uint32_t)RTC_ByteToBcd2(time->Seconds)) |
+                  (((uint32_t)time->TimeFormat) << 16U));
+				#endif
     }
 
     /* Disable the write protection for RTC registers */
@@ -421,6 +484,14 @@ uint32_t STM32_RTC::enter_init_mode()
     return STM32_RESULT_OK;
 }
 
+#if defined(STM32F1)
+void STM32_RTC::exit_init_mode()
+{
+		write_protect_enable();
+		WAIT_TIMEOUT((RTC->CRL & RTC_CRL_RTOFF) == RESET, RTC_TIMEOUT_VALUE);
+}
+#endif
+
 uint32_t STM32_RTC::wait_for_synchro()
 {
     /* Clear RSF flag */
@@ -451,3 +522,5 @@ uint8_t RTC_Bcd2ToByte(uint8_t Value)
     tmp = ((uint8_t)(Value & (uint8_t)0xF0U) >> (uint8_t)0x4U) * 10U;
     return (tmp + (Value & (uint8_t)0x0FU));
 }
+
+#endif

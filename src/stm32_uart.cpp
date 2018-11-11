@@ -64,11 +64,26 @@ void STM32_UART::init_base(USART_TypeDef* uart)
     {
     #ifdef STM32_USE_UART1
     case USART1_BASE:
-        //RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+        STM32_RCC::enable_clk_USART1();
+        STM32_RCC::enable_clk_GPIOA();
+        #if defined(STM32F1)
+        gpiob.set_config(GPIO_PIN_9, GPIO_MODE_AF_PP, 0, GPIO_SPEED_FREQ_HIGH, GPIO_PULLUP);
+        gpiob.set_config(GPIO_PIN_10, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+        #elif defined(STM32F4)
+        gpioa.set_config(GPIO_PIN_9|GPIO_PIN_10, GPIO_MODE_AF_PP, GPIO_AF7_USART1, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP);
+        #endif
         break;
     #endif
     #ifdef STM32_USE_UART2
     case USART2_BASE:
+        STM32_RCC::enable_clk_USART1();
+        STM32_RCC::enable_clk_GPIOA();
+        #if defined(STM32F1)
+        gpiob.set_config(GPIO_PIN_2, GPIO_MODE_AF_PP, 0, GPIO_SPEED_FREQ_HIGH, GPIO_PULLUP);
+        gpiob.set_config(GPIO_PIN_3, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+        #elif defined(STM32F4)
+        gpioa.set_config(GPIO_PIN_2|GPIO_PIN_3, GPIO_MODE_AF_PP, GPIO_AF7_USART1, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_PULLUP);
+        #endif
         break;
     #endif
     #ifdef STM32_USE_UART3
@@ -118,15 +133,21 @@ void STM32_UART::init(uint32_t brate)
     case USART3_BASE:
         BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = ENABLE;
         break;
+		#ifdef UART4_BASE
     case UART4_BASE:
         BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = ENABLE;
         break;
+		#endif
+		#ifdef UART5_BASE
     case UART5_BASE:
         BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = ENABLE;
         break;
+		#endif
+		#ifdef UART6_BASE
     case USART6_BASE:
         BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = ENABLE;
         break;
+		#endif
 #ifdef UART7_BASE
     case UART7_BASE:
         BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = ENABLE;
@@ -163,7 +184,12 @@ void STM32_UART::set_baud_rate(uint32_t brate)
 {
     m_brate = brate;
     uint32_t freq;
-    if((m_uart == USART1) || (m_uart == USART6))
+    if((m_uart == USART1) 
+    #ifdef UART6_BASE
+			|| (m_uart == USART6))
+    #else
+			)
+    #endif
         freq = STM32_RCC::get_PCLK2_freq();
     else
         freq = STM32_RCC::get_PCLK1_freq();

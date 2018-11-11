@@ -190,6 +190,7 @@ uint32_t STM32_PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPE
 }
 #endif
 
+#ifdef STM32F4
 uint32_t STM32_PWR::control_voltage_scaling(uint32_t voltage_scaling)
 {
     STM32_RCC::enable_clk_PWR();
@@ -211,6 +212,7 @@ uint32_t STM32_PWR::disable_backup_regulator()
     WAIT_TIMEOUT(get_flag(PWR_FLAG_BRR) == SET, PWR_BKPREG_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
+#endif
 
 void ISR::PVD_IRQ()
 {

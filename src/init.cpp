@@ -69,7 +69,9 @@ void PeriphInit()
 
     /* Other IO and peripheral initializations */
     STM32_GPIO::init_all();
+    #ifdef STM32_USE_UART
     STM32_UART::init_all();
+    #endif
     #ifdef STM32_USE_SPI
     STM32_SPI::init_all();
     #endif

@@ -2,7 +2,7 @@
 #define STM32_PWR_H
 
 /*
- * Based on HAL-F4 v1.21.0
+ * Based on HAL v1.21.0(F4), v1.6.1(F1)
  * */
 
 #include "stm32_inc.h"
@@ -104,8 +104,10 @@ public:
 
     static inline void set_EXTI_generate_swit() { BIT_BAND_PER(EXTI->SWIER, PWR_EXTI_LINE_PVD) = ENABLE; }
 
+    #ifdef STM32F4
     /* Voltage control */
     static inline void set_voltage_scaling_config(uint32_t config) { MODIFY_REG(PWR->CR, PWR_CR_VOS, config);  }
+    #endif
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)
@@ -121,6 +123,7 @@ public:
     static inline void clear_odrudr_flag() { BIT_BAND_PER(PWR->CSR, PWR_FLAG_UDRDY) = ENABLE; }
 #endif
 
+    #ifdef STM32F4
     static inline uint32_t get_voltage_range() { return PWR->CR & PWR_CR_VOS; }
 
     static uint32_t control_voltage_scaling(uint32_t voltage_scaling);
@@ -128,9 +131,10 @@ public:
     /* Backup regulator */
     static uint32_t enable_backup_regulator();
     static uint32_t disable_backup_regulator();
-
+		
     /* flash control */
     ENDIS_REG_FLAG(flash_power_down, PWR->CR, PWR_CR_FPDS)
+    #endif
 };
 
 #endif // STM32_PWR_H

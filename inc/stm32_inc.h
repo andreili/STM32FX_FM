@@ -1,11 +1,12 @@
 #ifndef STM32_INC_H
 #define STM32_INC_H
 
-#ifdef STM32F429xx
+#if defined(STM32F429xx)
 #include "ISRstm32f429xx.h"
-#endif
-#ifdef STM32F407xx
+#elif defined(STM32F407xx)
 #include "ISRstm32f407xx.h"
+#elif defined(STM32F100xB)
+#include "ISRstm32f10x_md.h"
 #endif
 #include "stm32_conf.h"
 #include "stm32_def.h"
