@@ -338,7 +338,7 @@ uint32_t STM32_RCC::config_osc()
                                   (((STM32_PLLP >> 1U) - 1U) << RCC_PLLCFGR_PLLP_Pos) |
                                   (STM32_PLLQ << RCC_PLLCFGR_PLLQ_Pos)));
 						#elif defined(STM32F1)
-						set_config_PLL_source(STM32_PLL_SOURCE | STM32_PLLM);
+                        set_config_PLL_source(STM32_PLL_SOURCE | STM32_PLLM);
 						#endif
             enable_PLL();
             WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) == RESET, PLL_TIMEOUT_VALUE);
@@ -400,14 +400,14 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
         }
     }
 
-		#if defined(FLASH_ACR_LATENCY)
+    #if defined(FLASH_ACR_LATENCY)
     if (flash_latency < STM32_FLASH::get_latency())
     {
         STM32_FLASH::set_latency(flash_latency);
         if (STM32_FLASH::get_latency() != flash_latency)
             return STM32_RESULT_FAIL;
     }
-		#endif
+    #endif
 
     if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK1)
     {
@@ -636,47 +636,47 @@ uint32_t STM32_RCC::update_system_core_clock()
         sysclockfreq = HSE_VALUE;
         break;
     case RCC_CFGR_SWS_PLL:  /* PLL used as system clock source */
-			#if defined(STM32F1)
+        #if defined(STM32F1)
         pllsource = get_source_PLL_OSC() >> 22;
-        pllm = RCC->CFGR & RCC_CFGR_PLLMULL;
-				if (get_source_PLL_OSC() != RCC_PLLSOURCE_HSI_DIV2)
-				{
-						#if defined(RCC_CFGR2_PREDIV1)
-						prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR2 & RCC_CFGR2_PREDIV1) >> RCC_CFGR2_PREDIV1_Pos];
-						#else
-						prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR & RCC_CFGR_PLLXTPRE) >> RCC_CFGR_PLLXTPRE_Pos];
-						#endif /*RCC_CFGR2_PREDIV1*/
-					
-						#if defined(RCC_CFGR2_PREDIV1SRC)
-						if(HAL_IS_BIT_SET(RCC->CFGR2, RCC_CFGR2_PREDIV1SRC))
-						{
-								/* PLL2 selected as Prediv1 source */
-								/* PLLCLK = PLL2CLK / PREDIV1 * PLLMUL with PLL2CLK = HSE/PREDIV2 * PLL2MUL */
-								prediv2 = ((RCC->CFGR2 & RCC_CFGR2_PREDIV2) >> RCC_CFGR2_PREDIV2_Pos) + 1;
-								pll2mul = ((RCC->CFGR2 & RCC_CFGR2_PLL2MUL) >> RCC_CFGR2_PLL2MUL_Pos) + 2;
-								pllclk = (uint32_t)(((uint64_t)HSE_VALUE * (uint64_t)pll2mul * (uint64_t)pllmul) / ((uint64_t)prediv2 * (uint64_t)prediv));
-						}
-						else
-						{
-								/* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
-								pllclk = (uint32_t)((HSE_VALUE * pllmul) / prediv);
-						}
+        pllm = aPLLMULFactorTable[(RCC->CFGR & RCC_CFGR_PLLMULL >> RCC_CFGR_PLLMULL_Pos)];
+        if (get_source_PLL_OSC() != RCC_PLLSOURCE_HSI_DIV2)
+        {
+            #if defined(RCC_CFGR2_PREDIV1)
+            prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR2 & RCC_CFGR2_PREDIV1) >> RCC_CFGR2_PREDIV1_Pos];
+            #else
+            prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR & RCC_CFGR_PLLXTPRE) >> RCC_CFGR_PLLXTPRE_Pos];
+            #endif /*RCC_CFGR2_PREDIV1*/
 
-						/* If PLLMUL was set to 13 means that it was to cover the case PLLMUL 6.5 (avoid using float) */
-						/* In this case need to divide pllclk by 2 */
-						if (pllmul == aPLLMULFactorTable[(uint32_t)(RCC_CFGR_PLLMULL6_5) >> RCC_CFGR_PLLMULL_Pos])
-								pllclk = pllclk / 2;
-						#else
-						/* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
-						sysclockfreq = (uint32_t)((HSE_VALUE  * pllm) / prediv);
-						#endif /*RCC_CFGR2_PREDIV1SRC*/
-				}
-				else
-				{
-						/* HSI used as PLL clock source : PLLCLK = HSI/2 * PLLMUL */
-						sysclockfreq = (uint32_t)((HSI_VALUE >> 1) * pllm);
-				}				
-			#elif defined(STM32F4)
+            #if defined(RCC_CFGR2_PREDIV1SRC)
+            if(HAL_IS_BIT_SET(RCC->CFGR2, RCC_CFGR2_PREDIV1SRC))
+            {
+                    /* PLL2 selected as Prediv1 source */
+                    /* PLLCLK = PLL2CLK / PREDIV1 * PLLMUL with PLL2CLK = HSE/PREDIV2 * PLL2MUL */
+                    prediv2 = ((RCC->CFGR2 & RCC_CFGR2_PREDIV2) >> RCC_CFGR2_PREDIV2_Pos) + 1;
+                    pll2mul = ((RCC->CFGR2 & RCC_CFGR2_PLL2MUL) >> RCC_CFGR2_PLL2MUL_Pos) + 2;
+                    pllclk = (uint32_t)(((uint64_t)HSE_VALUE * (uint64_t)pll2mul * (uint64_t)pllmul) / ((uint64_t)prediv2 * (uint64_t)prediv));
+            }
+            else
+            {
+                    /* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
+                    pllclk = (uint32_t)((HSE_VALUE * pllmul) / prediv);
+            }
+
+            /* If PLLMUL was set to 13 means that it was to cover the case PLLMUL 6.5 (avoid using float) */
+            /* In this case need to divide pllclk by 2 */
+            if (pllmul == aPLLMULFactorTable[(uint32_t)(RCC_CFGR_PLLMULL6_5) >> RCC_CFGR_PLLMULL_Pos])
+                    pllclk = pllclk / 2;
+            #else
+            /* HSE used as PLL clock source : PLLCLK = HSE/PREDIV1 * PLLMUL */
+            sysclockfreq = (uint32_t)((HSE_VALUE  * pllm) / prediv);
+            #endif /*RCC_CFGR2_PREDIV1SRC*/
+        }
+        else
+        {
+                /* HSI used as PLL clock source : PLLCLK = HSI/2 * PLLMUL */
+                sysclockfreq = (uint32_t)((HSI_VALUE >> 1) * pllm);
+        }
+        #elif defined(STM32F4)
         pllsource = get_source_PLL_OSC() >> 22;
         pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
         if (pllsource != 0)
