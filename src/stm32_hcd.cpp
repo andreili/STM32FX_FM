@@ -82,15 +82,12 @@ uint32_t STM32_HCD::HC_init(uint8_t ch_num, uint8_t ep_num, uint8_t dev_address,
     debug_fn();
     STM32_LOCK(m_lock);
 
-    bool is_in = ((ep_num & 0x80) == 0x80);
-    ep_num = ep_num & 0x7f;
-
     m_HC[ch_num].dev_addr = dev_address;
     m_HC[ch_num].max_packet = mps;
     m_HC[ch_num].ch_num = ch_num;
     m_HC[ch_num].ep_type = ep_type;
-    m_HC[ch_num].ep_num = ep_num;
-    m_HC[ch_num].ep_is_in = is_in;
+    m_HC[ch_num].ep_num = ep_num & 0x7f;
+    m_HC[ch_num].ep_is_in = ((ep_num & 0x80) == 0x80);
     m_HC[ch_num].speed = speed;
 
     clear_HC_int(ch_num, 0xffffffff);
@@ -311,7 +308,7 @@ void STM32_HCD::init_gpio()
                                      GPIO_AF10_OTG_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         STM32_RCC::STM32_USB_FS_EN_CLK();
         STM32_RCC::enable_clk_USB_FS();
-        STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 5, 0);
+        STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 0, 0);
         STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, GPIO_MODE_OUTPUT_PP,
                                          0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
     }
@@ -321,7 +318,7 @@ void STM32_HCD::init_gpio()
                                      GPIO_AF12_OTG_HS_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
         STM32_RCC::STM32_USB_HS_EN_CLK();
         STM32_RCC::enable_clk_USB_HS();
-        STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 5, 0);
+        STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 0, 0);
         STM32_USB_PWR_HS_PORT.set_config(STM32_USB_PWR_HS_PIN, GPIO_MODE_OUTPUT_PP,
                                          0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
     }
@@ -418,7 +415,7 @@ void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed
     disable_all_IT();
     clear_all_IT();
 
-    if (dma_enable)
+    if (!dma_enable)
         enable_IT(USB_OTG_GINTMSK_RXFLVLM);
 
     enable_IT(USB_OTG_GINTMSK_USBSUSPM | USB_OTG_GINTMSK_USBRST |
@@ -813,7 +810,7 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enab
         set_RX_EP0_FIFO_size(0x100, 0x200);
         set_TX_FIFO_size(0xe0, 0x300);
     }
-    if (dma_enable)
+    if (!dma_enable)
         unmask_IT(USB_OTG_GINTMSK_RXFLVLM);
     unmask_IT(USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |
               USB_OTG_GINTMSK_SOFM             |USB_OTG_GINTSTS_DISCINT|
@@ -877,8 +874,9 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
     if (dma)
         HC_set_Xfer_DMA(hc->ch_num, hc->xfer_len);
 
+    bool is_odd = is_cur_frame_odd();
     disable_HC_odd_frame(hc->ch_num);
-    if (get_current_frame() & 0x01)
+    if (is_odd)
         enable_HC_odd_frame(hc->ch_num);
 
     HC_reactivate(hc->ch_num);
@@ -918,11 +916,11 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 void STM32_HCD::drive_VBUS(uint8_t state)
 {
     debug_fn();
-    uint32_t val = m_regs->ports[0];
+    __IO uint32_t val = m_regs->ports[0];
     val &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
-    if (((val & USB_OTG_HPRT_PPWR) == 0) && (state == 0))
+    if (((val & USB_OTG_HPRT_PPWR) == 0) && (state == 1))
         reset_port_st1(USB_OTG_HPRT_PPWR | val);
-    if (((val & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 1))
+    if (((val & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 0))
         reset_port_st1((~USB_OTG_HPRT_PPWR) & val);
 }
 

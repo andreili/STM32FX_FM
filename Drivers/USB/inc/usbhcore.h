@@ -357,7 +357,7 @@ private:
     USBHClass*          m_active_class;
     uint32_t            m_class_number;
     uint32_t            m_pipes[15];
-    uint32_t            m_timer;
+    __IO uint32_t       m_timer;
     uint8_t             m_id;
     STM32_HCD*          m_hcd;
     void                (*m_user)(USBHCore*,EHostUser);

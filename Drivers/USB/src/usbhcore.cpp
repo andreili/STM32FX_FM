@@ -85,7 +85,7 @@ uint8_t USBHCore::find_interface(uint8_t Class, uint8_t subclass, uint8_t protoc
     USBHInterfaceDesc_t* pif = nullptr;
     USBHCfgDesc_t* pcfg = &m_device.CfgDesc;
 
-    int8_t if_idx = 0;
+    uint8_t if_idx = 0;
     while (if_idx < USBH_MAX_NUM_INTERFACES)
     {
         pif = &pcfg->Itf_Desc[if_idx];
@@ -103,7 +103,7 @@ uint8_t USBHCore::find_interface_index(uint8_t interface_number, uint8_t alt_set
     USBHInterfaceDesc_t* pif = nullptr;
     USBHCfgDesc_t* pcfg = &m_device.CfgDesc;
 
-    int8_t if_idx = 0;
+    uint8_t if_idx = 0;
     while (if_idx < USBH_MAX_NUM_INTERFACES)
     {
         pif = &pcfg->Itf_Desc[if_idx];
@@ -154,8 +154,8 @@ void USBHCore::process()
 #if (USBH_USE_OS == 1)
             osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
 #endif
-            break;
         }
+        break;
     case EHostState::DEV_WAIT_FOR_ATTACHMENT:
         break;
     case EHostState::DEV_ATTACHED:
@@ -359,7 +359,7 @@ uint32_t USBHCore::handle_enum()
             if (get_string_desc(m_device.DevDesc.iManufacturer,
                                 m_device.Data, 0xff) == STM32_RESULT_OK)
             {
-                USBH_UsrLog("Manufacturer : %s", (char *)m_device.Data);
+                USBH_UsrLog("Manufacturer : %s", m_device.Data);
             }
         }
         else
@@ -377,7 +377,7 @@ uint32_t USBHCore::handle_enum()
             if (get_string_desc(m_device.DevDesc.iProduct,
                                 m_device.Data, 0xff) == STM32_RESULT_OK)
             {
-                USBH_UsrLog("Product : %s", (char *)m_device.Data);
+                USBH_UsrLog("Product : %s", m_device.Data);
             }
         }
         else
@@ -395,7 +395,7 @@ uint32_t USBHCore::handle_enum()
             if (get_string_desc(m_device.DevDesc.iSerialNumber,
                                 m_device.Data, 0xff) == STM32_RESULT_OK)
             {
-                USBH_UsrLog("Serial Number : %s", (char *)m_device.Data);
+                USBH_UsrLog("Serial Number : %s", m_device.Data);
                 status = STM32_RESULT_OK;
             }
         }
@@ -420,10 +420,9 @@ void USBHCore::handle_SOF()
 
 void USBHCore::deInit_state_machine()
 {
-    for (int i=0 ; i<USBH_MAX_PIPES_NBR ; ++i)
-        m_pipes[i] = 0;
-    for (int i=0 ; i<USBH_MAX_DATA_BUFFER ; ++i)
-        m_device.Data[i] = 0;
+    memset(reinterpret_cast<uint8_t*>(m_pipes), 0, USBH_MAX_PIPES_NBR * sizeof(uint32_t));
+    memset(m_device.Data, 0, USBH_MAX_DATA_BUFFER);
+
     m_gstate = EHostState::IDLE;
     m_enum_state = EUSBState::IDLE;
     m_request_state = ECMDState::SEND;
@@ -474,7 +473,7 @@ void USBHCore::LL_init()
 #ifdef STM32_USE_USB_FS
     {
         m_hcd = &usb_fs;
-        m_hcd->set_data((void*)this);
+        m_hcd->set_data(static_cast<void*>(this));
         if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, false, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_fs.get_current_frame());
@@ -533,7 +532,7 @@ uint8_t USBHCore::alloc_pipe(uint8_t ep_addr)
     uint16_t pipe = get_free_pipe();
     if (pipe != 0xffff)
         m_pipes[pipe] = 0x8000 | ep_addr;
-    return pipe;
+    return static_cast<uint8_t>(pipe);
 }
 
 uint16_t USBHCore::get_free_pipe()
@@ -565,10 +564,9 @@ uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
             m_request_state = ECMDState::SEND;
             m_control.state = ECTRLState::IDLE;
         }
-        else
+        else if (status == STM32_RESULT_FAIL)
         {
             m_request_state = ECMDState::SEND;
-            status = STM32_RESULT_FAIL;
         }
         break;
     case ECMDState::IDLE:
@@ -589,7 +587,7 @@ uint32_t USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t*
             m_control.setup.b.wIndex.w = 0x0409;
         else
             m_control.setup.b.wIndex.w = 0;
-        m_control.setup.b.wLength.w = 0;
+        m_control.setup.b.wLength.w = length;
     }
     return ctl_req(buff, length);
 }
@@ -644,7 +642,7 @@ uint32_t USBHCore::set_address(uint8_t dev_address)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_D2H | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD;
+        m_control.setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD;
         m_control.setup.b.bRequest = USB_REQ_SET_ADDRESS;
         m_control.setup.b.wValue.w = dev_address;
         m_control.setup.b.wIndex.w = 0;
@@ -682,7 +680,12 @@ uint32_t USBHCore::clr_feature(uint8_t ep_num)
 void USBHCore::parse_dev_desc(USBHDevDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
     if (length > 8)
+    {
         memcpy((uint8_t*)pdesc, buf, 18);
+        pdesc->idVendor = __builtin_bswap16(pdesc->idVendor);
+        pdesc->idProduct = __builtin_bswap16(pdesc->idProduct);
+        pdesc->bcdDevice = __builtin_bswap16(pdesc->bcdDevice);
+    }
     else
         memcpy((uint8_t*)pdesc, buf, 8);
     pdesc->bcdUSB = __builtin_bswap16(pdesc->bcdUSB);
@@ -692,23 +695,25 @@ void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
 {
     if (psrc[1] == USB_DESC_TYPE_STRING)
     {
-        uint16_t strl = (((psrc[0] - 2) <= length) ? (psrc[0] - 1) : length);
+        uint16_t strl = (((psrc[0] - 2) <= length) ? (psrc[0] - 2) : length);
         psrc += 2;
-        for (uint16_t idx=0 ; idx<strl ; ++idx)
+        for (uint16_t idx=0 ; idx<strl ; idx+=2)
+        {
             *(pdst++) = psrc[idx];
+        }
         *pdst = 0;
     }
 }
 
 void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
-    memcpy((uint8_t*)pdesc, buf, 9);
+    memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 9);
     pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
         int8_t if_idx = 0;
         uint16_t ptr = USB_LEN_CFG_DESC;
-        USBHDescHeader_t* pheader = (USBHDescHeader_t*)buf;
+        USBHDescHeader_t* pheader = reinterpret_cast<USBHDescHeader_t*>(buf);
         while ((if_idx < USBH_MAX_NUM_INTERFACES) && (ptr < pdesc->wTotalLength))
         {
             pheader = get_next_desc(buf, &ptr);
@@ -748,9 +753,9 @@ void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
 
 USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr)
 {
-    USBHDescHeader_t* pnext = (USBHDescHeader_t*)buff;
+    USBHDescHeader_t* pnext = reinterpret_cast<USBHDescHeader_t*>(buff);
     *ptr += pnext->bLength;
-    pnext = (USBHDescHeader_t*)((buff + pnext->bLength));
+    pnext = reinterpret_cast<USBHDescHeader_t*>((buff + pnext->bLength));
     return pnext;
 }
 
@@ -762,7 +767,7 @@ uint32_t USBHCore::handle_control()
     switch (m_control.state)
     {
     case ECTRLState::SETUP:
-        ctrl_send_setup((uint8_t*)m_control.setup.d8, m_control.pipe_out);
+        ctrl_send_setup(reinterpret_cast<uint8_t*>(m_control.setup.d8), m_control.pipe_out);
         m_control.state = ECTRLState::SETUP_WAIT;
         break;
     case ECTRLState::SETUP_WAIT:
@@ -797,12 +802,12 @@ uint32_t USBHCore::handle_control()
         }
         break;
     case ECTRLState::DATA_IN:
-        m_control.timer = m_timer;
+        m_control.timer = static_cast<uint16_t>(m_timer);
         ctrl_recieve_data(m_control.buff, m_control.length, m_control.pipe_in);
         m_control.state = ECTRLState::DATA_IN_WAIT;
         break;
     case ECTRLState::DATA_IN_WAIT:
-        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_in);
         if (urb_state == EURBState::DONE)
         {
             m_control.state = ECTRLState::STATUS_OUT;
@@ -826,7 +831,7 @@ uint32_t USBHCore::handle_control()
         }
         break;
     case ECTRLState::DATA_OUT:
-        m_control.timer = m_timer;
+        m_control.timer = static_cast<uint16_t>(m_timer);
         ctrl_send_data(m_control.buff, m_control.length, m_control.pipe_out, true);
         m_control.state = ECTRLState::DATA_OUT_WAIT;
         break;
@@ -864,12 +869,12 @@ uint32_t USBHCore::handle_control()
         }
         break;
     case ECTRLState::STATUS_IN:
-        m_control.timer = m_timer;
+        m_control.timer = static_cast<uint16_t>(m_timer);
         ctrl_recieve_data(nullptr, 0, m_control.pipe_in);
         m_control.state = ECTRLState::STATUS_IN_WAIT;
         break;
     case ECTRLState::STATUS_IN_WAIT:
-        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
+        urb_state = m_hcd->HC_get_URB_state(m_control.pipe_in);
         if (urb_state == EURBState::DONE)
         {
             m_control.state = ECTRLState::COMPLETE;
@@ -894,8 +899,8 @@ uint32_t USBHCore::handle_control()
         }
         break;
     case ECTRLState::STATUS_OUT:
-        m_control.timer = m_timer;
-        ctrl_recieve_data(nullptr, 0, m_control.pipe_out);
+        m_control.timer = static_cast<uint16_t>(m_timer);
+        ctrl_send_data(nullptr, 0, m_control.pipe_out, true);
         m_control.state = ECTRLState::STATUS_OUT_WAIT;
         break;
     case ECTRLState::STATUS_OUT_WAIT:

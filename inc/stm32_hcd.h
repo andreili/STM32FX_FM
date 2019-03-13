@@ -222,6 +222,7 @@ public:
     FORCE_INLINE void clear_out_ep_intr(uint8_t ep_num, uint32_t mask) { m_regs->out_eps[ep_num].DOEPINT = mask; }
 
     FORCE_INLINE uint32_t get_current_frame() { return (m_regs->host.HFNUM & USB_OTG_HFNUM_FRNUM); }
+    FORCE_INLINE bool is_cur_frame_odd() { return (m_regs->host.HFNUM & 0x01) != 0; }
     FORCE_INLINE EOTGSpeed get_current_speed() { return get_host_speed(); }
 
     void set_toggle(uint8_t pipe, uint8_t toggle);
