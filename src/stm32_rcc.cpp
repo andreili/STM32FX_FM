@@ -9,12 +9,12 @@ uint32_t unused_reg;
 
 #define __MCO1_CLK_ENABLE()   enable_clk_GPIOA()
 #define MCO1_GPIO_PORT        gpioa
-#define MCO1_PIN              GPIO_PIN_8
+#define MCO1_PIN              STM32_GPIO::PIN_8
 
 #if defined(STM32F4)
 #define __MCO2_CLK_ENABLE()   enable_clk_GPIOC()
 #define MCO2_GPIO_PORT        gpioc
-#define MCO2_PIN              GPIO_PIN_9
+#define MCO2_PIN              STM32_GPIO::PIN_9
 #endif // STM32F4
 
 #define HSI_VALUE ((uint32_t)16000000UL)
@@ -458,10 +458,10 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
         __MCO1_CLK_ENABLE();
 				#if defined(STM3F1)
 				UNUSED(RCC_MCODiv);
-				MCO1_GPIO_PORT.set_config(MCO1_PIN, GPIO_MODE_AF_PP, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+                MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, 0, STM32_GPIO::ESpeed::HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, RCC_MCOSource);
 				#elif defined(STM32F4)
-        MCO1_GPIO_PORT.set_config(MCO1_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, GPIO_AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
 				#endif
     }
@@ -469,7 +469,7 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
     else
     {
         __MCO2_CLK_ENABLE();
-        MCO2_GPIO_PORT.set_config(MCO2_PIN, GPIO_MODE_AF_PP, GPIO_AF0_MCO, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        MCO2_GPIO_PORT.set_config(MCO2_PIN, STM32_GPIO::EMode::AF_PP, GPIO_AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (RCC_MCOSource | RCC_MCODiv));
     }
     #endif

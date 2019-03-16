@@ -1,14 +1,14 @@
 #include "stm32_inc.h"
 
-#define GPIO_MODE             ((uint32_t)0x00000003U)
-#define EXTI_MODE             ((uint32_t)0x10000000U)
-#define GPIO_MODE_IT          ((uint32_t)0x00010000U)
-#define GPIO_MODE_EVT         ((uint32_t)0x00020000U)
-#define RISING_EDGE           ((uint32_t)0x00100000U)
-#define FALLING_EDGE          ((uint32_t)0x00200000U)
-#define GPIO_OUTPUT_TYPE      ((uint32_t)0x00000010U)
+#define GPIO_MODE             0x00000003U
+#define EXTI_MODE             0x10000000U
+#define GPIO_MODE_IT          0x00010000U
+#define GPIO_MODE_EVT         0x00020000U
+#define RISING_EDGE           0x00100000U
+#define FALLING_EDGE          0x00200000U
+#define GPIO_OUTPUT_TYPE      0x00000010U
 
-#define GPIO_NUMBER           ((uint32_t)16U)
+#define GPIO_NUMBER           16U
 
 #ifdef STM32F1
 /* Definitions for bit manipulation of CRL and CRH register */
@@ -23,28 +23,28 @@
 #endif
 
 #if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx)
-#define GPIO_GET_INDEX(__GPIOx__)    (uint8_t)(((__GPIOx__) == (GPIOA))? 0U :\
-                                               ((__GPIOx__) == (GPIOB))? 1U :\
-                                               ((__GPIOx__) == (GPIOC))? 2U :\
-                                               ((__GPIOx__) == (GPIOD))? 3U :\
-                                               ((__GPIOx__) == (GPIOE))? 4U :\
-                                               ((__GPIOx__) == (GPIOF))? 5U :\
-                                               ((__GPIOx__) == (GPIOG))? 6U :\
-                                               ((__GPIOx__) == (GPIOH))? 7U : 8U)
+#define GPIO_GET_INDEX(__GPIOx__)    (((__GPIOx__) == (GPIOA))? 0U :\
+                                      ((__GPIOx__) == (GPIOB))? 1U :\
+                                      ((__GPIOx__) == (GPIOC))? 2U :\
+                                      ((__GPIOx__) == (GPIOD))? 3U :\
+                                      ((__GPIOx__) == (GPIOE))? 4U :\
+                                      ((__GPIOx__) == (GPIOF))? 5U :\
+                                      ((__GPIOx__) == (GPIOG))? 6U :\
+                                      ((__GPIOx__) == (GPIOH))? 7U : 8U)
 #endif
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F469xx) || defined(STM32F479xx)
-#define GPIO_GET_INDEX(__GPIOx__)    (uint8_t)(((__GPIOx__) == (GPIOA))? 0U :\
-                                               ((__GPIOx__) == (GPIOB))? 1U :\
-                                               ((__GPIOx__) == (GPIOC))? 2U :\
-                                               ((__GPIOx__) == (GPIOD))? 3U :\
-                                               ((__GPIOx__) == (GPIOE))? 4U :\
-                                               ((__GPIOx__) == (GPIOF))? 5U :\
-                                               ((__GPIOx__) == (GPIOG))? 6U :\
-                                               ((__GPIOx__) == (GPIOH))? 7U :\
-                                               ((__GPIOx__) == (GPIOI))? 8U :\
-                                               ((__GPIOx__) == (GPIOJ))? 9U : 10U)
+#define GPIO_GET_INDEX(__GPIOx__)    (((__GPIOx__) == (GPIOA))? 0U :\
+                                      ((__GPIOx__) == (GPIOB))? 1U :\
+                                      ((__GPIOx__) == (GPIOC))? 2U :\
+                                      ((__GPIOx__) == (GPIOD))? 3U :\
+                                      ((__GPIOx__) == (GPIOE))? 4U :\
+                                      ((__GPIOx__) == (GPIOF))? 5U :\
+                                      ((__GPIOx__) == (GPIOG))? 6U :\
+                                      ((__GPIOx__) == (GPIOH))? 7U :\
+                                      ((__GPIOx__) == (GPIOI))? 8U :\
+                                      ((__GPIOx__) == (GPIOJ))? 9U : 10U)
 #endif
 
 #if defined(STM32F429xx) || defined(STM32F439xx)
@@ -130,10 +130,10 @@ void STM32_GPIO::init_all()
 
 void STM32_GPIO::init(uint32_t base_addr)
 {
-    m_gpio = (GPIO_TypeDef*)base_addr;
+    m_gpio = reinterpret_cast<GPIO_TypeDef*>(base_addr);
 }
 
-void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_alt, uint32_t pin_speed, uint32_t pin_pull)
+void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, uint32_t pin_alt, ESpeed pin_speed, EPull pin_pull)
 {
     uint32_t position;
     uint32_t ioposition = 0x00U;
@@ -149,7 +149,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
     for (position = 0U; position < GPIO_NUMBER; position++)
     {
         /* Get the IO position */
-        ioposition = ((uint32_t)0x01U) << position;
+        ioposition = 0x01U << position;
         /* Get the current IO position */
         iocurrent = pin_mask & ioposition;
 
@@ -158,28 +158,28 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
             #if defined(STM32F1)
             switch (pin_mode)
             {
-                case GPIO_MODE_OUTPUT_PP:
+                case EModeOUTPUT_PP:
                     config = pin_speed | GPIO_CR_CNF_GP_OUTPUT_PP;
                     break;
-                case GPIO_MODE_OUTPUT_OD:
+                case EModeOUTPUT_OD:
                     config = pin_speed | GPIO_CR_CNF_GP_OUTPUT_OD;
                     break;
-                case GPIO_MODE_AF_PP:
+                case EModeAF_PP:
                     config = pin_speed | GPIO_CR_CNF_AF_OUTPUT_PP;
                     break;
-                case GPIO_MODE_AF_OD:
+                case EModeAF_OD:
                     config = pin_speed | GPIO_CR_CNF_AF_OUTPUT_OD;
                     break;
-                case GPIO_MODE_INPUT:
-                case GPIO_MODE_IT_RISING:
-                case GPIO_MODE_IT_FALLING:
-                case GPIO_MODE_IT_RISING_FALLING:
-                case GPIO_MODE_EVT_RISING:
-                case GPIO_MODE_EVT_FALLING:
-                case GPIO_MODE_EVT_RISING_FALLING:
-                    if (pin_pull == GPIO_NOPULL)
+                case EModeINPUT:
+                case EModeIT_RISING:
+                case EModeIT_FALLING:
+                case EModeIT_RISING_FALLING:
+                case EModeEVT_RISING:
+                case EModeEVT_FALLING:
+                case EModeEVT_RISING_FALLING:
+                    if (pin_pull == EPull::NOPULL)
                         config = GPIO_CR_MODE_INPUT | GPIO_CR_CNF_INPUT_FLOATING;
-                    else if (pin_pull == GPIO_PULLUP)
+                    else if (pin_pull == EPull::PULLUP)
                     {
                         config = GPIO_CR_MODE_INPUT | GPIO_CR_CNF_INPUT_PU_PD;
                         m_gpio->BSRR = ioposition;
@@ -190,7 +190,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
                         m_gpio->BRR = ioposition;
                     }
                     break;
-                case GPIO_MODE_ANALOG:
+                case EMode::ANALOG:
                     config = GPIO_CR_MODE_INPUT | GPIO_CR_CNF_ANALOG;
                     break;
             }
@@ -200,7 +200,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
 
             MODIFY_REG((*configregister), ((GPIO_CRL_MODE0 | GPIO_CRL_CNF0) << registeroffset), (config << registeroffset));/*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
-            if ((pin_mode & EXTI_MODE) == EXTI_MODE)
+            if ((static_cast<uint32_t>(pin_mode) & EXTI_MODE) == EXTI_MODE)
             {
                 /* Enable AFIO Clock */
                 STM32_RCC::enable_clk_AFIO();
@@ -211,25 +211,25 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
 
 
                 /* Configure the interrupt mask */
-                if ((pin_mode & GPIO_MODE_IT) == GPIO_MODE_IT)
+                if ((static_cast<uint32_t>(pin_mode) & GPIO_MODE_IT) == GPIO_MODE_IT)
                     SET_BIT(EXTI->IMR, iocurrent);
                 else
                     CLEAR_BIT(EXTI->IMR, iocurrent);
 
                 /* Configure the event mask */
-                if ((pin_mode & GPIO_MODE_EVT) == GPIO_MODE_EVT)
+                if ((static_cast<uint32_t>(pin_mode) & GPIO_MODE_EVT) == GPIO_MODE_EVT)
                     SET_BIT(EXTI->EMR, iocurrent);
                 else
                     CLEAR_BIT(EXTI->EMR, iocurrent);
 
                 /* Enable or disable the rising trigger */
-                if ((pin_mode & RISING_EDGE) == RISING_EDGE)
+                if ((static_cast<uint32_t>(pin_mode) & RISING_EDGE) == RISING_EDGE)
                     SET_BIT(EXTI->RTSR, iocurrent);
                 else
                     CLEAR_BIT(EXTI->RTSR, iocurrent);
 
                 /* Enable or disable the falling trigger */
-                if ((pin_mode & FALLING_EDGE) == FALLING_EDGE)
+                if ((static_cast<uint32_t>(pin_mode) & FALLING_EDGE) == FALLING_EDGE)
                     SET_BIT(EXTI->FTSR, iocurrent);
                 else
                     CLEAR_BIT(EXTI->FTSR, iocurrent);
@@ -237,79 +237,79 @@ void STM32_GPIO::set_config(uint32_t pin_mask, uint32_t pin_mode, uint8_t pin_al
             #elif defined(STM32F4)
             /*--------------------- GPIO Mode Configuration ------------------------*/
             /* In case of Alternate function mode selection */
-            if ((pin_mode == GPIO_MODE_AF_PP) || (pin_mode == GPIO_MODE_AF_OD))
+            if ((pin_mode == EMode::AF_PP) || (pin_mode == EMode::AF_OD))
             {
                 /* Configure Alternate function mapped with the current IO */
                 temp = m_gpio->AFR[position >> 3U];
-                temp &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
-                temp |= ((uint32_t)(pin_alt) << (((uint32_t)position & (uint32_t)0x07U) * 4U));
+                temp &= ~(0xFU << ((position & 0x07U) * 4U)) ;
+                temp |= (pin_alt << ((position & 0x07U) * 4U));
                 m_gpio->AFR[position >> 3U] = temp;
             }
 
             /* Configure IO Direction mode (Input, Output, Alternate or Analog) */
             temp = m_gpio->MODER;
             temp &= ~(GPIO_MODER_MODER0 << (position * 2U));
-            temp |= ((pin_mode & GPIO_MODE) << (position * 2U));
+            temp |= ((static_cast<uint32_t>(pin_mode) & GPIO_MODE) << (position * 2U));
             m_gpio->MODER = temp;
 
             /* In case of Output or Alternate function mode selection */
-            if ((pin_mode == GPIO_MODE_OUTPUT_PP) || (pin_mode == GPIO_MODE_AF_PP) ||
-                (pin_mode == GPIO_MODE_OUTPUT_OD) || (pin_mode == GPIO_MODE_AF_OD))
+            if ((pin_mode == EMode::OUTPUT_PP) || (pin_mode == EMode::AF_PP) ||
+                (pin_mode == EMode::OUTPUT_OD) || (pin_mode == EMode::AF_OD))
             {
                 /* Configure the IO Speed */
                 temp = m_gpio->OSPEEDR;
                 temp &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
-                temp |= (pin_speed << (position * 2U));
+                temp |= (static_cast<uint32_t>(pin_speed) << (position * 2U));
                 m_gpio->OSPEEDR = temp;
 
                 /* Configure the IO Output Type */
                 temp = m_gpio->OTYPER;
                 temp &= ~(GPIO_OTYPER_OT_0 << position) ;
-                temp |= (((pin_mode & GPIO_OUTPUT_TYPE) >> 4U) << position);
+                temp |= (((static_cast<uint32_t>(pin_mode) & GPIO_OUTPUT_TYPE) >> 4U) << position);
                 m_gpio->OTYPER = temp;
             }
 
             /* Activate the Pull-up or Pull down resistor for the current IO */
             temp = m_gpio->PUPDR;
             temp &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
-            temp |= (pin_pull << (position * 2U));
+            temp |= (static_cast<uint32_t>(pin_pull) << (position * 2U));
             m_gpio->PUPDR = temp;
 
             /*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
-            if ((pin_mode & EXTI_MODE) == EXTI_MODE)
+            if ((static_cast<uint32_t>(pin_mode) & EXTI_MODE) == EXTI_MODE)
             {
                 /* Enable SYSCFG Clock */
                 STM32_RCC::enable_clk_SYSCFG();
 
                 temp = SYSCFG->EXTICR[position >> 2U];
-                temp &= ~(((uint32_t)0x0FU) << (4U * (position & 0x03U)));
-                temp |= ((uint32_t)(GPIO_GET_INDEX(m_gpio)) << (4U * (position & 0x03U)));
+                temp &= ~(0x0FU << (4U * (position & 0x03U)));
+                temp |= GPIO_GET_INDEX(m_gpio) << (4U * (position & 0x03U));
                 SYSCFG->EXTICR[position >> 2U] = temp;
 
                 /* Clear EXTI line configuration */
                 temp = EXTI->IMR;
-                temp &= ~((uint32_t)iocurrent);
-                if ((pin_mode & GPIO_MODE_IT) == GPIO_MODE_IT)
+                temp &= ~iocurrent;
+                if ((static_cast<uint32_t>(pin_mode) & GPIO_MODE_IT) == GPIO_MODE_IT)
                     temp |= iocurrent;
                 EXTI->IMR = temp;
 
                 temp = EXTI->EMR;
-                temp &= ~((uint32_t)iocurrent);
-                if ((pin_mode & GPIO_MODE_EVT) == GPIO_MODE_EVT)
+                temp &= ~iocurrent;
+                if ((static_cast<uint32_t>(pin_mode) & GPIO_MODE_EVT) == GPIO_MODE_EVT)
                     temp |= iocurrent;
                 EXTI->EMR = temp;
 
                 /* Clear Rising Falling edge configuration */
                 temp = EXTI->RTSR;
-                temp &= ~((uint32_t)iocurrent);
-                if ((pin_mode & RISING_EDGE) == RISING_EDGE)
+                temp &= ~iocurrent;
+                if ((static_cast<uint32_t>(pin_mode) & RISING_EDGE) == RISING_EDGE)
                     temp |= iocurrent;
                 EXTI->RTSR = temp;
 
                 temp = EXTI->FTSR;
-                temp &= ~((uint32_t)iocurrent);
-                if ((pin_mode & FALLING_EDGE) == FALLING_EDGE)
+                temp &= ~iocurrent;
+                if ((static_cast<uint32_t>(pin_mode) & FALLING_EDGE) == FALLING_EDGE)
                     temp |= iocurrent;
                 EXTI->FTSR = temp;
             }
@@ -334,7 +334,7 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
     for (position = 0U; position < GPIO_NUMBER; position++)
     {
         /* Get the IO position */
-        ioposition = ((uint32_t)0x01U) << position;
+        ioposition = 0x01U << position;
         /* Get the current IO position */
         iocurrent = (pin_mask) & ioposition;
 
@@ -377,7 +377,7 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
             m_gpio->MODER &= ~(GPIO_MODER_MODER0 << (position * 2U));
 
             /* Configure the default Alternate Function in current IO */
-            m_gpio->AFR[position >> 3U] &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
+            m_gpio->AFR[position >> 3U] &= ~(0xFU << ((position & 0x07U) * 4U)) ;
 
             /* Configure the default value for IO Speed */
             m_gpio->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
@@ -390,20 +390,20 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
 
             /*------------------------- EXTI Mode Configuration --------------------*/
             tmp = SYSCFG->EXTICR[position >> 2U];
-            tmp &= (((uint32_t)0x0FU) << (4U * (position & 0x03U)));
-            if(tmp == ((uint32_t)(GPIO_GET_INDEX(m_gpio)) << (4U * (position & 0x03U))))
+            tmp &= (0x0FU << (4U * (position & 0x03U)));
+            if (tmp == GPIO_GET_INDEX(m_gpio) << (4U * (position & 0x03U)))
             {
                 /* Configure the External Interrupt or event for the current IO */
-                tmp = ((uint32_t)0x0FU) << (4U * (position & 0x03U));
+                tmp = 0x0FU << (4U * (position & 0x03U));
                 SYSCFG->EXTICR[position >> 2U] &= ~tmp;
 
                 /* Clear EXTI line configuration */
-                EXTI->IMR &= ~((uint32_t)iocurrent);
-                EXTI->EMR &= ~((uint32_t)iocurrent);
+                EXTI->IMR &= ~iocurrent;
+                EXTI->EMR &= ~iocurrent;
 
                 /* Clear Rising Falling edge configuration */
-                EXTI->RTSR &= ~((uint32_t)iocurrent);
-                EXTI->FTSR &= ~((uint32_t)iocurrent);
+                EXTI->RTSR &= ~iocurrent;
+                EXTI->FTSR &= ~iocurrent;
             }
             #endif
         }

@@ -304,23 +304,23 @@ void STM32_HCD::init_gpio()
     debug_fn();
     if (m_regs == (OTGRegs_t*)USB_OTG_FS)
     {
-        STM32_USB_FS_PORT.set_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN, GPIO_MODE_AF_PP,
-                                     GPIO_AF10_OTG_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        STM32_USB_FS_PORT.set_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN, STM32_GPIO::EMode::AF_PP,
+                                     GPIO_AF10_OTG_FS, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         STM32_RCC::STM32_USB_FS_EN_CLK();
         STM32_RCC::enable_clk_USB_FS();
         STM32_NVIC::enable_and_set_prior_IRQ(OTG_FS_IRQn, 0, 0);
-        STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, GPIO_MODE_OUTPUT_PP,
-                                         0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
+        STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, STM32_GPIO::EMode::OUTPUT_PP,
+                                         0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     }
     else
     {
-        STM32_USB_HS_PORT.set_config(STM32_USB_HS_DM_PIN | STM32_USB_HS_DP_PIN, GPIO_MODE_AF_PP,
-                                     GPIO_AF12_OTG_HS_FS, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_NOPULL);
+        STM32_USB_HS_PORT.set_config(STM32_USB_HS_DM_PIN | STM32_USB_HS_DP_PIN, STM32_GPIO::EMode::AF_PP,
+                                     GPIO_AF12_OTG_HS_FS, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         STM32_RCC::STM32_USB_HS_EN_CLK();
         STM32_RCC::enable_clk_USB_HS();
         STM32_NVIC::enable_and_set_prior_IRQ(OTG_HS_IRQn, 0, 0);
-        STM32_USB_PWR_HS_PORT.set_config(STM32_USB_PWR_HS_PIN, GPIO_MODE_OUTPUT_PP,
-                                         0, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL);
+        STM32_USB_PWR_HS_PORT.set_config(STM32_USB_PWR_HS_PIN, STM32_GPIO::EMode::OUTPUT_PP,
+                                         0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     }
 }
 
