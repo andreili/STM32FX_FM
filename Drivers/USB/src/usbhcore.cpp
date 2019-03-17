@@ -172,14 +172,14 @@ void USBHCore::process()
                   0x80,
                   m_device.address,
                   m_device.speed,
-                  EEPType::CTRL,
+                  STM32_HCD::EEPType::CTRL,
                   m_control.pipe_size);
 
         open_pipe(m_control.pipe_out,
                   0x00,
                   m_device.address,
                   m_device.speed,
-                  EEPType::CTRL,
+                  STM32_HCD::EEPType::CTRL,
                   m_control.pipe_size);
 #if (USBH_USE_OS == 1)
         osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -303,14 +303,14 @@ uint32_t USBHCore::handle_enum()
                       0x80,
                       m_device.address,
                       m_device.speed,
-                      EEPType::CTRL,
+                      STM32_HCD::EEPType::CTRL,
                       m_control.pipe_size);
 
             open_pipe(m_control.pipe_out,
                       0x00,
                       m_device.address,
                       m_device.speed,
-                      EEPType::CTRL,
+                      STM32_HCD::EEPType::CTRL,
                       m_control.pipe_size);
         }
         break;
@@ -334,14 +334,14 @@ uint32_t USBHCore::handle_enum()
                       0x80,
                       m_device.address,
                       m_device.speed,
-                      EEPType::CTRL,
+                      STM32_HCD::EEPType::CTRL,
                       m_control.pipe_size);
 
             open_pipe(m_control.pipe_out,
                       0x00,
                       m_device.address,
                       m_device.speed,
-                      EEPType::CTRL,
+                      STM32_HCD::EEPType::CTRL,
                       m_control.pipe_size);
         }
         break;
@@ -433,7 +433,7 @@ void USBHCore::deInit_state_machine()
     m_control.errorcount = 0;
 
     m_device.address = USBH_ADDRESS_DEFAULT;
-    m_device.speed = EOTGSpeed::FULL;
+    m_device.speed = STM32_HCD::EOTGSpeed::FULL;
 }
 
 void USBHCore::LL_connect()
@@ -474,7 +474,7 @@ void USBHCore::LL_init()
     {
         m_hcd = &usb_fs;
         m_hcd->set_data(static_cast<void*>(this));
-        if (usb_fs.init(USB_OTG_FS, EOTG_PHY::EMBEDDED, false, false, EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
+        if (usb_fs.init(USB_OTG_FS, STM32_HCD::EOTG_PHY::EMBEDDED, false, false, STM32_HCD::EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_fs.get_current_frame());
     }
@@ -486,7 +486,7 @@ void USBHCore::LL_init()
     {
         m_hcd = &usb_hs;
         m_hcd->set_data((void*)this);
-        if (usb_hs.init(USB_OTG_HS, EOTG_PHY::EMBEDDED, false, false, EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
+        if (usb_hs.init(USB_OTG_HS, STM32_HCD::EOTG_PHY::EMBEDDED, false, false, STM32_HCD::EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_hs.get_current_frame());
     }
@@ -761,7 +761,7 @@ USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr)
 
 uint32_t USBHCore::handle_control()
 {
-    EURBState urb_state = EURBState::IDLE;
+    STM32_HCD::EURBState urb_state = STM32_HCD::EURBState::IDLE;
     uint8_t direction;
     uint32_t status = STM32_RESULT_BUSY;
     switch (m_control.state)
@@ -772,7 +772,7 @@ uint32_t USBHCore::handle_control()
         break;
     case ECTRLState::SETUP_WAIT:
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
-        if (urb_state == EURBState::DONE)
+        if (urb_state == STM32_HCD::EURBState::DONE)
         {
             direction = (m_control.setup.b.bmRequestType & USB_REQ_DIR_MASK);
             if (m_control.setup.b.wLength.w != 0)
@@ -793,7 +793,7 @@ uint32_t USBHCore::handle_control()
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::ERROR)
+        else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
@@ -808,21 +808,21 @@ uint32_t USBHCore::handle_control()
         break;
     case ECTRLState::DATA_IN_WAIT:
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_in);
-        if (urb_state == EURBState::DONE)
+        if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::STATUS_OUT;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::STALL)
+        else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             status = STM32_RESULT_FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::ERROR)
+        else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
@@ -837,14 +837,14 @@ uint32_t USBHCore::handle_control()
         break;
     case ECTRLState::DATA_OUT_WAIT:
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
-        if (urb_state == EURBState::DONE)
+        if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::STATUS_IN;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::STALL)
+        else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             m_control.state = ECTRLState::STALLED;
             status = STM32_RESULT_FAIL;
@@ -852,14 +852,14 @@ uint32_t USBHCore::handle_control()
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::NOT_READY)
+        else if (urb_state == STM32_HCD::EURBState::NOT_READY)
         {
             m_control.state = ECTRLState::DATA_OUT;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::ERROR)
+        else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
             status = STM32_RESULT_FAIL;
@@ -875,7 +875,7 @@ uint32_t USBHCore::handle_control()
         break;
     case ECTRLState::STATUS_IN_WAIT:
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_in);
-        if (urb_state == EURBState::DONE)
+        if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::COMPLETE;
             status = STM32_RESULT_OK;
@@ -883,14 +883,14 @@ uint32_t USBHCore::handle_control()
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::STALL)
+        else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             status = STM32_RESULT_FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::ERROR)
+        else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
@@ -905,7 +905,7 @@ uint32_t USBHCore::handle_control()
         break;
     case ECTRLState::STATUS_OUT_WAIT:
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
-        if (urb_state == EURBState::DONE)
+        if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::COMPLETE;
             status = STM32_RESULT_OK;
@@ -913,14 +913,14 @@ uint32_t USBHCore::handle_control()
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::NOT_READY)
+        else if (urb_state == STM32_HCD::EURBState::NOT_READY)
         {
             m_control.state = ECTRLState::STATUS_OUT;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
-        else if (urb_state == EURBState::ERROR)
+        else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)

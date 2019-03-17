@@ -305,7 +305,7 @@ typedef struct
 #endif
     uint8_t         Data[USBH_MAX_DATA_BUFFER];
     uint8_t         address;
-    EOTGSpeed       speed;
+    STM32_HCD::EOTGSpeed speed;
     __IO uint8_t    is_connected;
     uint8_t         current_interface;
     USBHDevDesc_t   DevDesc;
@@ -337,7 +337,8 @@ public:
     uint8_t find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol);
     uint8_t find_interface_index(uint8_t interface_number, uint8_t alt_settings);
 
-    FORCE_INLINE uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
+    //FORCE_INLINE uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
+    USBHClass* get_active_class() { return m_active_class; }
 
     void start();
     void stop();
@@ -376,17 +377,17 @@ private:
     FORCE_INLINE uint32_t LL_start() { return m_hcd->start(); }
     FORCE_INLINE uint32_t LL_stop() { return m_hcd->stop(); }
 
-    FORCE_INLINE EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
+    FORCE_INLINE STM32_HCD::EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
     FORCE_INLINE void LL_reset_port() { m_hcd->reset_port(); }
     FORCE_INLINE uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
     void LL_driver_VBUS(uint8_t state);
 
-    FORCE_INLINE uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
+    FORCE_INLINE uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
         { return m_hcd->HC_init(pipe_num, ep_num, dev_address, speed, ep_type, mps); }
     FORCE_INLINE uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
-    FORCE_INLINE void LL_submit_URB(uint8_t pipe, bool is_in, EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
+    FORCE_INLINE void LL_submit_URB(uint8_t pipe, bool is_in, STM32_HCD::EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
         { m_hcd->HC_submit_request(pipe, is_in, ep_type, token, pbuff, length, do_ping); }
-    FORCE_INLINE EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
+    FORCE_INLINE STM32_HCD::EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
 
 #if (USBH_USE_OS == 1)
     void process_OS();
@@ -399,7 +400,7 @@ private:
     FORCE_INLINE void LL_set_timer(uint32_t time) { m_timer = time; }
 
     /* Pipes */
-    FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, EOTGSpeed speed, EEPType ep_type, uint16_t mps)
+    FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
         { return m_hcd->HC_init(ch_num, epnum, dev_addr, speed, ep_type, mps); }
     FORCE_INLINE uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
     uint8_t alloc_pipe(uint8_t ep_addr);
@@ -408,23 +409,23 @@ private:
 
     /* IOreq */
     FORCE_INLINE void ctrl_send_setup(uint8_t* buff, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_SETUP, buff, USBH_SETUP_PKT_SIZE, false); }
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::CTRL, USBH_PID_SETUP, buff, USBH_SETUP_PKT_SIZE, false); }
     FORCE_INLINE void ctrl_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, bool do_ping)
-        { m_hcd->HC_submit_request(ch_num, false, EEPType::CTRL, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::CTRL, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH) ? do_ping : false); }
     FORCE_INLINE void ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, EEPType::CTRL, USBH_PID_DATA, buff, length, false); }
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::CTRL, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, EEPType::BULK, USBH_PID_DATA, buff, length, false); }
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
-        { m_hcd->HC_submit_request(ch_num, false, EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == EOTGSpeed::HIGH) ? do_ping : false); }
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH) ? do_ping : false); }
     FORCE_INLINE void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, false, EEPType::INTR, USBH_PID_DATA, buff, length, false); }
-    FORCE_INLINE void isoc_recieve_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
-    FORCE_INLINE void isoc_send_data(uint8_t* buff, uint32_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, false, EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+    FORCE_INLINE void isoc_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
+    FORCE_INLINE void isoc_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
 
     /* CtrlReq */
     uint32_t ctl_req(uint8_t* buff, uint16_t length);

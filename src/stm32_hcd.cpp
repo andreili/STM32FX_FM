@@ -1,11 +1,11 @@
 #include "stm32_hcd.h"
 
 uint32_t STM32_HCD::init(USB_OTG_GlobalTypeDef* regs_addr, EOTG_PHY phy, bool use_ext_vbus, bool dma_enable,
-                         EOTGSpeed speed, uint32_t host_channels)
+                         EOTGSpeed speed, uint8_t host_channels)
 {
     debug_fn();
     m_state = EHCDState::BUSY;
-    m_regs = (OTGRegs_t*)regs_addr;
+    m_regs = reinterpret_cast<OTGRegs_t*>(regs_addr);
     m_dma_enable = dma_enable;
     m_host_channels = host_channels;
     m_phy = phy;
@@ -103,7 +103,7 @@ uint32_t STM32_HCD::HC_init(uint8_t ch_num, uint8_t ep_num, uint8_t dev_address,
                    USB_OTG_HCINTMSK_NAKM);
         if (ep_num & 0x80)
             unmask_HC_int(ch_num, USB_OTG_HCINTMSK_BBERRM);
-        else if (m_regs != (OTGRegs_t*)USB_OTG_FS)
+        else if (m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS))
             unmask_HC_int(ch_num, USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
         break;
     case EEPType::INTR:
@@ -145,9 +145,9 @@ void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, b
     m_HC[ch_num].ep_type = ep_type;
 
     if (!token)
-        m_HC[ch_num].data_pid = HC_PID_SETUP;
+        m_HC[ch_num].data_pid = EPID::SETUP;
     else
-        m_HC[ch_num].data_pid = HC_PID_DATA1;
+        m_HC[ch_num].data_pid = EPID::DATA1;
 
     switch (ep_type)
     {
@@ -157,9 +157,9 @@ void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, b
             if (length == 0)
                 m_HC[ch_num].toggle_out = true;
             if (!m_HC[ch_num].toggle_out)
-                m_HC[ch_num].data_pid = HC_PID_DATA0;
+                m_HC[ch_num].data_pid = EPID::DATA0;
             else
-                m_HC[ch_num].data_pid = HC_PID_DATA1;
+                m_HC[ch_num].data_pid = EPID::DATA1;
             if (m_HC[ch_num].urb_state != EURBState::NOT_READY)
                 m_HC[ch_num].do_ping = do_ping;
         }
@@ -168,38 +168,38 @@ void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, b
         if (!is_in)
         {
             if (!m_HC[ch_num].toggle_out)
-                m_HC[ch_num].data_pid = HC_PID_DATA0;
+                m_HC[ch_num].data_pid = EPID::DATA0;
             else
-                m_HC[ch_num].data_pid = HC_PID_DATA1;
+                m_HC[ch_num].data_pid = EPID::DATA1;
             if (m_HC[ch_num].urb_state != EURBState::NOT_READY)
                 m_HC[ch_num].do_ping = do_ping;
         }
         else
         {
             if (!m_HC[ch_num].toggle_in)
-                m_HC[ch_num].data_pid = HC_PID_DATA0;
+                m_HC[ch_num].data_pid = EPID::DATA0;
             else
-                m_HC[ch_num].data_pid = HC_PID_DATA1;
+                m_HC[ch_num].data_pid = EPID::DATA1;
         }
         break;
     case EEPType::INTR:
         if (!is_in)
         {
             if (!m_HC[ch_num].toggle_out)
-                m_HC[ch_num].data_pid = HC_PID_DATA0;
+                m_HC[ch_num].data_pid = EPID::DATA0;
             else
-                m_HC[ch_num].data_pid = HC_PID_DATA1;
+                m_HC[ch_num].data_pid = EPID::DATA1;
         }
         else
         {
             if (!m_HC[ch_num].toggle_in)
-                m_HC[ch_num].data_pid = HC_PID_DATA0;
+                m_HC[ch_num].data_pid = EPID::DATA0;
             else
-                m_HC[ch_num].data_pid = HC_PID_DATA1;
+                m_HC[ch_num].data_pid = EPID::DATA1;
         }
         break;
     case EEPType::ISOC:
-        m_HC[ch_num].data_pid = HC_PID_DATA0;
+        m_HC[ch_num].data_pid = EPID::DATA0;
         break;
     case EEPType::MSK:
         break;
@@ -247,7 +247,6 @@ uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
 
 void STM32_HCD::IRQ_handler()
 {
-    debug_fn();
     if (get_mode() == EOTGDeviceMode::HOST)
     {
         if (is_invalid_IT())
@@ -278,7 +277,7 @@ void STM32_HCD::IRQ_handler()
         if (get_flag(USB_OTG_GINTSTS_HCINT))
         {
             uint32_t it = HC_read_IT();
-            for (uint32_t i=0 ; i<m_host_channels ; ++i)
+            for (uint8_t i=0 ; i<m_host_channels ; ++i)
             {
                 if (it & (1 << i))
                 {
@@ -302,7 +301,7 @@ void STM32_HCD::IRQ_handler()
 void STM32_HCD::init_gpio()
 {
     debug_fn();
-    if (m_regs == (OTGRegs_t*)USB_OTG_FS)
+    if (m_regs == reinterpret_cast<OTGRegs_t*>(USB_OTG_FS))
     {
         STM32_USB_FS_PORT.set_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN, STM32_GPIO::EMode::AF_PP,
                                      GPIO_AF10_OTG_FS, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
@@ -327,7 +326,7 @@ void STM32_HCD::init_gpio()
 void STM32_HCD::deInit_gpio()
 {
     debug_fn();
-    if (m_regs == (OTGRegs_t*)USB_OTG_FS)
+    if (m_regs == reinterpret_cast<OTGRegs_t*>(USB_OTG_FS))
     {
         STM32_RCC::disable_clk_OTGFS();
         STM32_USB_FS_PORT.unset_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN);
@@ -441,7 +440,7 @@ void STM32_HCD::set_current_mode(EOTGDeviceMode mode)
     STM32_SYSTICK::delay(500);
 }
 
-EOTGSpeed STM32_HCD::get_dev_speed()
+STM32_HCD::EOTGSpeed STM32_HCD::get_dev_speed()
 {
     debug_fn();
     uint32_t speed = get_dev_speed_RAW();
@@ -600,12 +599,12 @@ void STM32_HCD::EP_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpack
         }
         else
         {
-            uint16_t pkt_cnt = (xfer_len + ep_maxpacket - 1) / ep_maxpacket;
+            uint16_t pkt_cnt = static_cast<uint16_t>((xfer_len + ep_maxpacket - 1) / ep_maxpacket);
             Xfer_out_pkt_size(ep_num, pkt_cnt);
             Xfer_out_pkt_end(ep_num, ep_maxpacket * pkt_cnt);
         }
         if (dma)
-            Xfer_out_enable_DMA(ep_num, (uint32_t)xfer_buff);
+            Xfer_out_enable_DMA(ep_num, reinterpret_cast<uint32_t>(xfer_buff));
         if (ep_type == EEPType::ISOC)
         {
             if (is_frame_odd())
@@ -617,7 +616,7 @@ void STM32_HCD::EP_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpack
     }
 }
 
-void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpacket,
+void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint16_t ep_maxpacket,
                                uint8_t* xfer_buff, uint16_t xfer_len, bool dma, uint32_t dma_addr)
 {
     debug_fn();
@@ -651,29 +650,32 @@ void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint32_t ep_maxpac
         Xfer_out_pkt_size(ep_num, 1);
         Xfer_out_pkt_end(ep_num, ep_maxpacket);
         if (dma)
-            Xfer_out_enable_DMA(ep_num, (uint32_t)xfer_buff);
+            Xfer_out_enable_DMA(ep_num, reinterpret_cast<uint32_t>(xfer_buff));
         Xfer_out_ep_enable(ep_num);
     }
 }
 
-void STM32_HCD::write_packet(uint8_t* src, uint8_t ch_ep_num, uint16_t len, uint8_t dma)
+void STM32_HCD::write_packet(uint8_t* src, uint8_t ch_ep_num, uint32_t len, uint8_t dma)
 {
     debug_fn();
+    //xprintf("ep:%d len:%d dma:%d\n\r", ch_ep_num, len, dma);
     if (!dma)
     {
         uint32_t count32b = (len + 3) >> 2;
         for (uint32_t i=0 ; i<count32b ; ++i, src+=4)
-            write_FIFO(ch_ep_num, *((__attribute__((__packed__))uint32_t *)src));
+            //write_FIFO(ch_ep_num, *((__attribute__((__packed__))uint32_t *)src));
+            write_FIFO(ch_ep_num, *reinterpret_cast<uint32_t*>(src));
     }
 }
 
-void* STM32_HCD::read_packet(uint8_t* dest, uint16_t len)
+void* STM32_HCD::read_packet(uint8_t* dest, uint32_t len)
 {
     debug_fn();
     uint32_t count32b = (len + 3) >> 2;
     for (uint32_t i=0 ; i<count32b ; ++i, dest+=4)
-        *((__attribute__((__packed__))uint32_t *)dest) = read_FIFO(0);
-    return (void*)dest;
+        //*((__attribute__((__packed__))uint32_t *)dest) = read_FIFO(0);
+        *reinterpret_cast<uint32_t*>(dest) = read_FIFO(0);
+    return reinterpret_cast<void*>(dest);
 }
 
 void STM32_HCD::EP_set_stall(bool ep_is_in, uint8_t ep_num)
@@ -720,7 +722,7 @@ void STM32_HCD::set_dev_address(uint8_t address)
 void STM32_HCD::stop_device()
 {
     debug_fn();
-    for (int i=0 ; i<15 ; ++i)
+    for (uint8_t i=0 ; i<15 ; ++i)
     {
         clear_in_ep_intr(i, 0xff);
         clear_out_ep_intr(i, 0xff);
@@ -749,7 +751,7 @@ void STM32_HCD::EP0_out_start(uint8_t dma, uint8_t* psetup)
     ep_out_setup_packet_count();
     if (dma)
     {
-        Xfer_out_enable_DMA(0, (uint32_t)psetup);
+        Xfer_out_enable_DMA(0, reinterpret_cast<uint32_t>(psetup));
         ep_out_start_enable();
     }
 }
@@ -773,7 +775,7 @@ uint32_t STM32_HCD::core_reset()
     return STM32_RESULT_OK;
 }
 
-void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enable)
+void STM32_HCD::host_init(EOTGSpeed speed, uint8_t host_channels, bool dma_enable)
 {
     debug_fn();
     restart_phy_clock();
@@ -783,13 +785,13 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enab
     enable_VBUS();
 
     /* Disable the FS/LS support mode only */
-    if ((speed == EOTGSpeed::FULL) && (m_regs != (OTGRegs_t*)USB_OTG_FS))
+    if ((speed == EOTGSpeed::FULL) && (m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS)))
         enable_FS_LS_only();
     else
         disable_FS_LS_only();
     flush_TX_FIFO(0x10);
     flush_RX_FIFO();
-    for (uint32_t i=0 ; i<host_channels ; ++i)
+    for (uint8_t i=0 ; i<host_channels ; ++i)
     {
         clear_HC_int(i, 0xffffffff);
         mask_all_HC_int(i);
@@ -798,7 +800,7 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint32_t host_channels, bool dma_enab
     STM32_SYSTICK::delay(200);
     disable_all_IT();
     clear_all_IT1();
-    if (m_regs == (OTGRegs_t*)USB_OTG_FS)
+    if (m_regs == reinterpret_cast<OTGRegs_t*>(USB_OTG_FS))
     {
         set_RX_FIFO_size(0x80);
         set_RX_EP0_FIFO_size(0x60, 0x80);
@@ -839,7 +841,7 @@ void STM32_HCD::init_FSLSPClk_sel(EClockSpeed freq)
 void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 {
     debug_fn();
-    if ((m_regs != (OTGRegs_t*)USB_OTG_FS) && (hc->speed == EOTGSpeed::HIGH))
+    if ((m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS)) && (hc->speed == EOTGSpeed::HIGH))
     {
         if ((!dma) && hc->do_ping)
         {
@@ -856,7 +858,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
     uint16_t numpackets;
     if (hc->xfer_len > 0)
     {
-        numpackets = (hc->xfer_len + hc->max_packet - 1) / hc->max_packet;
+        numpackets = static_cast<uint16_t>((hc->xfer_len + hc->max_packet - 1) / hc->max_packet);
         if (numpackets > 256)
         {
             numpackets = 256;
@@ -869,7 +871,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
     if (hc->ep_is_in)
         hc->xfer_len = numpackets * hc->max_packet;
 
-    HC_set_Xfer_size(hc->ch_num, hc->xfer_len, numpackets, hc->data_pid);
+    HC_set_Xfer_size(hc->ch_num, hc->xfer_len, numpackets, static_cast<uint8_t>(hc->data_pid));
 
     if (dma)
         HC_set_Xfer_DMA(hc->ch_num, hc->xfer_len);
@@ -890,7 +892,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
             case EEPType::CTRL:
             case EEPType::BULK:
                 {
-                    uint16_t len_w = (hc->xfer_len + 3) / 4;
+                    uint16_t len_w = static_cast<uint16_t>((hc->xfer_len + 3) / 4);
                     if (len_w > get_TX_NP_FIFO_size())
                         /* need to process data in nptxfempty interrupt */
                         unmask_IT(USB_OTG_GINTMSK_NPTXFEM);
@@ -899,7 +901,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
             case EEPType::INTR:
             case EEPType::ISOC:
                 {
-                    uint16_t len_w = (hc->xfer_len + 3) / 4;
+                    uint16_t len_w = static_cast<uint16_t>((hc->xfer_len + 3) / 4);
                     if (len_w > get_TX_P_FIFO_size())
                         /* need to process data in nptxfempty interrupt */
                         unmask_IT(USB_OTG_GINTMSK_PTXFEM);
@@ -938,7 +940,7 @@ void STM32_HCD::stop_host()
     flush_TX_FIFO(0x10);
     flush_RX_FIFO();
     /* Flush out any leftover queued requests. */
-    for(int i=0 ; i<15 ; ++i)
+    for(uint8_t i=0 ; i<15 ; ++i)
     {
         uint32_t tmp = HC_get_params(i);
         tmp |= USB_OTG_HCCHAR_CHDIS;
@@ -946,7 +948,7 @@ void STM32_HCD::stop_host()
         HC_set_param_RAW(i, tmp);
     }
     /* Halt all channels to put them into a known state. */
-    for(int i=0 ; i<15 ; ++i)
+    for(uint8_t i=0 ; i<15 ; ++i)
     {
         uint32_t tmp = HC_get_params(i);
         tmp |= USB_OTG_HCCHAR_CHDIS;
@@ -1260,7 +1262,6 @@ STM32_HCD usb_hs;
 #ifdef STM32_USE_USB_FS
 void ISR::OTG_FS_IRQ()
 {
-    debug_fn();
     usb_fs.IRQ_handler();
 }
 #endif
@@ -1287,7 +1288,7 @@ __attribute__((weak)) void SOF_callback(STM32_HCD *hcd)
     UNUSED(hcd);
 }
 
-__attribute__((weak)) void HC_notify_URB_change_callback(STM32_HCD *hcd, uint8_t ch_num, EURBState urb_state)
+__attribute__((weak)) void HC_notify_URB_change_callback(STM32_HCD *hcd, uint8_t ch_num, STM32_HCD::EURBState urb_state)
 {
     UNUSED(hcd);
     UNUSED(ch_num);
