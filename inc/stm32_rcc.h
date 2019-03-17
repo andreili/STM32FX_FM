@@ -8,39 +8,11 @@
 #include <stm32_inc.h>
 
 #define RCC_APB2LPENR_ADCLPEN RCC_APB2LPENR_ADC1LPEN
-#define RCC_FLAG_MASK  ((uint8_t)0x1FU)
-
-/* Flags in the CR register */
-#define RCC_FLAG_HSIRDY                  ((uint8_t)0x21U)
-#define RCC_FLAG_HSERDY                  ((uint8_t)0x31U)
-#define RCC_FLAG_PLLRDY                  ((uint8_t)0x39U)
-#define RCC_FLAG_PLLI2SRDY               ((uint8_t)0x3BU)
-
-/* Flags in the BDCR register */
-#define RCC_FLAG_LSERDY                  ((uint8_t)0x41U)
-
-/* Flags in the CSR register */
-#define RCC_FLAG_LSIRDY                  ((uint8_t)0x61U)
-#define RCC_FLAG_BORRST                  ((uint8_t)0x79U)
-#define RCC_FLAG_PINRST                  ((uint8_t)0x7AU)
-#define RCC_FLAG_PORRST                  ((uint8_t)0x7BU)
-#define RCC_FLAG_SFTRST                  ((uint8_t)0x7CU)
-#define RCC_FLAG_IWDGRST                 ((uint8_t)0x7DU)
-#define RCC_FLAG_WWDGRST                 ((uint8_t)0x7EU)
-#define RCC_FLAG_LPWRRST                 ((uint8_t)0x7FU)
-
-#define RCC_IT_LSIRDY                    ((uint8_t)0x01U)
-#define RCC_IT_LSERDY                    ((uint8_t)0x02U)
-#define RCC_IT_HSIRDY                    ((uint8_t)0x04U)
-#define RCC_IT_HSERDY                    ((uint8_t)0x08U)
-#define RCC_IT_PLLRDY                    ((uint8_t)0x10U)
-#define RCC_IT_PLLI2SRDY                 ((uint8_t)0x20U)
-#define RCC_IT_CSS                       ((uint8_t)0x80U)
 
 #define RCC_CIR_OFFSET                   0x0c
 
-#define RCC_MCO1                         ((uint32_t)0x00000000U)
-#define RCC_MCO2                         ((uint32_t)0x00000001U)
+#define RCC_MCO1                         0x00000000U
+#define RCC_MCO2                         0x00000001U
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
 #define RCC_PERIPHCLK_I2S             ((uint32_t)0x00000001U)
@@ -129,6 +101,66 @@ typedef struct
 class STM32_RCC
 {
 public:
+    enum class EFlag: uint8_t
+    {
+        MASK                    = 0x1FU,
+        /* Flags in the CR register */
+        HSIRDY                  = 0x21U,
+        HSERDY                  = 0x31U,
+        PLLRDY                  = 0x39U,
+        PLLI2SRDY               = 0x3BU,
+        /* Flags in the BDCR register */
+        LSERDY                  = 0x41U,
+        /* Flags in the CSR register */
+        LSIRDY                  = 0x61U,
+        BORRST                  = 0x79U,
+        PINRST                  = 0x7AU,
+        PORRST                  = 0x7BU,
+        SFTRST                  = 0x7CU,
+        IWDGRST                 = 0x7DU,
+        WWDGRST                 = 0x7EU,
+        LPWRRST                 = 0x7FU,
+    };
+
+    enum class EIT: uint8_t
+    {
+        LSIRDY                  = 0x01U,
+        LSERDY                  = 0x02U,
+        HSIRDY                  = 0x04U,
+        HSERDY                  = 0x08U,
+        PLLRDY                  = 0x10U,
+        PLLI2SRDY               = 0x20U,
+        CSS                     = 0x80U,
+    };
+
+    enum class EPLL: uint8_t
+    {
+        NONE,
+        OFF,
+        ON,
+    };
+
+    enum class EPLLP: uint32_t
+    {
+        DIV2                    = 0x00000002U,
+        DIV4                    = 0x00000004U,
+        DIV6                    = 0x00000006U,
+        DIV8                    = 0x00000008U,
+    };
+
+    enum EClockType: uint32_t
+    {
+        SYSCLK                  = 0x00000001U,
+        HCLK                    = 0x00000002U,
+        PCLK1                   = 0x00000004U,
+        PCLK2                   = 0x00000008U,
+    };
+
+/*#define RCC_CLOCKTYPE_SYSCLK             ((uint32_t)0x00000001U)
+#define RCC_CLOCKTYPE_HCLK               ((uint32_t)0x00000002U)
+#define RCC_CLOCKTYPE_PCLK1              ((uint32_t)0x00000004U)
+#define RCC_CLOCKTYPE_PCLK2              ((uint32_t)0x00000008U)*/
+
     static void init();
     static uint32_t deinit();
 
@@ -196,17 +228,17 @@ public:
         { MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (source | (div << 3))); }
     #endif // STM32F1
 
-    static inline void enable_IT(uint32_t value) { *((__IO uint8_t*)(RCC_BASE + RCC_CIR_OFFSET + 1)) |= value; }
-    static inline void disable_IT(uint32_t value) { *((__IO uint8_t*)(RCC_BASE + RCC_CIR_OFFSET + 1)) &= ~value; }
-    static inline void clear_IT(uint32_t value) { *((__IO uint8_t*)(RCC_BASE + RCC_CIR_OFFSET + 2)) = value; }
-    static inline bool get_IT(uint32_t value) { return (RCC->CIR & value) == value; }
+    static inline void enable_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 1)) |= static_cast<uint8_t>(value); }
+    static inline void disable_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 1)) &= ~static_cast<uint8_t>(value); }
+    static inline void clear_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 2)) = static_cast<uint8_t>(value); }
+    static inline bool get_IT(EIT value) { return (RCC->CIR & static_cast<uint32_t>(value)) == static_cast<uint8_t>(value); }
 
     static inline void clear_reset_flags() { RCC->CSR |= RCC_CSR_RMVF; }
 
-    static bool get_flag(uint32_t value);
+    static bool get_flag(EFlag value);
 
     static uint32_t config_osc();
-    static uint32_t config_clock(uint32_t flash_latency);
+    static uint32_t config_clock(uint8_t flash_latency);
     
     static inline uint32_t get_HCLK_freq() { return m_system_core_clock; }
     static uint32_t get_PCLK1_freq();

@@ -17,29 +17,20 @@ uint32_t unused_reg;
 #define MCO2_PIN              STM32_GPIO::PIN_9
 #endif // STM32F4
 
-#define HSI_VALUE ((uint32_t)16000000UL)
-#define HSE_VALUE ((uint32_t) 8000000UL)
+#define HSI_VALUE    16000000UL
+#define HSE_VALUE     8000000UL
 #define F_CPU 		168000000UL
 
 #define HSE_TIMEOUT_VALUE           100
-#define HSI_TIMEOUT_VALUE           ((uint32_t)2U)  /* 2 ms */
-#define LSI_TIMEOUT_VALUE           ((uint32_t)2U)  /* 2 ms */
-#define RCC_DBP_TIMEOUT_VALUE       ((uint32_t)2U)
-#define PLL_TIMEOUT_VALUE           ((uint32_t)2U)
+#define HSI_TIMEOUT_VALUE           2U  /* 2 ms */
+#define LSI_TIMEOUT_VALUE           2U  /* 2 ms */
+#define RCC_DBP_TIMEOUT_VALUE       2U
+#define PLL_TIMEOUT_VALUE           2U
 #define LSE_TIMEOUT_VALUE           5000
-#define CLOCKSWITCH_TIMEOUT_VALUE   ((uint32_t)5000U) /* 5 s    */
+#define CLOCKSWITCH_TIMEOUT_VALUE   5000U /* 5 s    */
 
 #define RCC_HSE_BYPASS (RCC_CR_HSEBYP | RCC_CR_HSEON)
 #define RCC_LSE_BYPASS (RCC_BDCR_LSEBYP | RCC_BDCR_LSEON)
-
-#define RCC_PLL_NONE                     ((uint8_t)0x00U)
-#define RCC_PLL_OFF                      ((uint8_t)0x01U)
-#define RCC_PLL_ON                       ((uint8_t)0x02U)
-
-#define RCC_PLLP_DIV2                    ((uint32_t)0x00000002U)
-#define RCC_PLLP_DIV4                    ((uint32_t)0x00000004U)
-#define RCC_PLLP_DIV6                    ((uint32_t)0x00000006U)
-#define RCC_PLLP_DIV8                    ((uint32_t)0x00000008U)
 
 #if defined(STM32F1)
 	#define RCC_PLLSOURCE_HSI_DIV2           0x00000000U
@@ -48,12 +39,6 @@ uint32_t unused_reg;
 	#define RCC_PLLSOURCE_HSI                RCC_PLLCFGR_PLLSRC_HSI
 	#define RCC_PLLSOURCE_HSE                RCC_PLLCFGR_PLLSRC_HSE
 #endif
-
-
-#define RCC_CLOCKTYPE_SYSCLK             ((uint32_t)0x00000001U)
-#define RCC_CLOCKTYPE_HCLK               ((uint32_t)0x00000002U)
-#define RCC_CLOCKTYPE_PCLK1              ((uint32_t)0x00000004U)
-#define RCC_CLOCKTYPE_PCLK2              ((uint32_t)0x00000008U)
 
 #define RCC_SYSCLKSOURCE_HSI             RCC_CFGR_SW_HSI
 #define RCC_SYSCLKSOURCE_HSE             RCC_CFGR_SW_HSE
@@ -121,16 +106,20 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   const uint8_t aPLLMULFactorTable[14] = {0, 0, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 13};
   const uint8_t aPredivFactorTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 #else
-  const uint8_t aPLLMULFactorTable[16] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16};
+    #if defined(STM32F1)
+    const uint8_t aPLLMULFactorTable[16] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16};
+    #endif
 #if defined(RCC_CFGR2_PREDIV1)
   const uint8_t aPredivFactorTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 #else
-  const uint8_t aPredivFactorTable[2] = {1, 2};
+    #if defined(STM32F1)
+    const uint8_t aPredivFactorTable[2] = {1, 2};
+    #endif
 #endif /*RCC_CFGR2_PREDIV1*/
 #endif
 
-#define PLLI2S_TIMEOUT_VALUE       ((uint32_t)2)  /* Timeout value fixed to 2 ms  */
-#define PLLSAI_TIMEOUT_VALUE       ((uint32_t)2)  /* Timeout value fixed to 2 ms  */
+#define PLLI2S_TIMEOUT_VALUE       2  /* Timeout value fixed to 2 ms  */
+#define PLLSAI_TIMEOUT_VALUE       2  /* Timeout value fixed to 2 ms  */
 
 void STM32_RCC::init()
 {
@@ -278,70 +267,64 @@ uint32_t STM32_RCC::config_osc()
     config_HSE(STM32_HSE_STATE);
     if (STM32_HSE_STATE != 0)
     {
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_HSERDY) == RESET, HSE_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::HSERDY) == RESET, HSE_TIMEOUT_VALUE);
     }
     else
     {
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_HSERDY) != RESET, HSE_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::HSERDY) != RESET, HSE_TIMEOUT_VALUE);
     }
     #elif defined(STM32_USE_HSI)
     if (STM32_HSI_STATE != 0)
     {
         enable_HSI();
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_HSIRDY) == RESET, HSI_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::HSIRDY) == RESET, HSI_TIMEOUT_VALUE);
         set_calibration_value_HSI(STM32_HSI_CALIBRATION);
     }
     else
     {
         disable_HSI();
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_HSIRDY) != RESET, HSI_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::HSIRDY) != RESET, HSI_TIMEOUT_VALUE);
     }
     #endif
 
-    #ifdef STM32_USE_LSI
-    if (STM32_LSI_STATE != 0)
-    {
-        enable_LSI();
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_LSIRDY) == RESET, LSI_TIMEOUT_VALUE);
-    }
-    else
-    {
-        disable_LSI();
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_LSIRDY) != RESET, LSI_TIMEOUT_VALUE);
-    }
-    #elif defined(STM32_USE_LSE)
+   #ifdef STM32_USE_LSI
+    #ifdef STM32_LSI_STATE
+    enable_LSI();
+    WAIT_TIMEOUT(get_flag(EFlag::LSIRDY) == RESET, LSI_TIMEOUT_VALUE);
+    #else
+    disable_LSI();
+    WAIT_TIMEOUT(get_flag(EFlag::LSIRDY) != RESET, LSI_TIMEOUT_VALUE);
+    #endif //STM32_LSI_STATE
+   #elif defined(STM32_USE_LSE)
     enable_clk_PWR();
     STM32_PWR::enable_backup_access();
     WAIT_TIMEOUT(STM32_PWR::is_backup_acces_RO(), RCC_DBP_TIMEOUT_VALUE);
     config_LSE(STM32_LSE_STATE);
 
-    if (STM32_LSE_STATE != 0)
-    {
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_LSERDY) == RESET, LSE_TIMEOUT_VALUE);
-    }
-    else
-    {
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_LSERDY) != RESET, LSE_TIMEOUT_VALUE);
-    }
-    #endif
+    #ifdef STM32_LSI_STATE
+    WAIT_TIMEOUT(get_flag(EFlag::LSERDY) == RESET, LSE_TIMEOUT_VALUE);
+    #else
+    WAIT_TIMEOUT(get_flag(EFlag::LSERDY) != RESET, LSE_TIMEOUT_VALUE);
+    #endif //STM32_LSI_STATE
+   #endif //STM32_USE_LSI
 
     #ifdef STM32_USE_PLL
     if (get_source_SYSCLK() != RCC_CFGR_SWS_PLL)
     {
         disable_PLL();
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) != RESET, PLL_TIMEOUT_VALUE);
-        if (STM32_PLL_STATE == RCC_PLL_ON)
+        WAIT_TIMEOUT(get_flag(EFlag::PLLRDY) != RESET, PLL_TIMEOUT_VALUE);
+        if (STM32_PLL_STATE == EPLL::ON)
         {
 						#if defined(STM32F4)
             set_config_PLL_source((STM32_PLL_SOURCE | STM32_PLLM |
                                   (STM32_PLLN << RCC_PLLCFGR_PLLN_Pos) |
-                                  (((STM32_PLLP >> 1U) - 1U) << RCC_PLLCFGR_PLLP_Pos) |
+                                  (((static_cast<uint32_t>(STM32_PLLP) >> 1U) - 1U) << RCC_PLLCFGR_PLLP_Pos) |
                                   (STM32_PLLQ << RCC_PLLCFGR_PLLQ_Pos)));
 						#elif defined(STM32F1)
                         set_config_PLL_source(STM32_PLL_SOURCE | STM32_PLLM);
 						#endif
             enable_PLL();
-            WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLRDY) == RESET, PLL_TIMEOUT_VALUE);
+            WAIT_TIMEOUT(get_flag(EFlag::PLLRDY) == RESET, PLL_TIMEOUT_VALUE);
         }
     }
     else
@@ -351,7 +334,7 @@ uint32_t STM32_RCC::config_osc()
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
+uint32_t STM32_RCC::config_clock(uint8_t flash_latency)
 {
     #if defined(FLASH_ACR_LATENCY)
     if (flash_latency > STM32_FLASH::get_latency())
@@ -364,25 +347,25 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
     (void)(flash_latency);
     #endif
 
-    if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_HCLK) == RCC_CLOCKTYPE_HCLK)
+    if ((STM32_CLOCK_TYPE & EClockType::HCLK) == EClockType::HCLK)
     {
         MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, STM32_CLOCK_AHB_DIV);
     }
 
-    if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_SYSCLK) == RCC_CLOCKTYPE_SYSCLK)
+    if ((STM32_CLOCK_TYPE & EClockType::SYSCLK) == EClockType::SYSCLK)
     {
         if (STM32_CLOCK_SYSCLK_SOURCE == RCC_CFGR_SW_HSE)
         {
-            if (get_flag(RCC_FLAG_HSERDY) == RESET)
+            if (get_flag(EFlag::HSERDY) == RESET)
                 return STM32_RESULT_FAIL;
         }
         else if ((STM32_CLOCK_SYSCLK_SOURCE == RCC_CFGR_SW_PLL) ||
                  (STM32_CLOCK_SYSCLK_SOURCE == (RCC_CFGR_SW_HSE | RCC_CFGR_SW_PLL)))
         {
-            if (get_flag(RCC_FLAG_PLLRDY) == RESET)
+            if (get_flag(EFlag::PLLRDY) == RESET)
                 return STM32_RESULT_FAIL;
         }
-        else if (get_flag(RCC_FLAG_HSIRDY) == RESET)
+        else if (get_flag(EFlag::HSIRDY) == RESET)
             return STM32_RESULT_FAIL;
 
         set_config_SYSCLK(STM32_CLOCK_SYSCLK_SOURCE);
@@ -409,12 +392,12 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
     }
     #endif
 
-    if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK1)
+    if ((STM32_CLOCK_TYPE & EClockType::PCLK1) == EClockType::PCLK1)
     {
         MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, STM32_CLOCK_APB1_DIV);
     }
 
-    if ((STM32_CLOCK_TYPE & RCC_CLOCKTYPE_PCLK2) == RCC_CLOCKTYPE_PCLK2)
+    if ((STM32_CLOCK_TYPE & EClockType::PCLK2) == EClockType::PCLK2)
     {
         MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, STM32_CLOCK_APB2_DIV);
     }
@@ -425,10 +408,10 @@ uint32_t STM32_RCC::config_clock(uint32_t flash_latency)
     return STM32_RESULT_OK;
 }
 
-bool STM32_RCC::get_flag(uint32_t value)
+bool STM32_RCC::get_flag(EFlag value)
 {
     __IO uint32_t reg;
-    switch (value >> 5U)
+    switch (static_cast<uint32_t>(value) >> 5U)
     {
     case 0x01U:
         reg = RCC->CR;
@@ -443,7 +426,7 @@ bool STM32_RCC::get_flag(uint32_t value)
         reg = RCC->CIR;
         break;
     }
-    return (reg & (0x01U << (value & RCC_FLAG_MASK)));
+    return (reg & (0x01U << (static_cast<uint32_t>(value) & static_cast<uint32_t>(EFlag::MASK))));
 }
 
 uint32_t STM32_RCC::get_PCLK2_freq()
@@ -477,10 +460,10 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
 
 void STM32_RCC::NMI_IRQ_Handler()
 {
-    if (get_IT(RCC_IT_CSS))
+    if (get_IT(EIT::CSS))
     {
         ///TODO: CSSCallback
-        clear_IT(RCC_IT_CSS);
+        clear_IT(EIT::CSS);
     }
 }
 
@@ -499,7 +482,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
     {
         disable_PLLI2S();
         /* Wait till PLLI2S is disabled */
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLI2SRDY) != RESET, PLLI2S_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::PLLI2SRDY) != RESET, PLLI2S_TIMEOUT_VALUE);
 #ifdef RCC_PERIPHCLK_SAI_PLLI2S
         /*---------------------------- SAI configuration -------------------------*/
         /* In Case of SAI Clock Configuration through PLLI2S, PLLI2SQ and PLLI2S_DIVQ must
@@ -523,7 +506,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         /* Enable the PLLI2S */
         enable_PLLI2S();
         /* Wait till PLLI2S is ready */
-        WAIT_TIMEOUT(get_flag(RCC_FLAG_PLLI2SRDY) == RESET, PLLI2S_TIMEOUT_VALUE);
+        WAIT_TIMEOUT(get_flag(EFlag::PLLI2SRDY) == RESET, PLLI2S_TIMEOUT_VALUE);
     }
 
     /*----------------------- SAI/LTDC Configuration (PLLSAI) ------------------*/
@@ -597,7 +580,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
             if ((RCC->BDCR & RCC_BDCR_LSEON) == RCC_BDCR_LSEON)
             {
                 /* Wait till LSE is ready */
-                WAIT_TIMEOUT(get_flag(RCC_FLAG_LSERDY) == RESET, LSE_TIMEOUT_VALUE);
+                WAIT_TIMEOUT(get_flag(EFlag::LSERDY) == RESET, LSE_TIMEOUT_VALUE);
             }
         }
         set_config_RTC(sources->RTCClockSelection);
@@ -620,7 +603,9 @@ uint32_t STM32_RCC::update_system_core_clock()
             pllvco = 0,
             pllp = 2,
             pllsource = 0,
-						prediv = 0,
+            #if defined(STM32F1)
+            prediv = 0,
+            #endif
             pllm = 2;
     uint32_t sysclockfreq = 0U;
 
@@ -708,9 +693,9 @@ uint32_t STM32_RCC::update_system_core_clock()
 
 __attribute__((weak)) void ISR::RCC_IRQ()
 {
-    if (STM32_RCC::get_IT(RCC_IT_CSS))
+    if (STM32_RCC::get_IT(STM32_RCC::EIT::CSS))
     {
-        STM32_RCC::clear_IT(RCC_IT_CSS);
+        STM32_RCC::clear_IT(STM32_RCC::EIT::CSS);
     }
 }
 
