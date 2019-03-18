@@ -3,8 +3,8 @@
 
 #include "stm32_inc.h"
 
-#define SYSTICK_CLKSOURCE_HCLK_DIV8    ((uint32_t)0x00000000U)
-#define SYSTICK_CLKSOURCE_HCLK         ((uint32_t)0x00000004U)
+#define SYSTICK_CLKSOURCE_HCLK_DIV8    0x00000000U
+#define SYSTICK_CLKSOURCE_HCLK         0x00000004U
 
 void systick_callback();
 

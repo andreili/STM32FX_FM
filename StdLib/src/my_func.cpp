@@ -1,7 +1,7 @@
 #include "my_func.h"
 
-#define BIG_BLOCK_SIZE (sizeof(uint32_t) << 2)
-#define LITTLE_BLOCK_SIZE (sizeof(uint32_t))
+#define BIG_BLOCK_SIZE (sizeof(int) << 2)
+#define LITTLE_BLOCK_SIZE (sizeof(int))
 #define TOO_SMALL1(LEN) ((LEN) < LITTLE_BLOCK_SIZE)
 #define TOO_SMALL4(LEN) ((LEN) < BIG_BLOCK_SIZE)
 
@@ -20,7 +20,7 @@ int strlen(const char* str)
 
 
 
-void memcpy(uint8_t* dst, const uint8_t* src, uint32_t len)
+void memcpy(uint8_t* dst, const uint8_t* src, int len)
 {
     if (TOO_SMALL4(len) && (!UNALLIGNED2(src, dst)))
     {
@@ -46,7 +46,7 @@ void memcpy(uint8_t* dst, const uint8_t* src, uint32_t len)
 		*dst++ = *src++;
 }
 
-void memset(uint8_t* dst,char val, uint32_t len)
+void memset(uint8_t* dst, char val, int len)
 {
     while (UNALLIGNED1(val))
     {

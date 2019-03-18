@@ -51,8 +51,11 @@ public:
             { NVIC_SetPriority(irqn,
                                _NVIC_EncodePriority(get_priority_grouping(),
                                                    prior, subprior)); }
+
     static inline void enable_IRQ(IRQn_Type irqn) { NVIC_EnableIRQ(irqn); }
     static inline void disable_IRQ(IRQn_Type irqn) { NVIC_DisableIRQ(irqn); }
+    static inline bool is_active(IRQn_Type irqn)
+    { return (NVIC->IABR[(((uint32_t)(int32_t)irqn) >> 5UL)] == (uint32_t)(1UL << (((uint32_t)(int32_t)irqn) & 0x1FUL))); }
     static inline void enable_and_set_prior_IRQ(IRQn_Type irqn, uint32_t prior, uint32_t subprior)
             { set_priority(irqn, prior, subprior);
               enable_IRQ(irqn); }

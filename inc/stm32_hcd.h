@@ -286,7 +286,7 @@ private:
     void init_gpio();
     void deInit_gpio();
 
-    uint32_t core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable);
+    uint32_t core_init(bool use_ext_vbus);
     FORCE_INLINE void power_down() { m_regs->global.GCCFG &= ~USB_OTG_GCCFG_PWRDWN; }
     FORCE_INLINE void power_up() { m_regs->global.GCCFG = USB_OTG_GCCFG_PWRDWN; }
     FORCE_INLINE void init_phy_ULPI() { m_regs->global.GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL); }
@@ -458,7 +458,7 @@ private:
     FORCE_INLINE void core_soft_reset() { m_regs->global.GRSTCTL |= USB_OTG_GRSTCTL_CSRST; }
     FORCE_INLINE bool is_core_reseted() { return ((m_regs->global.GRSTCTL & USB_OTG_GRSTCTL_CSRST) != USB_OTG_GRSTCTL_CSRST); }
 
-    void host_init(EOTGSpeed speed, uint8_t host_channels, bool dma_enable);
+    void host_init();
     ENDIS_REG_FLAG_NAME_SL(FS_LS_only, m_regs->host.HCFG, USB_OTG_HCFG_FSLSS)
     FORCE_INLINE void set_RX_FIFO_size(uint32_t size) { m_regs->global.GRXFSIZ = size; }
     FORCE_INLINE void set_RX_EP0_FIFO_size(uint32_t s0, uint32_t size) { m_regs->global.DIEPTXF0_HNPTXFSIZ = (((s0 << USB_OTG_NPTXFD_Pos) & USB_OTG_NPTXFD) | size); }

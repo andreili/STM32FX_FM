@@ -60,7 +60,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
 {
     m_uart = uart;
     m_busy = false;
-    switch ((uint32_t)m_uart)
+    switch (reinterpret_cast<uint32_t>(m_uart))
     {
     #ifdef STM32_USE_UART1
     case USART1_BASE:
@@ -122,7 +122,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
 void STM32_UART::init(uint32_t brate)
 {
     // Clock enable
-    switch ((uint32_t)m_uart)
+    switch (reinterpret_cast<uint32_t>(m_uart))
     {
     case USART1_BASE:
         BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = ENABLE;
@@ -173,6 +173,53 @@ void STM32_UART::init(uint32_t brate)
     UART_ENABLE();
 }
 
+void STM32_UART::deinit()
+{
+    UART_DISABLE();
+    // Clock disable
+    switch (reinterpret_cast<uint32_t>(m_uart))
+    {
+    case USART1_BASE:
+        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = DISABLE;
+        break;
+    case USART2_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART2EN) = DISABLE;
+        break;
+    case USART3_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = DISABLE;
+        break;
+        #ifdef UART4_BASE
+    case UART4_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = DISABLE;
+        break;
+        #endif
+        #ifdef UART5_BASE
+    case UART5_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = DISABLE;
+        break;
+        #endif
+        #ifdef UART6_BASE
+    case USART6_BASE:
+        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = DISABLE;
+        break;
+        #endif
+#ifdef UART7_BASE
+    case UART7_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = DISABLE;
+        break;
+#endif
+#ifdef UART8_BASE
+    case UART8_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART8EN) = DISABLE;
+        break;
+#endif
+    }
+
+    m_uart->CR1 = 0;
+    m_uart->CR2 = 0;
+    m_uart->CR3 = 0;
+}
+
 #define UART_DIV_SAMPLING16(_PCLK_, _BAUD_)            (((_PCLK_)*25U)/(4U*(_BAUD_)))
 #define UART_DIVMANT_SAMPLING16(_PCLK_, _BAUD_)        (UART_DIV_SAMPLING16((_PCLK_), (_BAUD_))/100U)
 #define UART_DIVFRAQ_SAMPLING16(_PCLK_, _BAUD_)        (((UART_DIV_SAMPLING16((_PCLK_), (_BAUD_)) - (UART_DIVMANT_SAMPLING16((_PCLK_), (_BAUD_)) * 100U)) * 16U + 50U) / 100U)
@@ -184,9 +231,11 @@ void STM32_UART::set_baud_rate(uint32_t brate)
 {
     m_brate = brate;
     uint32_t freq;
-    if((m_uart == USART1) 
+    if((m_uart == USART1)
     #ifdef UART6_BASE
-			|| (m_uart == USART6))
+            || (m_uart == USART6))
+    #elif USART6_BASE
+            || (m_uart == USART6))
     #else
 			)
     #endif
@@ -230,7 +279,7 @@ void STM32_UART::send_buf(const char *buf, int size, TXRX_MODE mode)
     case TXRX_MODE::INTERRUPT:
         #ifdef STM32_UART_MODE_IT_ENABLE
         m_busy = true;
-        memcpy((uint8_t*)m_tx_buf, (uint8_t*)buf, size);
+        memcpy(reinterpret_cast<uint8_t*>(m_tx_buf), reinterpret_cast<const uint8_t*>(buf), size);
         m_uart->CR1 |= USART_CR1_TXEIE;
         BIT_BAND_PER(m_uart->CR1, USART_CR1_TXEIE) = 1;
         #endif

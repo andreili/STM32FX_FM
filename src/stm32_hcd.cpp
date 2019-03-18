@@ -13,10 +13,10 @@ uint32_t STM32_HCD::init(USB_OTG_GlobalTypeDef* regs_addr, EOTG_PHY phy, bool us
 
     init_gpio();
     disable();
-    if (core_init(phy, use_ext_vbus, dma_enable) != STM32_RESULT_OK)
+    if (core_init(use_ext_vbus) != STM32_RESULT_OK)
         return STM32_RESULT_FAIL;
     set_current_mode(EOTGDeviceMode::HOST);
-    host_init(speed, host_channels, dma_enable);
+    host_init();
     m_state = EHCDState::READY;
     return STM32_RESULT_OK;
 }
@@ -220,8 +220,9 @@ uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
     STM32_LOCK(m_lock);
 
     uint32_t FIFO_queue = 0;
-    if (((HC_get_params(hc_num) & USB_OTG_HCCHAR_EPTYP) == HCCHAR_CTRL) ||
-        ((HC_get_params(hc_num) & USB_OTG_HCCHAR_EPTYP) == HCCHAR_BULK))
+    uint32_t val = HC_get_params(hc_num);
+    if (((val & USB_OTG_HCCHAR_EPTYP) == HCCHAR_CTRL) ||
+        ((val & USB_OTG_HCCHAR_EPTYP) == HCCHAR_BULK))
         FIFO_queue = get_TX_NP_FIFO_hi_size();
     else
         FIFO_queue = get_TX_P_FIFO_size();
@@ -252,29 +253,31 @@ void STM32_HCD::IRQ_handler()
         if (is_invalid_IT())
             return;
 
-        if (get_flag(USB_OTG_GINTSTS_PXFR_INCOMPISOOUT))
-            clear_flag(USB_OTG_GINTSTS_PXFR_INCOMPISOOUT);
-        if (get_flag(USB_OTG_GINTSTS_IISOIXFR))
-            clear_flag(USB_OTG_GINTSTS_IISOIXFR);
-        if (get_flag(USB_OTG_GINTSTS_PTXFE))
-            clear_flag(USB_OTG_GINTSTS_PTXFE);
-        if (get_flag(USB_OTG_GINTSTS_MMIS))
-            clear_flag(USB_OTG_GINTSTS_MMIS);
-        if (get_flag(USB_OTG_GINTSTS_DISCINT))
+        uint32_t IT = read_IT();
+        uint32_t clr_msk = 0;
+        if (IT & USB_OTG_GINTSTS_PXFR_INCOMPISOOUT)
+            clr_msk |= USB_OTG_GINTSTS_PXFR_INCOMPISOOUT;
+        if (IT & USB_OTG_GINTSTS_IISOIXFR)
+            clr_msk |= USB_OTG_GINTSTS_IISOIXFR;
+        if (IT & USB_OTG_GINTSTS_PTXFE)
+            clr_msk |= USB_OTG_GINTSTS_PTXFE;
+        if (IT & USB_OTG_GINTSTS_MMIS)
+            clr_msk |= USB_OTG_GINTSTS_MMIS;
+        if (IT & USB_OTG_GINTSTS_DISCINT)
         {
             m_regs->ports[0] &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
             disconnect_callback(this);
             init_FSLSPClk_sel(EClockSpeed::_48_MHZ);
-            clear_flag(USB_OTG_GINTSTS_DISCINT);
+            clr_msk |= USB_OTG_GINTSTS_DISCINT;
         }
-        if (get_flag(USB_OTG_GINTSTS_HPRTINT))
+        if (IT & USB_OTG_GINTSTS_HPRTINT)
             port_IRQ_handler();
-        if (get_flag(USB_OTG_GINTSTS_SOF))
+        if (IT & USB_OTG_GINTSTS_SOF)
         {
             SOF_callback(this);
-            clear_flag(USB_OTG_GINTSTS_SOF);
+            clr_msk |= USB_OTG_GINTSTS_SOF;
         }
-        if (get_flag(USB_OTG_GINTSTS_HCINT))
+        if (IT & USB_OTG_GINTSTS_HCINT)
         {
             uint32_t it = HC_read_IT();
             for (uint8_t i=0 ; i<m_host_channels ; ++i)
@@ -287,14 +290,15 @@ void STM32_HCD::IRQ_handler()
                         HC_out_IRQ_handler(i);
                 }
             }
-            clear_flag(USB_OTG_GINTSTS_HCINT);
+            clr_msk |= USB_OTG_GINTSTS_HCINT;
         }
-        if (get_flag(USB_OTG_GINTSTS_RXFLVL))
+        if (IT & USB_OTG_GINTSTS_RXFLVL)
         {
             mask_IT(USB_OTG_GINTSTS_RXFLVL);
             RXQLVL_IRQ_handler();
             unmask_IT(USB_OTG_GINTSTS_RXFLVL);
         }
+        clear_flag(clr_msk);
     }
 }
 
@@ -340,10 +344,10 @@ void STM32_HCD::deInit_gpio()
     }
 }
 
-uint32_t STM32_HCD::core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable)
+uint32_t STM32_HCD::core_init(bool use_ext_vbus)
 {
     debug_fn();
-    if (phy == EOTG_PHY::ULPI)
+    if (m_phy == EOTG_PHY::ULPI)
     {
         power_down();
         init_phy_ULPI();
@@ -360,7 +364,7 @@ uint32_t STM32_HCD::core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable)
             return STM32_RESULT_FAIL;
         power_up();
     }
-    if (dma_enable)
+    if (m_dma_enable)
         enable_DMA();
     return STM32_RESULT_OK;
 }
@@ -773,7 +777,7 @@ uint32_t STM32_HCD::core_reset()
     return STM32_RESULT_OK;
 }
 
-void STM32_HCD::host_init(EOTGSpeed speed, uint8_t host_channels, bool dma_enable)
+void STM32_HCD::host_init()
 {
     debug_fn();
     restart_phy_clock();
@@ -783,13 +787,13 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint8_t host_channels, bool dma_enabl
     enable_VBUS();
 
     /* Disable the FS/LS support mode only */
-    if ((speed == EOTGSpeed::FULL) && (m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS)))
+    if ((m_speed == EOTGSpeed::FULL) && (m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS)))
         enable_FS_LS_only();
     else
         disable_FS_LS_only();
     flush_TX_FIFO(0x10);
     flush_RX_FIFO();
-    for (uint8_t i=0 ; i<host_channels ; ++i)
+    for (uint8_t i=0 ; i<m_host_channels ; ++i)
     {
         clear_HC_int(i, 0xffffffff);
         mask_all_HC_int(i);
@@ -810,7 +814,7 @@ void STM32_HCD::host_init(EOTGSpeed speed, uint8_t host_channels, bool dma_enabl
         set_RX_EP0_FIFO_size(0x100, 0x200);
         set_TX_FIFO_size(0xe0, 0x300);
     }
-    if (!dma_enable)
+    if (!m_dma_enable)
         unmask_IT(USB_OTG_GINTMSK_RXFLVLM);
     unmask_IT(USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |
               USB_OTG_GINTMSK_SOFM             |USB_OTG_GINTSTS_DISCINT|
@@ -835,7 +839,7 @@ void STM32_HCD::init_FSLSPClk_sel(EClockSpeed freq)
     }
 }
 
-#pragma GCC optimize ("O0")
+//#pragma GCC optimize ("O0")
 void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 {
     debug_fn();

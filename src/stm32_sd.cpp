@@ -116,7 +116,7 @@ uint32_t STM32_SD::m_CSD[4];
 uint32_t STM32_SD::m_CID[4];
 STM32_SD::CardInfo STM32_SD::m_card_info;
 
-uint32_t STM32_SD::init()
+STM32_SD::ESDError STM32_SD::init()
 {
     init_gpio();
     ///TODO init_DMA();
@@ -135,10 +135,10 @@ uint32_t STM32_SD::init()
     STM32_SYSTICK::delay(2);
 
     if ((errorstate = power_ON()) != ESDError::OK)
-        return static_cast<uint32_t>(errorstate);
+        return errorstate;
 
     if ((errorstate = initialize_cards()) != ESDError::OK)
-        return static_cast<uint32_t>(errorstate);
+        return errorstate;
 
     if ((errorstate = get_card_info()) == ESDError::OK)
         select_deselect(static_cast<uint32_t>(m_card_info.RCA << 16));
@@ -147,7 +147,7 @@ uint32_t STM32_SD::init()
              EClockPowerSave::DISABLE, EBusWide::_1B,
              EHWFlowControl::DISABLE, STM32_SDIO_CLOCK_DIV);
 
-    return static_cast<uint32_t>(errorstate);
+    return errorstate;
 }
 
 void STM32_SD::deinit()

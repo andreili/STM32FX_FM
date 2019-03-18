@@ -107,6 +107,7 @@ enum class TXRX_MODE
 #else
 #define debug_out(s)
 #define debug_printf(s, ...)
+#define debug_fn(s, ...)
 #endif
 
 #endif

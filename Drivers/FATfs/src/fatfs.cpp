@@ -22,7 +22,7 @@ DSTATUS FAT_FS::disk_initialize(BYTE pdrv)
 {
     if (m_disk.is_initialized[pdrv] == 0)
     {
-        if (((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->init(m_disk.lun[pdrv]) == RES_OK)
+        if (((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->init(m_disk.lun[pdrv]) == STM32_SD::ESDError::OK)
         {
             m_disk.is_initialized[pdrv] = 1;
             return RES_OK;

@@ -159,8 +159,8 @@ uint32_t STM32_FLASH::wait_for_last_operation(uint32_t timeout)
 #elif defined(STM32F4)
     if (get_flag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR) != RESET)
-#elsif defined(STM32F1)
-	if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_OPTVERR) || get_flag(FLASH_FLAG_PGERR))
+#elif defined(STM32F1)
+    if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_OPTVERR) || get_flag(FLASH_FLAG_PGERR))
 #endif
     {
         set_error_code();
@@ -433,7 +433,7 @@ void STM32_FLASH::irq_proc()
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_RDERR) != RESET)
 #else
 #if defined(STM32F1)
-	if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_PGERR))
+    if (get_flag(FLASH_FLAG_WRPERR) || get_flag(FLASH_FLAG_PGERR))
 #elif defined(STM32F4)
     if (get_flag(FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
                  FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR) != RESET)

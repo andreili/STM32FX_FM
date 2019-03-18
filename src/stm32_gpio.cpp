@@ -200,6 +200,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, uint32_t pin_alt,
 
             MODIFY_REG((*configregister), ((GPIO_CRL_MODE0 | GPIO_CRL_CNF0) << registeroffset), (config << registeroffset));/*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
+            #ifdef STM32_USE_EXTI
             if ((static_cast<uint32_t>(pin_mode) & EXTI_MODE) == EXTI_MODE)
             {
                 /* Enable AFIO Clock */
@@ -234,6 +235,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, uint32_t pin_alt,
                 else
                     CLEAR_BIT(EXTI->FTSR, iocurrent);
             }
+            #endif //STM32_USE_EXTI
             #elif defined(STM32F4)
             /*--------------------- GPIO Mode Configuration ------------------------*/
             /* In case of Alternate function mode selection */
@@ -277,6 +279,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, uint32_t pin_alt,
 
             /*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
+            #ifdef STM32_USE_EXTI
             if ((static_cast<uint32_t>(pin_mode) & EXTI_MODE) == EXTI_MODE)
             {
                 /* Enable SYSCFG Clock */
@@ -313,7 +316,8 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, uint32_t pin_alt,
                     temp |= iocurrent;
                 EXTI->FTSR = temp;
             }
-            #endif
+            #endif //STM32_USE_EXTI
+            #endif //STM32F4
         }
     }
 }
@@ -356,6 +360,7 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
             /*------------------------- EXTI Mode Configuration --------------------*/
             /* Clear the External Interrupt or Event for the current IO */
 
+            #ifdef STM32_USE_EXTI
             tmp = AFIO->EXTICR[position >> 2U];
             tmp &= 0x0FU << (4U * (position & 0x03U));
             if (tmp == (GPIO_GET_INDEX(m_gpio) << (4U * (position & 0x03U))))
@@ -371,6 +376,7 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
                 CLEAR_BIT(EXTI->RTSR, (uint32_t)iocurrent);
                 CLEAR_BIT(EXTI->FTSR, (uint32_t)iocurrent);
             }
+            #endif //STM32_USE_EXTI
             #elif defined(STM32F4)
             /*------------------------- GPIO Mode Configuration --------------------*/
             /* Configure IO Direction in Input Floating Mode */
@@ -389,6 +395,7 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
             m_gpio->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
 
             /*------------------------- EXTI Mode Configuration --------------------*/
+            #ifdef STM32_USE_EXTI
             tmp = SYSCFG->EXTICR[position >> 2U];
             tmp &= (0x0FU << (4U * (position & 0x03U)));
             if (tmp == GPIO_GET_INDEX(m_gpio) << (4U * (position & 0x03U)))
@@ -405,7 +412,8 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
                 EXTI->RTSR &= ~iocurrent;
                 EXTI->FTSR &= ~iocurrent;
             }
-            #endif
+            #endif //STM32_USE_EXTI
+            #endif //STM32F4
         }
     }
 }

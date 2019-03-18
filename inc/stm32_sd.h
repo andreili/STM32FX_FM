@@ -380,7 +380,7 @@ public:
         ERRORBITS                = 0xFDFFE008U,
     };
 
-    static uint32_t init();
+    static ESDError init();
     static void deinit();
 
     static ESDError wide_bus_config(EBusWide mode);

@@ -18,11 +18,11 @@ public:
 
     static inline bool is_card_present() { return (STM32_FATFS_CARD_DETECT_PORT.pin_read(STM32_FATFS_CARD_DETECT_PIN) == RESET); }
 
-    uint8_t init(uint8_t);
+    STM32_SD::ESDError init(uint8_t);
     uint8_t status(uint8_t);
-    uint8_t read(uint8_t lun, uint8_t*buf, uint32_t sector, uint32_t count);
+    DSTATUS read(uint8_t lun, uint8_t*buf, uint32_t sector, uint32_t count);
     #if _USE_WRITE == 1
-    uint8_t write(uint8_t, uint8_t*, uint32_t, uint32_t);
+    DSTATUS write(uint8_t, uint8_t*, uint32_t, uint32_t);
     #endif
     #if _USE_IOCTL == 1
     uint8_t ioctl(uint8_t, uint8_t, void*);
