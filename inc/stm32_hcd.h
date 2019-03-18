@@ -215,6 +215,7 @@ public:
     FORCE_INLINE void clear_flag(uint32_t mask) { m_regs->global.GINTSTS = mask; }
     FORCE_INLINE bool is_invalid_IT() { return (read_IT() == 0); }
 
+    FORCE_INLINE uint32_t get_HC_int(uint8_t ch_num) { return m_regs->channels[ch_num].HCINT; }
     FORCE_INLINE bool is_HC_int(uint8_t ch_num, uint32_t mask) { return (m_regs->channels[ch_num].HCINT & mask) == mask; }
     FORCE_INLINE void clear_HC_int(uint8_t ch_num, uint32_t mask) { m_regs->channels[ch_num].HCINT = mask; }
     FORCE_INLINE void set_HC_int(uint8_t ch_num, uint32_t val) { m_regs->channels[ch_num].HCINTMSK = val; }
@@ -293,7 +294,7 @@ private:
     FORCE_INLINE void reset_ULPI_VBUS() { m_regs->global.GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI); }
     FORCE_INLINE void set_ULPI_VBUS() { m_regs->global.GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD; }
     FORCE_INLINE void enable_DMA() { m_regs->global.GAHBCFG |= (USB_OTG_GAHBCFG_HBSTLEN_2 | USB_OTG_GAHBCFG_DMAEN); }
-    void dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed, uint32_t ep_count, bool dma_enable, bool sof_enable);
+    void dev_init(bool vbus_sending_enable, uint32_t ep_count, bool sof_enable);
     ENDIS_REG_FLAG_NAME_SL(VBUS_A, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSASEN)
     ENDIS_REG_FLAG_NAME_SL(VBUS_B, m_regs->global.GCCFG, USB_OTG_GCCFG_VBUSBSEN)
     ENDIS_REG_FLAG_NAME_SL(VBUS, m_regs->global.GCCFG, USB_OTG_GCCFG_NOVBUSSENS)

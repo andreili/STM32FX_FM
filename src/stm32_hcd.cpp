@@ -365,8 +365,7 @@ uint32_t STM32_HCD::core_init(EOTG_PHY phy, bool use_ext_vbus, bool dma_enable)
     return STM32_RESULT_OK;
 }
 
-void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed, uint32_t ep_count,
-                         bool dma_enable, bool sof_enable)
+void STM32_HCD::dev_init(bool vbus_sending_enable, uint32_t ep_count, bool sof_enable)
 {
     debug_fn();
     if (!vbus_sending_enable)
@@ -375,9 +374,9 @@ void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed
         enable_VBUS_B();
     restart_phy_clock();
     mode_device_configuration();
-    if (phy == EOTG_PHY::ULPI)
+    if (m_phy == EOTG_PHY::ULPI)
     {
-        if (speed == EOTGSpeed::HIGH)
+        if (m_speed == EOTGSpeed::HIGH)
             set_dev_speed(EOTGSpeed::HIGH);
         else
             set_dev_speed(EOTGSpeed::HIGH_IN_FULL);
@@ -408,13 +407,13 @@ void STM32_HCD::dev_init(bool vbus_sending_enable, EOTG_PHY phy, EOTGSpeed speed
 
     reset_FIFO_underrun_flag();
 
-    if (dma_enable)
+    if (m_dma_enable)
         set_DMA_thresshold();
 
     disable_all_IT();
     clear_all_IT();
 
-    if (!dma_enable)
+    if (!m_dma_enable)
         enable_IT(USB_OTG_GINTMSK_RXFLVLM);
 
     enable_IT(USB_OTG_GINTMSK_USBSUSPM | USB_OTG_GINTMSK_USBRST |
@@ -658,7 +657,6 @@ void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint16_t ep_maxpac
 void STM32_HCD::write_packet(uint8_t* src, uint8_t ch_ep_num, uint32_t len, uint8_t dma)
 {
     debug_fn();
-    //xprintf("ep:%d len:%d dma:%d\n\r", ch_ep_num, len, dma);
     if (!dma)
     {
         uint32_t count32b = (len + 3) >> 2;
@@ -970,46 +968,62 @@ void STM32_HCD::stop_host()
 void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
 {
     debug_fn();
-    if (is_HC_int(chnum, USB_OTG_HCINT_AHBERR))
+    uint32_t int_val = get_HC_int(chnum);
+    uint32_t clear_mask = 0;
+    bool unmask_halt = false;
+
+    if (int_val & USB_OTG_HCINT_AHBERR)
     {
-        clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
-        unmask_halt_HC_int(chnum);
+        clear_mask = USB_OTG_HCINT_AHBERR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_ACK))
-        clear_HC_int(chnum, USB_OTG_HCINT_ACK);
-    else if (is_HC_int(chnum, USB_OTG_HCINT_STALL))
+    else if (int_val & USB_OTG_HCINT_ACK)
+        clear_mask = USB_OTG_HCINT_ACK;
+        //clear_HC_int(chnum, USB_OTG_HCINT_ACK);
+    else if (int_val & USB_OTG_HCINT_STALL)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         m_HC[chnum].state = EHCState::STALL;
-        clear_HC_int(chnum, USB_OTG_HCINT_NAK | USB_OTG_HCINT_STALL);
+        clear_mask = USB_OTG_HCINT_NAK | USB_OTG_HCINT_STALL;
+        //clear_HC_int(chnum, USB_OTG_HCINT_NAK | USB_OTG_HCINT_STALL);
         HC_halt(chnum);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_DTERR))
+    else if (int_val & USB_OTG_HCINT_DTERR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_NAK | USB_OTG_HCINT_DTERR);
+        clear_mask = USB_OTG_HCINT_NAK | USB_OTG_HCINT_DTERR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_NAK | USB_OTG_HCINT_DTERR);
         m_HC[chnum].state = EHCState::DATATGLERR;
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_FRMOR))
+    else if (int_val & USB_OTG_HCINT_FRMOR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_FRMOR);
+        clear_mask = USB_OTG_HCINT_FRMOR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_FRMOR);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_XFRC))
+    else if (int_val & USB_OTG_HCINT_XFRC)
     {
         if (m_dma_enable)
             m_HC[chnum].xfer_count = m_HC[chnum].xfer_len - (HC_get_Xfer_size(chnum) & USB_OTG_HCTSIZ_XFRSIZ);
         m_HC[chnum].state = EHCState::XFRC;
         m_HC[chnum].ErrCnt = 0;
-        clear_HC_int(chnum, USB_OTG_HCINT_XFRC);
+        clear_mask = USB_OTG_HCINT_XFRC;
+        //clear_HC_int(chnum, USB_OTG_HCINT_XFRC);
         if ((m_HC[chnum].ep_type == EEPType::CTRL) ||
             (m_HC[chnum].ep_type == EEPType::BULK))
         {
-            unmask_halt_HC_int(chnum);
+            unmask_halt = true;
+            //unmask_halt_HC_int(chnum);
             HC_halt(chnum);
-            clear_HC_int(chnum, USB_OTG_HCINT_NAK);
+            clear_mask |= USB_OTG_HCINT_NAK;
+            //clear_HC_int(chnum, USB_OTG_HCINT_NAK);
         }
         else if (m_HC[chnum].ep_type == EEPType::INTR)
         {
@@ -1019,7 +1033,7 @@ void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
         }
         m_HC[chnum].toggle_in ^= 1;
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_CHH))
+    else if (int_val &  USB_OTG_HCINT_CHH)
     {
         mask_halt_HC_int(chnum);
         if (m_HC[chnum].state == EHCState::XFRC)
@@ -1038,103 +1052,133 @@ void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
                 m_HC[chnum].urb_state = EURBState::NOT_READY;
             HC_reactivate(chnum);
         }
-        clear_HC_int(chnum, USB_OTG_HCINT_CHH);
+        clear_mask = USB_OTG_HCINT_CHH;
+        //clear_HC_int(chnum, USB_OTG_HCINT_CHH);
         HC_notify_URB_change_callback(this, chnum, m_HC[chnum].urb_state);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_TXERR))
+    else if (int_val & USB_OTG_HCINT_TXERR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         ++m_HC[chnum].ErrCnt;
         m_HC[chnum].state = EHCState::XACTERR;
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_TXERR);
+        clear_mask = USB_OTG_HCINT_TXERR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_TXERR);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_NAK))
+    else if (int_val & USB_OTG_HCINT_NAK)
     {
         if (m_HC[chnum].ep_type == EEPType::INTR)
         {
-            unmask_halt_HC_int(chnum);
+            unmask_halt = true;
+            //unmask_halt_HC_int(chnum);
             HC_halt(chnum);
         }
         m_HC[chnum].state = EHCState::NAK;
-        clear_HC_int(chnum, USB_OTG_HCINT_NAK);
+        clear_mask = USB_OTG_HCINT_NAK;
+        //clear_HC_int(chnum, USB_OTG_HCINT_NAK);
         if ((m_HC[chnum].ep_type == EEPType::CTRL) ||
             (m_HC[chnum].ep_type == EEPType::BULK))
             HC_reactivate(chnum);
     }
+    clear_HC_int(chnum, clear_mask);
+    if (unmask_halt)
+        unmask_halt_HC_int(chnum);
 }
 
 void STM32_HCD::HC_out_IRQ_handler(uint8_t chnum)
 {
     debug_fn();
-    if (is_HC_int(chnum, USB_OTG_HCINT_AHBERR))
+    uint32_t int_val = get_HC_int(chnum);
+    uint32_t clear_mask = 0;
+    bool unmask_halt = false;
+
+    if (int_val & USB_OTG_HCINT_AHBERR)
     {
-        clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
-        unmask_halt_HC_int(chnum);
+        clear_mask = USB_OTG_HCINT_AHBERR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_AHBERR);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_ACK))
+    else if (int_val & USB_OTG_HCINT_ACK)
     {
-        clear_HC_int(chnum, USB_OTG_HCINT_ACK);
+        clear_mask = USB_OTG_HCINT_ACK;
+        //clear_HC_int(chnum, USB_OTG_HCINT_ACK);
         if (m_HC[chnum].do_ping)
         {
             m_HC[chnum].state = EHCState::NYET;
-            unmask_halt_HC_int(chnum);
+            unmask_halt = true;
+            //unmask_halt_HC_int(chnum);
             HC_halt(chnum);
             m_HC[chnum].urb_state = EURBState::NOT_READY;
         }
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_NYET))
+    else if (int_val & USB_OTG_HCINT_NYET)
     {
         m_HC[chnum].state = EHCState::NYET;
         m_HC[chnum].ErrCnt = 0;
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_NYET);
+        clear_mask = USB_OTG_HCINT_NYET;
+        //clear_HC_int(chnum, USB_OTG_HCINT_NYET);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_FRMOR))
+    else if (int_val & USB_OTG_HCINT_FRMOR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_FRMOR);
+        clear_mask = USB_OTG_HCINT_FRMOR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_FRMOR);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_XFRC))
+    else if (int_val & USB_OTG_HCINT_XFRC)
     {
         m_HC[chnum].ErrCnt = 0;
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
-        clear_HC_int(chnum, USB_OTG_HCINT_XFRC);
+        clear_mask = USB_OTG_HCINT_XFRC;
+        //clear_HC_int(chnum, USB_OTG_HCINT_XFRC);
         m_HC[chnum].state = EHCState::XFRC;
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_STALL))
+    else if (int_val & USB_OTG_HCINT_STALL)
     {
-        clear_HC_int(chnum, USB_OTG_HCINT_STALL);
-        unmask_halt_HC_int(chnum);
+        clear_mask = USB_OTG_HCINT_STALL;
+        //clear_HC_int(chnum, USB_OTG_HCINT_STALL);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
         m_HC[chnum].state = EHCState::STALL;
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_NAK))
+    else if (int_val & USB_OTG_HCINT_NAK)
     {
         m_HC[chnum].ErrCnt = 0;
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
         m_HC[chnum].state = EHCState::NAK;
-        clear_HC_int(chnum, USB_OTG_HCINT_NAK);
+        clear_mask = USB_OTG_HCINT_NAK;
+        //clear_HC_int(chnum, USB_OTG_HCINT_NAK);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_TXERR))
+    else if (int_val & USB_OTG_HCINT_TXERR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
         m_HC[chnum].state = EHCState::XACTERR;
-        clear_HC_int(chnum, USB_OTG_HCINT_TXERR);
+        clear_mask = USB_OTG_HCINT_TXERR;
+        //clear_HC_int(chnum, USB_OTG_HCINT_TXERR);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_DTERR))
+    else if (int_val & USB_OTG_HCINT_DTERR)
     {
-        unmask_halt_HC_int(chnum);
+        unmask_halt = true;
+        //unmask_halt_HC_int(chnum);
         HC_halt(chnum);
         m_HC[chnum].state = EHCState::DATATGLERR;
-        clear_HC_int(chnum, USB_OTG_HCINT_DTERR | USB_OTG_HCINT_NAK);
+        clear_mask = USB_OTG_HCINT_DTERR | USB_OTG_HCINT_NAK;
+        //clear_HC_int(chnum, USB_OTG_HCINT_DTERR | USB_OTG_HCINT_NAK);
     }
-    else if (is_HC_int(chnum, USB_OTG_HCINT_CHH))
+    else if (int_val & USB_OTG_HCINT_CHH)
     {
         mask_halt_HC_int(chnum);
         switch (m_HC[chnum].state)
@@ -1170,9 +1214,14 @@ void STM32_HCD::HC_out_IRQ_handler(uint8_t chnum)
             break;
         }
 
-        clear_HC_int(chnum, USB_OTG_HCINT_CHH);
+        clear_mask = USB_OTG_HCINT_CHH;
+        //clear_HC_int(chnum, USB_OTG_HCINT_CHH);
         HC_notify_URB_change_callback(this, chnum, m_HC[chnum].urb_state);
     }
+
+    clear_HC_int(chnum, clear_mask);
+    if (unmask_halt)
+        unmask_halt_HC_int(chnum);
 }
 
 void STM32_HCD::RXQLVL_IRQ_handler()
