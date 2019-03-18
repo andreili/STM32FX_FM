@@ -575,16 +575,15 @@ uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
     return status;
 }
 
-uint32_t USBHCore::get_descriptor(uint8_t req_type, EDescType value_idx, uint8_t* buff, uint16_t length)
+uint32_t USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length)
 {
     if (m_request_state == ECMDState::SEND)
     {
         m_control.setup.b.bmRequestType = USB_D2H | req_type;
-        m_control.setup.b.bRequest = static_cast<uint8_t>(ERequest::GET_DESCRIPTOR);
-        m_control.setup.b.wValue.w = static_cast<uint16_t>(value_idx);
+        m_control.setup.b.bRequest = ERequest::GET_DESCRIPTOR;
+        m_control.setup.b.wValue.w = value_idx;
 
-        #warning invalid mask?
-        if ((static_cast<uint16_t>(value_idx) & 0xff00) == static_cast<uint16_t>(EDescType::STRING))
+        if ((value_idx & 0xff00) == USB_DESC_STRING)
             m_control.setup.b.wIndex.w = 0x0409;
         else
             m_control.setup.b.wIndex.w = 0;
@@ -595,9 +594,8 @@ uint32_t USBHCore::get_descriptor(uint8_t req_type, EDescType value_idx, uint8_t
 
 uint32_t USBHCore::get_dev_desc(uint16_t length)
 {
-    uint32_t status = get_descriptor(static_cast<uint8_t>(EReqRecipient::DEVICE) |
-                                     static_cast<uint8_t>(EReqType::STANDARD),
-                                     EDescType::DEVICE, m_device.Data, length);
+    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                     USB_DESC_DEVICE, m_device.Data, length);
     if (status == STM32_RESULT_OK)
         parse_dev_desc(&m_device.DevDesc, m_device.Data, length);
     return status;
@@ -605,10 +603,8 @@ uint32_t USBHCore::get_dev_desc(uint16_t length)
 
 uint32_t USBHCore::get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length)
 {
-    uint16_t idx = static_cast<uint16_t>(EDescType::STRING) | string_index;
-    uint32_t status = get_descriptor(static_cast<uint8_t>(EReqRecipient::DEVICE) |
-                                     static_cast<uint8_t>(EReqType::STANDARD),
-                                     static_cast<EDescType>(idx), m_device.Data, length);
+    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                     USB_DESC_STRING | string_index, m_device.Data, length);
     if (status == STM32_RESULT_OK)
         parse_string_desc(m_device.Data, buff, length);
     return status;
@@ -618,9 +614,8 @@ uint32_t USBHCore::set_cfg(uint16_t config_val)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | static_cast<uint8_t>(EReqRecipient::DEVICE) |
-                static_cast<uint8_t>(EReqType::STANDARD);
-        m_control.setup.b.bRequest = static_cast<uint8_t>(ERequest::SET_CONFIGURATION);
+        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
+        m_control.setup.b.bRequest = ERequest::SET_CONFIGURATION;
         m_control.setup.b.wValue.w = config_val;
         m_control.setup.b.wIndex.w = 0;
         m_control.setup.b.wLength.w = 0;
@@ -636,9 +631,8 @@ uint32_t USBHCore::get_cfg_desc(uint16_t length)
 #else
     pData = m_device.Data;
 #endif
-    uint32_t status = get_descriptor(static_cast<uint8_t>(EReqRecipient::DEVICE) |
-                                     static_cast<uint8_t>(EReqType::STANDARD),
-                                     EDescType::CONFIGURATION, m_device.Data, length);
+    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                     USB_DESC_CONFIGURATION, m_device.Data, length);
     if (status == STM32_RESULT_OK)
         parse_cfg_desc(&m_device.CfgDesc, pData, length);
     return status;
@@ -648,9 +642,8 @@ uint32_t USBHCore::set_address(uint8_t dev_address)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | static_cast<uint8_t>(EReqRecipient::DEVICE) |
-                static_cast<uint8_t>(EReqType::STANDARD);
-        m_control.setup.b.bRequest = static_cast<uint8_t>(ERequest::SET_ADDRESS);
+        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
+        m_control.setup.b.bRequest = ERequest::SET_ADDRESS;
         m_control.setup.b.wValue.w = dev_address;
         m_control.setup.b.wIndex.w = 0;
         m_control.setup.b.wLength.w = 0;
@@ -662,9 +655,8 @@ uint32_t USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | static_cast<uint8_t>(EReqRecipient::INTERFACE) |
-                static_cast<uint8_t>(EReqType::STANDARD);
-        m_control.setup.b.bRequest = static_cast<uint8_t>(ERequest::SET_INTERFACE);
+        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
+        m_control.setup.b.bRequest = ERequest::SET_INTERFACE;
         m_control.setup.b.wValue.w = alt_setting;
         m_control.setup.b.wIndex.w = ep_num;
         m_control.setup.b.wLength.w = 0;
@@ -676,9 +668,8 @@ uint32_t USBHCore::clr_feature(uint8_t ep_num)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | static_cast<uint8_t>(EReqRecipient::INTERFACE) |
-                static_cast<uint8_t>(EReqType::STANDARD);
-        m_control.setup.b.bRequest = static_cast<uint8_t>(ERequest::CLEAR_FEATURE);
+        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
+        m_control.setup.b.bRequest = ERequest::CLEAR_FEATURE;
         m_control.setup.b.wValue.w = FEATURE_SELECTOR_ENDPOINT;
         m_control.setup.b.wIndex.w = ep_num;
         m_control.setup.b.wLength.w = 0;
@@ -721,12 +712,12 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
         int8_t if_idx = 0;
-        uint16_t ptr = static_cast<uint16_t>(ELen::CFG_DESC);
+        uint16_t ptr = static_cast<uint16_t>(ELen::CFG_DESC);;
         USBHDescHeader_t* pheader = reinterpret_cast<USBHDescHeader_t*>(buf);
         while ((if_idx < USBH_MAX_NUM_INTERFACES) && (ptr < pdesc->wTotalLength))
         {
             pheader = get_next_desc(buf, &ptr);
-            if (pheader->bDescriptorType == static_cast<uint16_t>(EDescType::INTERFACE))
+            if (pheader->bDescriptorType == EDescType::INTERFACE)
             {
                 USBHInterfaceDesc_t* pif = &pdesc->Itf_Desc[if_idx];
                 parse_interface_desc(pif, buf);
@@ -736,7 +727,7 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
                 while ((ep_idx < pif->bNumEndpoints) && (ptr < pdesc->wTotalLength))
                 {
                     pheader = get_next_desc(buf, &ptr);
-                    if (pheader->bDescriptorType == static_cast<uint16_t>(EDescType::ENDPOINT))
+                    if (pheader->bDescriptorType == EDescType::ENDPOINT)
                     {
                         pep = &pif->Ep_Desc[ep_idx];
                         parse_ep_desc(pep, buf);

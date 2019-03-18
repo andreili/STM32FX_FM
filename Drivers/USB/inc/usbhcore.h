@@ -25,16 +25,16 @@
 
 /* Descriptor Type and Descriptor Index  */
 /* Use the following values when calling the function USBH_GetDescriptor  */
-#define  USB_DESC_DEVICE                    ((USB_DESC_TYPE_DEVICE << 8) & 0xFF00)
-#define  USB_DESC_CONFIGURATION             ((USB_DESC_TYPE_CONFIGURATION << 8) & 0xFF00)
-#define  USB_DESC_STRING                    ((USB_DESC_TYPE_STRING << 8) & 0xFF00)
-#define  USB_DESC_INTERFACE                 ((USB_DESC_TYPE_INTERFACE << 8) & 0xFF00)
-#define  USB_DESC_ENDPOINT                  ((USB_DESC_TYPE_INTERFACE << 8) & 0xFF00)
-#define  USB_DESC_DEVICE_QUALIFIER          ((USB_DESC_TYPE_DEVICE_QUALIFIER << 8) & 0xFF00)
-#define  USB_DESC_OTHER_SPEED_CONFIGURATION ((USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION << 8) & 0xFF00)
-#define  USB_DESC_INTERFACE_POWER           ((USB_DESC_TYPE_INTERFACE_POWER << 8) & 0xFF00)
-#define  USB_DESC_HID_REPORT                ((USB_DESC_TYPE_HID_REPORT << 8) & 0xFF00)
-#define  USB_DESC_HID                       ((USB_DESC_TYPE_HID << 8) & 0xFF00)
+#define  USB_DESC_DEVICE                    ((EDescType::DEVICE << 8) & 0xFF00)
+#define  USB_DESC_CONFIGURATION             ((EDescType::CONFIGURATION << 8) & 0xFF00)
+#define  USB_DESC_STRING                    ((EDescType::STRING << 8) & 0xFF00)
+#define  USB_DESC_INTERFACE                 ((EDescType::INTERFACE << 8) & 0xFF00)
+#define  USB_DESC_ENDPOINT                  ((EDescType::INTERFACE << 8) & 0xFF00)
+#define  USB_DESC_DEVICE_QUALIFIER          ((EDescType::DEVICE_QUALIFIER << 8) & 0xFF00)
+#define  USB_DESC_OTHER_SPEED_CONFIGURATION ((EDescType::OTHER_SPEED_CONFIGURATION << 8) & 0xFF00)
+#define  USB_DESC_INTERFACE_POWER           ((EDescType::INTERFACE_POWER << 8) & 0xFF00)
+#define  USB_DESC_HID_REPORT                ((EDescType::HID_REPORT << 8) & 0xFF00)
+#define  USB_DESC_HID                       ((EDescType::HID << 8) & 0xFF00)
 
 #define  USB_EP_DIR_OUT                                 0x00
 #define  USB_EP_DIR_IN                                  0x80
@@ -85,7 +85,7 @@ public:
         SETUP_PKT   = 0x08,
     };
 
-    enum class EReqType: uint8_t
+    enum EReqType: uint8_t
     {
         STANDARD    = 0x00,
         CLASS       = 0x20,
@@ -93,15 +93,15 @@ public:
         RESERVED    = 0x60,
     };
 
-    enum class EReqRecipient: uint8_t
+    enum EReqRecipient: uint8_t
     {
-        DEVICE      = 0x00,
-        INTERFACE   = 0x01,
-        ENDPOINT    = 0x02,
-        OTHER       = 0x03,
+        REQ_DEVICE      = 0x00,
+        REQ_INTERFACE   = 0x01,
+        REQ_ENDPOINT    = 0x02,
+        REQ_OTHER       = 0x03,
     };
 
-    enum class ERequest: uint8_t
+    enum ERequest: uint8_t
     {
         GET_STATUS          = 0x00,
         CLEAR_FEATURE       = 0x01,
@@ -116,7 +116,7 @@ public:
         SYNCH_FRAME         = 0x0C,
     };
 
-    enum class EDescType: uint16_t
+    enum EDescType: uint16_t
     {
         DEVICE                              = 1,
         CONFIGURATION                       = 2,
@@ -442,7 +442,7 @@ private:
 
     /* CtrlReq */
     uint32_t ctl_req(uint8_t* buff, uint16_t length);
-    uint32_t get_descriptor(uint8_t req_type, EDescType value_idx, uint8_t* buff, uint16_t length);
+    uint32_t get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
     uint32_t get_dev_desc(uint16_t length);
     uint32_t get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length);
     uint32_t set_cfg(uint16_t config_val);
