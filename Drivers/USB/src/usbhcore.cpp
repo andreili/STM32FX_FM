@@ -28,6 +28,8 @@ void USBHCore::init(void (*puser)(USBHCore *,EHostUser), uint8_t id)
 #error TODO
 #endif
     LL_init();
+    for (int idx=0 ; idx<USBH_MAX_NUM_SUPPORTED_CLASS ; ++idx)
+        m_class[idx] = nullptr;
 }
 
 void USBHCore::deInit()
@@ -219,17 +221,21 @@ void USBHCore::process()
     case EHostState::CHECK_CLASS:
         if (m_class_number == 0)
         {
-            //USBH_UsrLog("No Class has been registered.");
+            USBH_UsrLog("No Class has been registered.");
         }
         else
         {
             m_active_class = nullptr;
             for (int idx=0 ; idx<USBH_MAX_NUM_SUPPORTED_CLASS ; ++idx)
-                if (m_class[idx]->get_class_code() == m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass)
+            {
+                if (m_class[idx] == nullptr)
+                    continue;
+                if (m_class[idx]->get_class_code() == m_device.CfgDesc.Itf_Desc[0].bInterfaceClass)
                 {
                     m_active_class = m_class[idx];
                     break;
                 }
+            }
             if (m_active_class != nullptr)
             {
                 if (m_active_class->init(this) ==  STM32_RESULT_OK)
@@ -257,7 +263,7 @@ void USBHCore::process()
     case EHostState::CLASS_REQUEST:
         if (m_active_class != nullptr)
         {
-            if (m_active_class->request(this) == STM32_RESULT_OK)
+            if (m_active_class->class_request(this) == STM32_RESULT_OK)
                 m_gstate = EHostState::CLASS;
         }
         else
@@ -271,7 +277,7 @@ void USBHCore::process()
         break;
     case EHostState::CLASS:
         if (m_active_class != nullptr)
-            m_active_class->bgnd_process(this);
+            m_active_class->process(this);
         break;
     case EHostState::DEV_DISCONNECTED:
         deInit_state_machine();
@@ -346,11 +352,11 @@ uint32_t USBHCore::handle_enum()
         }
         break;
     case EUSBState::GET_CFG_DESC:
-        if (get_cfg_desc(m_device.CfgDesc.wTotalLength) == STM32_RESULT_OK)
+        if (get_cfg_desc(USB_CONFIGURATION_DESC_SIZE) == STM32_RESULT_OK)
             m_enum_state = EUSBState::GET_FULL_CFG_DESC;
         break;
     case EUSBState::GET_FULL_CFG_DESC:
-        if (get_cfg_desc(USB_CONFIGURATION_DESC_SIZE) == STM32_RESULT_OK)
+        if (get_cfg_desc(m_device.CfgDesc.wTotalLength) == STM32_RESULT_OK)
             m_enum_state = EUSBState::GET_MFC_STRING_DESC;
         break;
     case EUSBState::GET_MFC_STRING_DESC:
@@ -632,7 +638,7 @@ uint32_t USBHCore::get_cfg_desc(uint16_t length)
     pData = m_device.Data;
 #endif
     uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                     USB_DESC_CONFIGURATION, m_device.Data, length);
+                                     USB_DESC_CONFIGURATION, pData, length);
     if (status == STM32_RESULT_OK)
         parse_cfg_desc(&m_device.CfgDesc, pData, length);
     return status;
@@ -682,13 +688,13 @@ void USBHCore::parse_dev_desc(USBHDevDesc_t *pdesc, uint8_t *buf, uint16_t lengt
     if (length > 8)
     {
         memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 18);
-        pdesc->idVendor = __builtin_bswap16(pdesc->idVendor);
-        pdesc->idProduct = __builtin_bswap16(pdesc->idProduct);
-        pdesc->bcdDevice = __builtin_bswap16(pdesc->bcdDevice);
+        //pdesc->idVendor = __builtin_bswap16(pdesc->idVendor);
+        //pdesc->idProduct = __builtin_bswap16(pdesc->idProduct);
+        //pdesc->bcdDevice = __builtin_bswap16(pdesc->bcdDevice);
     }
     else
         memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 8);
-    pdesc->bcdUSB = __builtin_bswap16(pdesc->bcdUSB);
+    //pdesc->bcdUSB = __builtin_bswap16(pdesc->bcdUSB);
 }
 
 void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
@@ -708,19 +714,19 @@ void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
 void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
     memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 9);
-    pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
+    //pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
         int8_t if_idx = 0;
         uint16_t ptr = static_cast<uint16_t>(ELen::CFG_DESC);;
-        USBHDescHeader_t* pheader = reinterpret_cast<USBHDescHeader_t*>(buf);
+        USBHDescHeader_t* pheader;
         while ((if_idx < USBH_MAX_NUM_INTERFACES) && (ptr < pdesc->wTotalLength))
         {
             pheader = get_next_desc(buf, &ptr);
             if (pheader->bDescriptorType == EDescType::INTERFACE)
             {
                 USBHInterfaceDesc_t* pif = &pdesc->Itf_Desc[if_idx];
-                parse_interface_desc(pif, buf);
+                parse_interface_desc(pif, reinterpret_cast<uint8_t*>(pheader));
 
                 int8_t ep_idx = 0;
                 USBHEpDesc_t* pep = nullptr;
@@ -743,7 +749,7 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
 void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
 {
     memcpy(reinterpret_cast<uint8_t*>(ep_desc), buf, 7);
-    ep_desc->wMaxPacketSize = __builtin_bswap16(ep_desc->wMaxPacketSize);
+    //ep_desc->wMaxPacketSize = __builtin_bswap16(ep_desc->wMaxPacketSize);
 }
 
 void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
