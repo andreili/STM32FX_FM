@@ -1,5 +1,5 @@
-#ifndef __USBHCORE_H__
-#define __USBHCORE_H__
+#ifndef USBHCORE_H
+#define USBHCORE_H
 
 /*
  * Based on HAL-F4 v1.21.0
@@ -7,10 +7,7 @@
 
 #include "stm32_inc.h"
 
-#ifdef STM32_USE_USB
-
 #include "usbh_config.h"
-#include "usbh_class.h"
 
 /* bmRequestType :D7 Data Phase Transfer Direction  */
 #define  USB_REQ_DIR_MASK                               0x80
@@ -25,16 +22,16 @@
 
 /* Descriptor Type and Descriptor Index  */
 /* Use the following values when calling the function USBH_GetDescriptor  */
-#define  USB_DESC_DEVICE                    ((EDescType::DEVICE << 8) & 0xFF00)
-#define  USB_DESC_CONFIGURATION             ((EDescType::CONFIGURATION << 8) & 0xFF00)
-#define  USB_DESC_STRING                    ((EDescType::STRING << 8) & 0xFF00)
-#define  USB_DESC_INTERFACE                 ((EDescType::INTERFACE << 8) & 0xFF00)
-#define  USB_DESC_ENDPOINT                  ((EDescType::INTERFACE << 8) & 0xFF00)
-#define  USB_DESC_DEVICE_QUALIFIER          ((EDescType::DEVICE_QUALIFIER << 8) & 0xFF00)
-#define  USB_DESC_OTHER_SPEED_CONFIGURATION ((EDescType::OTHER_SPEED_CONFIGURATION << 8) & 0xFF00)
-#define  USB_DESC_INTERFACE_POWER           ((EDescType::INTERFACE_POWER << 8) & 0xFF00)
-#define  USB_DESC_HID_REPORT                ((EDescType::HID_REPORT << 8) & 0xFF00)
-#define  USB_DESC_HID                       ((EDescType::HID << 8) & 0xFF00)
+#define  USB_DESC_DEVICE                    ((USBHCore::EDescType::DEVICE << 8) & 0xFF00)
+#define  USB_DESC_CONFIGURATION             ((USBHCore::EDescType::CONFIGURATION << 8) & 0xFF00)
+#define  USB_DESC_STRING                    ((USBHCore::EDescType::STRING << 8) & 0xFF00)
+#define  USB_DESC_INTERFACE                 ((USBHCore::EDescType::INTERFACE << 8) & 0xFF00)
+#define  USB_DESC_ENDPOINT                  ((USBHCore::EDescType::INTERFACE << 8) & 0xFF00)
+#define  USB_DESC_DEVICE_QUALIFIER          ((USBHCore::EDescType::DEVICE_QUALIFIER << 8) & 0xFF00)
+#define  USB_DESC_OTHER_SPEED_CONFIGURATION ((USBHCore::EDescType::OTHER_SPEED_CONFIGURATION << 8) & 0xFF00)
+#define  USB_DESC_INTERFACE_POWER           ((USBHCore::EDescType::INTERFACE_POWER << 8) & 0xFF00)
+#define  USB_DESC_HID_REPORT                ((USBHCore::EDescType::HID_REPORT << 8) & 0xFF00)
+#define  USB_DESC_HID                       ((USBHCore::EDescType::HID << 8) & 0xFF00)
 
 #define  USB_EP_DIR_OUT                                 0x00
 #define  USB_EP_DIR_IN                                  0x80
@@ -70,11 +67,13 @@
 #define ENDPOINT_DESC_TYPE                0x05
 #define INTERFACE_DESC_SIZE               0x09
 
+class USBHClass;
+
 class USBHCore
 {
 public:
 
-    enum class ELen: uint16_t
+    enum class ELen: uint8_t
     {
         DESC_HDR    = 0x02,
         DEV_DESC    = 0x12,
@@ -138,7 +137,7 @@ public:
         INTR    = 0x03,
     };
 
-    enum class EHostUser: uint32_t
+    enum class EHostUser: uint8_t
     {
         SELECT_CONFIGURATION = 1,
         CLASS_ACTIVE,
@@ -148,7 +147,7 @@ public:
         UNRECOVERED_ERROR,
     };
 
-    enum class EHostState: uint32_t
+    enum class EHostState: uint8_t
     {
         IDLE = 0,
         DEV_WAIT_FOR_ATTACHMENT,
@@ -165,7 +164,7 @@ public:
         ABORT_STATE,
     };
 
-    enum class EUSBState: uint32_t
+    enum class EUSBState: uint8_t
     {
         IDLE = 0,
         GET_FULL_DEV_DESC,
@@ -177,14 +176,14 @@ public:
         GET_SERIALNUM_STRING_DESC,
     };
 
-    enum class ECMDState: uint32_t
+    enum class ECMDState: uint8_t
     {
         IDLE = 0,
         SEND,
         WAIT,
     };
 
-    enum class EUSBHStatus: uint32_t
+    enum class EStatus: uint32_t
     {
         OK = 0,
         BUSY,
@@ -194,7 +193,7 @@ public:
         ERROR_SPEED_UNKNOWN,
     };
 
-    enum class ECTRLState: uint32_t
+    enum class ECTRLState: uint8_t
     {
         IDLE =0,
         SETUP,
@@ -251,12 +250,12 @@ public:
         uint8_t     pipe_in;
         uint8_t     pipe_out;
         uint8_t     pipe_size;
-        uint8_t     *buff;
+        uint8_t     errorcount;
+        ECTRLState  state;
         uint16_t    length;
         uint16_t    timer;
         USB_Setup_t setup;
-        ECTRLState  state;
-        uint8_t     errorcount;
+        uint8_t     *buff;
     } USBHCtrl_t;
 
     #pragma pack(push, 1)
@@ -344,6 +343,8 @@ public:
     void init(void (*puser)(USBHCore*,EHostUser), uint8_t id);
     void deInit();
 
+    EHostState get_state() { return m_gstate; }
+
     uint32_t register_class(USBHClass *pclass);
 
     uint32_t select_interface(uint8_t interface);
@@ -351,7 +352,29 @@ public:
     uint8_t find_interface_index(uint8_t interface_number, uint8_t alt_settings);
 
     //FORCE_INLINE uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
-    USBHClass* get_active_class() { return m_active_class; }
+    FORCE_INLINE USBHClass* get_active_class() { return m_active_class; }
+    FORCE_INLINE USBHInterfaceDesc_t* get_current_interface() { return &m_device.CfgDesc.Itf_Desc[m_device.current_interface]; }
+
+    /* Pipes */
+    FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
+        { return m_hcd->HC_init(ch_num, epnum, dev_addr, speed, ep_type, mps); }
+    FORCE_INLINE uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
+    uint8_t alloc_pipe(uint8_t ep_addr);
+    uint16_t get_free_pipe();
+    FORCE_INLINE void free_pipe(uint8_t idx) { if (idx < 11) { m_pipes[idx] &= 0x7fff; } }
+
+    FORCE_INLINE void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+
+    // device
+    FORCE_INLINE uint8_t get_dev_addr() { return m_device.address; }
+    FORCE_INLINE STM32_HCD::EOTGSpeed get_dev_speed() { return m_device.speed; }
+    FORCE_INLINE uint8_t* get_dev_data() { return m_device.Data; }
+
+    FORCE_INLINE void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
+    FORCE_INLINE uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }
+
+    FORCE_INLINE void to_user(EHostUser reason) { m_user(this, reason); }
 
     void start();
     void stop();
@@ -360,8 +383,26 @@ public:
 
     void LL_connect();
     void LL_disconnect();
+
     FORCE_INLINE void LL_inc_timer() { ++m_timer; handle_SOF(); }
+    FORCE_INLINE uint32_t get_timer() { return m_timer; }
+
+    FORCE_INLINE STM32_HCD::EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
+
+    EStatus clr_feature(uint8_t ep_num);
+    EStatus get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
+    FORCE_INLINE EStatus ctrl_req_custom(uint8_t dir, uint8_t req_type, uint8_t req, uint16_t value_idx, uint16_t length, uint8_t* buff)
+    {
+        m_control.setup.b.bmRequestType = dir | req_type;
+        m_control.setup.b.bRequest = req;
+        m_control.setup.b.wValue.w = value_idx;
+
+        m_control.setup.b.wIndex.w = 0;
+        m_control.setup.b.wLength.w = length;
+        return ctl_req(buff, length);
+    }
 private:
+    uint8_t             m_id;
     EHostState          m_gstate;
     EUSBState           m_enum_state;
     ECMDState           m_request_state;
@@ -372,7 +413,6 @@ private:
     uint32_t            m_class_number;
     uint32_t            m_pipes[15];
     __IO uint32_t       m_timer;
-    uint8_t             m_id;
     STM32_HCD*          m_hcd;
     void                (*m_user)(USBHCore*,EHostUser);
 #if (USBH_USE_OS == 1)
@@ -400,25 +440,14 @@ private:
     FORCE_INLINE uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
     FORCE_INLINE void LL_submit_URB(uint8_t pipe, bool is_in, STM32_HCD::EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
         { m_hcd->HC_submit_request(pipe, is_in, ep_type, token, pbuff, length, do_ping); }
-    FORCE_INLINE STM32_HCD::EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
 
 #if (USBH_USE_OS == 1)
     void process_OS();
     FORCE_INLINE void LL_notify_URB_change() { osMessagePut(m_event, USBH_URB_EVENT, 0); }
 #endif
-    FORCE_INLINE void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
-    FORCE_INLINE uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }
 
     /* USBH Time base */
     FORCE_INLINE void LL_set_timer(uint32_t time) { m_timer = time; }
-
-    /* Pipes */
-    FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
-        { return m_hcd->HC_init(ch_num, epnum, dev_addr, speed, ep_type, mps); }
-    FORCE_INLINE uint32_t close_pipe(uint8_t pipe_num) { return m_hcd->HC_halt(pipe_num); }
-    uint8_t alloc_pipe(uint8_t ep_addr);
-    uint16_t get_free_pipe();
-    FORCE_INLINE void free_pipe(uint8_t idx) { if (idx < 11) { m_pipes[idx] &= 0x7fff; } }
 
     /* IOreq */
     FORCE_INLINE void ctrl_send_setup(uint8_t* buff, uint8_t ch_num)
@@ -431,8 +460,6 @@ private:
         { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
         { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH) ? do_ping : false); }
-    FORCE_INLINE void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void isoc_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
@@ -441,15 +468,13 @@ private:
         { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::ISOC, USBH_PID_DATA, buff, length, false); }
 
     /* CtrlReq */
-    uint32_t ctl_req(uint8_t* buff, uint16_t length);
-    uint32_t get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
-    uint32_t get_dev_desc(uint16_t length);
-    uint32_t get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length);
-    uint32_t set_cfg(uint16_t config_val);
-    uint32_t get_cfg_desc(uint16_t length);
-    uint32_t set_address(uint8_t dev_address);
-    uint32_t set_interface(uint8_t ep_num, uint8_t alt_setting);
-    uint32_t clr_feature(uint8_t ep_num);
+    EStatus ctl_req(uint8_t* buff, uint16_t length);
+    EStatus get_dev_desc(uint16_t length);
+    EStatus get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length);
+    EStatus set_cfg(uint16_t config_val);
+    EStatus get_cfg_desc(uint16_t length);
+    EStatus set_address(uint8_t dev_address);
+    EStatus set_interface(uint8_t ep_num, uint8_t alt_setting);
     USBHDescHeader_t* get_next_desc(uint8_t* buff, uint16_t* ptr);
 
     void parse_dev_desc(USBHDevDesc_t* pdesc, uint8_t *buf, uint16_t length);
@@ -458,7 +483,7 @@ private:
     void parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf);
     void parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf);
 
-    uint32_t handle_control();
+    EStatus handle_control();
 };
 
 #ifdef STM32_USE_USB_HS
@@ -470,7 +495,5 @@ extern USBHCore usb_FS;
 #endif
 
 extern uint8_t USBH_CfgDesc[512];
-
-#endif
 
 #endif

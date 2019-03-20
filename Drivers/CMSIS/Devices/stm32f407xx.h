@@ -1101,15 +1101,15 @@ typedef struct
 #define DAC                 ((DAC_TypeDef *) DAC_BASE) /* Kept for legacy purpose */
 #define TIM1                ((TIM_TypeDef *) TIM1_BASE)
 #define TIM8                ((TIM_TypeDef *) TIM8_BASE)
-#define USART1              ((USART_TypeDef *) USART1_BASE)
-#define USART6              ((USART_TypeDef *) USART6_BASE)
+#define USART1              (reinterpret_cast<USART_TypeDef*>(USART1_BASE))
+#define USART6              (reinterpret_cast<USART_TypeDef*>(USART6_BASE))
 #define ADC1                ((ADC_TypeDef *) ADC1_BASE)
 #define ADC2                ((ADC_TypeDef *) ADC2_BASE)
 #define ADC3                ((ADC_TypeDef *) ADC3_BASE)
 #define ADC123_COMMON       ((ADC_Common_TypeDef *) ADC123_COMMON_BASE)
 /* Legacy define */
 #define ADC                  ADC123_COMMON
-#define SDIO                ((SDIO_TypeDef *) SDIO_BASE)
+#define SDIO                (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))
 #define SPI1                ((SPI_TypeDef *) SPI1_BASE)
 #define SYSCFG              (reinterpret_cast<SYSCFG_TypeDef*>(SYSCFG_BASE))
 #define EXTI                (reinterpret_cast<EXTI_TypeDef*>(EXTI_BASE))
@@ -1126,7 +1126,7 @@ typedef struct
 #define GPIOH               (reinterpret_cast<GPIO_TypeDef*>(GPIOH_BASE))
 #define GPIOI               (reinterpret_cast<GPIO_TypeDef*>(GPIOI_BASE))
 #define CRC                 ((CRC_TypeDef *) CRC_BASE)
-#define RCC                 ((RCC_TypeDef *) RCC_BASE)
+#define RCC                 (reinterpret_cast<RCC_TypeDef*>(RCC_BASE))
 #define FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
 #define DMA1                ((DMA_TypeDef *) DMA1_BASE)
 #define DMA1_Stream0        ((DMA_Stream_TypeDef *) DMA1_Stream0_BASE)
@@ -1154,8 +1154,8 @@ typedef struct
 #define FSMC_Bank2_3        ((FSMC_Bank2_3_TypeDef *) FSMC_Bank2_3_R_BASE)
 #define FSMC_Bank4          ((FSMC_Bank4_TypeDef *) FSMC_Bank4_R_BASE)
 #define DBGMCU              ((DBGMCU_TypeDef *) DBGMCU_BASE)
-#define USB_OTG_FS          ((USB_OTG_GlobalTypeDef *) USB_OTG_FS_PERIPH_BASE)
-#define USB_OTG_HS          ((USB_OTG_GlobalTypeDef *) USB_OTG_HS_PERIPH_BASE)
+#define USB_OTG_FS          (reinterpret_cast<USB_OTG_GlobalTypeDef*>(USB_OTG_FS_PERIPH_BASE))
+#define USB_OTG_HS          (reinterpret_cast<USB_OTG_GlobalTypeDef*>(USB_OTG_HS_PERIPH_BASE))
 
 /**
   * @}

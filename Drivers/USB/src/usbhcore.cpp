@@ -1,5 +1,6 @@
 #include "usbhcore.h"
 #include "my_func.h"
+#include "usbh_class.h"
 
 #ifdef STM32_USE_USB
 
@@ -212,7 +213,7 @@ void USBHCore::process()
         }
         break;
     case EHostState::SET_CONFIGURATION:
-        if (set_cfg(m_device.CfgDesc.bConfigurationValue) == STM32_RESULT_OK)
+        if (set_cfg(m_device.CfgDesc.bConfigurationValue) == EStatus::OK)
         {
             m_gstate = EHostState::CHECK_CLASS;
             USBH_UsrLog("Default configuration set.");
@@ -238,7 +239,7 @@ void USBHCore::process()
             }
             if (m_active_class != nullptr)
             {
-                if (m_active_class->init(this) ==  STM32_RESULT_OK)
+                if (m_active_class->init(this) ==  EStatus::OK)
                 {
                     m_gstate = EHostState::CLASS_REQUEST;
                     USBH_UsrLog("%s class started.", m_active_class->get_name());
@@ -263,7 +264,7 @@ void USBHCore::process()
     case EHostState::CLASS_REQUEST:
         if (m_active_class != nullptr)
         {
-            if (m_active_class->class_request(this) == STM32_RESULT_OK)
+            if (m_active_class->class_request() == EStatus::OK)
                 m_gstate = EHostState::CLASS;
         }
         else
@@ -277,13 +278,13 @@ void USBHCore::process()
         break;
     case EHostState::CLASS:
         if (m_active_class != nullptr)
-            m_active_class->process(this);
+            m_active_class->process();
         break;
     case EHostState::DEV_DISCONNECTED:
         deInit_state_machine();
         if (m_active_class != nullptr)
         {
-            m_active_class->deInit(this);
+            m_active_class->deInit();
             m_active_class = nullptr;
         }
         break;
@@ -300,7 +301,7 @@ uint32_t USBHCore::handle_enum()
     switch (m_enum_state)
     {
     case EUSBState::IDLE:
-        if (get_dev_desc(8) == STM32_RESULT_OK)
+        if (get_dev_desc(8) == EStatus::OK)
         {
             m_control.pipe_size = m_device.DevDesc.bMaxPacketSize;
             m_enum_state = EUSBState::GET_FULL_DEV_DESC;
@@ -321,7 +322,7 @@ uint32_t USBHCore::handle_enum()
         }
         break;
     case EUSBState::GET_FULL_DEV_DESC:
-        if (get_dev_desc(USB_DEVICE_DESC_SIZE) == STM32_RESULT_OK)
+        if (get_dev_desc(USB_DEVICE_DESC_SIZE) == EStatus::OK)
         {
             USBH_UsrLog("PID: %xh", m_device.DevDesc.idProduct );
             USBH_UsrLog("VID: %xh", m_device.DevDesc.idVendor );
@@ -329,7 +330,7 @@ uint32_t USBHCore::handle_enum()
         }
         break;
     case EUSBState::SET_ADDR:
-        if (set_address(USBH_DEVICE_ADDRESS) == STM32_RESULT_OK)
+        if (set_address(USBH_DEVICE_ADDRESS) == EStatus::OK)
         {
             STM32_SYSTICK::delay(2);
             m_device.address = USBH_DEVICE_ADDRESS;
@@ -352,18 +353,18 @@ uint32_t USBHCore::handle_enum()
         }
         break;
     case EUSBState::GET_CFG_DESC:
-        if (get_cfg_desc(USB_CONFIGURATION_DESC_SIZE) == STM32_RESULT_OK)
+        if (get_cfg_desc(USB_CONFIGURATION_DESC_SIZE) == EStatus::OK)
             m_enum_state = EUSBState::GET_FULL_CFG_DESC;
         break;
     case EUSBState::GET_FULL_CFG_DESC:
-        if (get_cfg_desc(m_device.CfgDesc.wTotalLength) == STM32_RESULT_OK)
+        if (get_cfg_desc(m_device.CfgDesc.wTotalLength) == EStatus::OK)
             m_enum_state = EUSBState::GET_MFC_STRING_DESC;
         break;
     case EUSBState::GET_MFC_STRING_DESC:
         if (m_device.DevDesc.iManufacturer != 0)
         {
             if (get_string_desc(m_device.DevDesc.iManufacturer,
-                                m_device.Data, 0xff) == STM32_RESULT_OK)
+                                m_device.Data, 0xff) == EStatus::OK)
             {
                 USBH_UsrLog("Manufacturer : %s", m_device.Data);
             }
@@ -381,7 +382,7 @@ uint32_t USBHCore::handle_enum()
         if (m_device.DevDesc.iProduct != 0)
         {
             if (get_string_desc(m_device.DevDesc.iProduct,
-                                m_device.Data, 0xff) == STM32_RESULT_OK)
+                                m_device.Data, 0xff) == EStatus::OK)
             {
                 USBH_UsrLog("Product : %s", m_device.Data);
             }
@@ -399,7 +400,7 @@ uint32_t USBHCore::handle_enum()
         if (m_device.DevDesc.iSerialNumber != 0)
         {
             if (get_string_desc(m_device.DevDesc.iSerialNumber,
-                                m_device.Data, 0xff) == STM32_RESULT_OK)
+                                m_device.Data, 0xff) == EStatus::OK)
             {
                 USBH_UsrLog("Serial Number : %s", m_device.Data);
                 status = STM32_RESULT_OK;
@@ -421,7 +422,7 @@ uint32_t USBHCore::handle_enum()
 void USBHCore::handle_SOF()
 {
     if ((m_gstate == EHostState::CLASS) && (m_active_class != nullptr))
-        m_active_class->SOF_process(this);
+        m_active_class->SOF_process();
 }
 
 void USBHCore::deInit_state_machine()
@@ -549,9 +550,9 @@ uint16_t USBHCore::get_free_pipe()
     return 0xffff;
 }
 
-uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
+USBHCore::EStatus USBHCore::ctl_req(uint8_t* buff, uint16_t length)
 {
-    uint32_t status = STM32_RESULT_BUSY;
+    EStatus status = EStatus::BUSY;
     switch (m_request_state)
     {
     case ECMDState::SEND:
@@ -565,12 +566,12 @@ uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
         break;
     case ECMDState::WAIT:
         status = handle_control();
-        if (status == STM32_RESULT_OK)
+        if (status == EStatus::OK)
         {
             m_request_state = ECMDState::SEND;
             m_control.state = ECTRLState::IDLE;
         }
-        else if (status == STM32_RESULT_FAIL)
+        else if (status == EStatus::FAIL)
         {
             m_request_state = ECMDState::SEND;
         }
@@ -581,7 +582,7 @@ uint32_t USBHCore::ctl_req(uint8_t* buff, uint16_t length)
     return status;
 }
 
-uint32_t USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length)
+USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -598,25 +599,25 @@ uint32_t USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t*
     return ctl_req(buff, length);
 }
 
-uint32_t USBHCore::get_dev_desc(uint16_t length)
+USBHCore::EStatus USBHCore::get_dev_desc(uint16_t length)
 {
-    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                     USB_DESC_DEVICE, m_device.Data, length);
-    if (status == STM32_RESULT_OK)
+    EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                    USB_DESC_DEVICE, m_device.Data, length);
+    if (status == EStatus::OK)
         parse_dev_desc(&m_device.DevDesc, m_device.Data, length);
     return status;
 }
 
-uint32_t USBHCore::get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length)
+USBHCore::EStatus USBHCore::get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length)
 {
-    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                     USB_DESC_STRING | string_index, m_device.Data, length);
-    if (status == STM32_RESULT_OK)
+    EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                    USB_DESC_STRING | string_index, m_device.Data, length);
+    if (status == EStatus::OK)
         parse_string_desc(m_device.Data, buff, length);
     return status;
 }
 
-uint32_t USBHCore::set_cfg(uint16_t config_val)
+USBHCore::EStatus USBHCore::set_cfg(uint16_t config_val)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -629,7 +630,7 @@ uint32_t USBHCore::set_cfg(uint16_t config_val)
     return ctl_req(nullptr, 0);
 }
 
-uint32_t USBHCore::get_cfg_desc(uint16_t length)
+USBHCore::EStatus USBHCore::get_cfg_desc(uint16_t length)
 {
     uint8_t* pData;
 #if (USBH_KEEP_CFG_DESCRIPTOR == 1)
@@ -637,14 +638,14 @@ uint32_t USBHCore::get_cfg_desc(uint16_t length)
 #else
     pData = m_device.Data;
 #endif
-    uint32_t status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                     USB_DESC_CONFIGURATION, pData, length);
-    if (status == STM32_RESULT_OK)
+    EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
+                                    USB_DESC_CONFIGURATION, pData, length);
+    if (status == EStatus::OK)
         parse_cfg_desc(&m_device.CfgDesc, pData, length);
     return status;
 }
 
-uint32_t USBHCore::set_address(uint8_t dev_address)
+USBHCore::EStatus USBHCore::set_address(uint8_t dev_address)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -657,7 +658,7 @@ uint32_t USBHCore::set_address(uint8_t dev_address)
     return ctl_req(nullptr, 0);
 }
 
-uint32_t USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
+USBHCore::EStatus USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -670,7 +671,7 @@ uint32_t USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
     return ctl_req(nullptr, 0);
 }
 
-uint32_t USBHCore::clr_feature(uint8_t ep_num)
+USBHCore::EStatus USBHCore::clr_feature(uint8_t ep_num)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -732,11 +733,11 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
                 USBHEpDesc_t* pep = nullptr;
                 while ((ep_idx < pif->bNumEndpoints) && (ptr < pdesc->wTotalLength))
                 {
-                    pheader = get_next_desc(buf, &ptr);
+                    pheader = get_next_desc(reinterpret_cast<uint8_t*>(pheader), &ptr);
                     if (pheader->bDescriptorType == EDescType::ENDPOINT)
                     {
                         pep = &pif->Ep_Desc[ep_idx];
-                        parse_ep_desc(pep, buf);
+                        parse_ep_desc(pep, reinterpret_cast<uint8_t*>(pheader));
                         ++ep_idx;
                     }
                 }
@@ -765,11 +766,11 @@ USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr
     return pnext;
 }
 
-uint32_t USBHCore::handle_control()
+USBHCore::EStatus USBHCore::handle_control()
 {
     STM32_HCD::EURBState urb_state = STM32_HCD::EURBState::IDLE;
     uint8_t direction;
-    uint32_t status = STM32_RESULT_BUSY;
+    EStatus status = EStatus::BUSY;
     switch (m_control.state)
     {
     case ECTRLState::SETUP:
@@ -823,7 +824,7 @@ uint32_t USBHCore::handle_control()
         }
         else if (urb_state == STM32_HCD::EURBState::STALL)
         {
-            status = STM32_RESULT_FAIL;
+            status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
@@ -853,7 +854,7 @@ uint32_t USBHCore::handle_control()
         else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             m_control.state = ECTRLState::STALLED;
-            status = STM32_RESULT_FAIL;
+            status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
@@ -868,7 +869,7 @@ uint32_t USBHCore::handle_control()
         else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
-            status = STM32_RESULT_FAIL;
+            status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
@@ -884,14 +885,14 @@ uint32_t USBHCore::handle_control()
         if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::COMPLETE;
-            status = STM32_RESULT_OK;
+            status = EStatus::OK;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::STALL)
         {
-            status = STM32_RESULT_FAIL;
+            status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
@@ -914,7 +915,7 @@ uint32_t USBHCore::handle_control()
         if (urb_state == STM32_HCD::EURBState::DONE)
         {
             m_control.state = ECTRLState::COMPLETE;
-            status = STM32_RESULT_OK;
+            status = EStatus::OK;
 #if (USBH_USE_OS == 1)
             osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
 #endif
@@ -946,7 +947,7 @@ uint32_t USBHCore::handle_control()
             m_user(this, EHostUser::UNRECOVERED_ERROR);
             m_control.errorcount = 0;
             USBH_ErrLog("Control error");
-            status = STM32_RESULT_FAIL;
+            status = EStatus::FAIL;
         }
         break;
     case ECTRLState::IDLE:

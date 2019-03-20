@@ -327,8 +327,8 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
     uint32_t position;
     uint32_t ioposition = 0x00U;
     uint32_t iocurrent = 0x00U;
-    uint32_t tmp = 0x00U;
     #if defined(STM32F1)
+    uint32_t tmp = 0x00U;
     uint32_t config = 0x00U;
     __IO uint32_t *configregister;
     uint32_t registeroffset;

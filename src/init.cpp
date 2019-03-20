@@ -81,7 +81,7 @@ void PeriphInit()
     #ifdef STM32_USE_DMA
     STM32_DMA::init_all();
     #endif
-    #ifdef STM32_FATFS_USE
+    #if defined(STM32_FATFS_USE ) && defined(STM32_USE_SD)
     sd_driver.init_gpio();
     #endif
 }

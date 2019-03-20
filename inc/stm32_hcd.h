@@ -86,7 +86,7 @@ public:
         DRD = 2,
     };
 
-    enum class EURBState: uint32_t
+    enum class EURBState: uint8_t
     {
         IDLE = 0,
         DONE,
@@ -96,7 +96,7 @@ public:
         STALL,
     };
 
-    enum class EHCState: uint32_t
+    enum class EHCState: uint8_t
     {
         IDLE = 0,
         XFRC,
@@ -109,7 +109,7 @@ public:
         DATATGLERR,
     };
 
-    enum class EOTGSpeed: uint32_t
+    enum class EOTGSpeed: uint8_t
     {
         HIGH = 0,
         HIGH_IN_FULL = 1,
@@ -139,7 +139,7 @@ public:
         _6_MHZ,
     };
 
-    enum class EEPType: uint32_t
+    enum class EEPType: uint8_t
     {
         CTRL = 0,
         ISOC,
@@ -185,21 +185,21 @@ public:
       uint8_t   *xfer_buff;    /*!< Pointer to transfer buffer.                                                */
       uint8_t   toggle_in;     /*!< IN transfer current toggle flag.
                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
-      uint8_t   dummy;
-      uint16_t  max_packet;    /*!< Endpoint Max packet size.
-                                    This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
-      EOTGSpeed speed;         /*!< USB Host speed.
-                                    This parameter can be any value of @ref USB_Core_Speed_                    */
-      EEPType   ep_type;       /*!< Endpoint Type.
-                                    This parameter can be any value of @ref USB_EP_Type_                       */
-      uint32_t  xfer_len;      /*!< Current transfer length.                                                   */
-      uint32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
-      uint32_t  dma_addr;      /*!< 32 bits aligned transfer buffer address.                                   */
-      uint32_t  ErrCnt;        /*!< Host channel error count.*/
       EURBState urb_state;     /*!< URB state.
                                     This parameter can be any value of @ref USB_OTG_URBStateTypeDef            */
       EHCState  state;         /*!< Host Channel state.
                                     This parameter can be any value of @ref USB_OTG_HCStateTypeDef             */
+      uint8_t   dummy;
+      EOTGSpeed speed;         /*!< USB Host speed.
+                                    This parameter can be any value of @ref USB_Core_Speed_                    */
+      EEPType   ep_type;       /*!< Endpoint Type.
+                                    This parameter can be any value of @ref USB_EP_Type_                       */
+      uint16_t  max_packet;    /*!< Endpoint Max packet size.
+                                    This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
+      uint32_t  xfer_len;      /*!< Current transfer length.                                                   */
+      uint32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
+      uint32_t  dma_addr;      /*!< 32 bits aligned transfer buffer address.                                   */
+      uint32_t  ErrCnt;        /*!< Host channel error count.*/
     } OTG_HC_t;
 
     uint32_t init(USB_OTG_GlobalTypeDef *regs_addr, EOTG_PHY phy, bool use_ext_vbus, bool dma_enable, EOTGSpeed speed, uint8_t host_channels);
@@ -234,7 +234,7 @@ public:
     FORCE_INLINE void clear_out_ep_intr(uint8_t ep_num, uint32_t mask) { m_regs->out_eps[ep_num].DOEPINT = mask; }
 
     FORCE_INLINE uint32_t get_current_frame() { return (m_regs->host.HFNUM & USB_OTG_HFNUM_FRNUM); }
-    FORCE_INLINE bool is_cur_frame_odd() { return (m_regs->host.HFNUM & 0x01) != 0; }
+    FORCE_INLINE bool is_cur_frame_odd() { return (m_regs->host.HFNUM & 0x01) == 0; }
     FORCE_INLINE EOTGSpeed get_current_speed() { return get_host_speed(); }
 
     void set_toggle(uint8_t pipe, uint8_t toggle);
