@@ -6,22 +6,23 @@
  * */
 
 #include <inttypes.h>
-
-class USBHCore;
+#include "usbhcore.h"
 
 class USBHClass
 {
 public:
     virtual uint8_t get_class_code() = 0;
     virtual const char* get_name() = 0;
-    virtual uint32_t init(USBHCore* host) = 0;
-    virtual uint32_t deInit(USBHCore* host) = 0;
-    virtual uint32_t class_request(USBHCore* host) = 0;
-    virtual uint32_t process(USBHCore* host) = 0;
-    virtual uint32_t SOF_process(USBHCore* host) = 0;
+    virtual USBHCore::EStatus init(USBHCore* host) = 0;
+    virtual USBHCore::EStatus deInit() = 0;
+    virtual USBHCore::EStatus class_request() = 0;
+    virtual USBHCore::EStatus process() = 0;
+    virtual USBHCore::EStatus SOF_process() = 0;
 
     inline void* get_data() { return m_data; }
     inline void set_data(void* val) { m_data = val; }
+protected:
+    USBHCore*   m_host;
 private:
     void*       m_data;
 };
