@@ -18,13 +18,8 @@ public:
     virtual USBHCore::EStatus class_request() = 0;
     virtual USBHCore::EStatus process() = 0;
     virtual USBHCore::EStatus SOF_process() = 0;
-
-    inline void* get_data() { return m_data; }
-    inline void set_data(void* val) { m_data = val; }
 protected:
     USBHCore*   m_host;
-private:
-    void*       m_data;
 };
 
 #endif

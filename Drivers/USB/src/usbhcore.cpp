@@ -38,7 +38,6 @@ void USBHCore::deInit()
     deInit_state_machine();
     if (m_hcd != nullptr)
     {
-        m_active_class->set_data(nullptr);
         LL_stop();
     }
 }

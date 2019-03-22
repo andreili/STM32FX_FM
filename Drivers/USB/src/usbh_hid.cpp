@@ -1,7 +1,5 @@
 #include "usbh_hid.h"
 #include "my_func.h"
-#include "usbh_hid_keyb.h"
-#include "xprintf.h"
 
 USBHCore::EStatus USBH_HID::init(USBHCore* host)
 {
@@ -16,7 +14,6 @@ USBHCore::EStatus USBH_HID::init(USBHCore* host)
     }
     m_host->select_interface(interface);
 
-    act_class->set_data(this);
     m_state = EState::ERROR;
 
     USBHCore::USBHInterfaceDesc_t* iface = m_host->get_current_interface();
@@ -44,6 +41,13 @@ USBHCore::EStatus USBH_HID::init(USBHCore* host)
     m_poll = iface->Ep_Desc[0].bInterval;
     if (m_poll < HID_MIN_POLL)
         m_poll = HID_MIN_POLL;
+
+    for (int i=0 ; i<CUSTOM_DATA_SIZE ; ++i)
+        m_custom_data[i] = 0;
+    uint8_t *data = m_host->get_dev_data();
+    for (int i=0 ; i<(HID_QUEUE_SIZE * REPORT_DATA_SIZE) ; ++i)
+        data[i] = 0;
+    m_fifo.init(m_host->get_dev_data(), HID_QUEUE_SIZE * REPORT_DATA_SIZE);
 
     /* Check fo available number of endpoints */
     /* Find the number of EPs in the Interface Descriptor */
@@ -147,22 +151,12 @@ USBHCore::EStatus USBH_HID::process()
     switch (m_state)
     {
     case EState::INIT:
-        switch (m_type)
-        {
-        case EType::MOUSE:
-            break;
-        case EType::KEYBOARD:
-#ifdef STM32_USE_USB_HID_KBD
-            reinterpret_cast<USBH_HID_Keyb*>(this)->kbd_init();
-#endif
-            break;
-        case EType::UNKNOWN:
-            break;
-        }
+        // NOTHING
+    [[clang::fallthrough]];
     case EState::IDLE:
-        if (get_report(0x01, 0, m_data, m_length) == USBHCore::EStatus::OK)
+        if (get_report(0x01, 0, m_custom_data, m_length) == USBHCore::EStatus::OK)
         {
-            m_fifo.write(m_data, m_length);
+            m_fifo.write(m_custom_data, m_length);
             m_state = EState::SYNC;
         }
         break;
@@ -175,7 +169,7 @@ USBHCore::EStatus USBH_HID::process()
 #endif
         break;
     case EState::GET_DATA:
-        m_host->interrupt_recieve_data(m_data, m_length, m_in_pipe);
+        m_host->interrupt_recieve_data(m_custom_data, m_length, m_in_pipe);
         m_state = EState::POLL;
         m_timer = m_host->get_timer();
         m_data_ready = false;
@@ -186,7 +180,7 @@ USBHCore::EStatus USBH_HID::process()
         case STM32_HCD::EURBState::DONE:
             if (!m_data_ready)
             {
-                m_fifo.write(m_data, m_length);
+                m_fifo.write(m_custom_data, m_length);
                 m_data_ready = true;
 #if (USBH_USE_OS == 1)
                 osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
@@ -200,6 +194,7 @@ USBHCore::EStatus USBH_HID::process()
         default:
             break;
         }
+        break;
     case EState::SEND_DATA:
     case EState::BUSY:
     case EState::ERROR:
@@ -237,29 +232,28 @@ uint16_t USBH_HID::get_pool_interval()
     }
 }
 
-void USBH_HID::decode()
+USBHCore::EStatus USBH_HID::decode(uint8_t *data)
 {
     debug_fn();
+    if (m_length == 0)
+        return USBHCore::EStatus::FAIL;
     switch (m_type)
     {
     case EType::MOUSE:
         break;
     case EType::KEYBOARD:
-#ifdef STM32_USE_USB_HID_KBD
-        reinterpret_cast<USBH_HID_Keyb*>(this)->kbd_decode();
-#endif
+        if (m_fifo.read(data, m_length) == m_length)
+            return USBHCore::EStatus::OK;
         break;
     case EType::UNKNOWN:
         break;
     }
+    return USBHCore::EStatus::FAIL;
 }
 
 void USBH_HID::parse_HID_desc()
 {
     memcpy(reinterpret_cast<uint8_t*>(&m_HID_Desc), m_host->get_dev_data(), sizeof(DescTypeDef));
-    /*xprintf("HID: bLength=%d bDescriptorType=%d bcdHID=%d bCountryCode=%d bNumDescriptors=%d bReportDescriptorType=%d wItemLength=%d\n\r",
-            m_HID_Desc.bLength, m_HID_Desc.bDescriptorType, m_HID_Desc.bcdHID, m_HID_Desc.bCountryCode, m_HID_Desc.bNumDescriptors,
-            m_HID_Desc.bReportDescriptorType, m_HID_Desc.wItemLength);*/
 }
 
 USBHCore::EStatus USBH_HID::get_HID_report_descriptor(uint16_t size)

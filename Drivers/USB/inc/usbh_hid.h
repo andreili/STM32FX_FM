@@ -18,7 +18,7 @@
 #define HID_QUEUE_SIZE                              10
 
 #define CUSTOM_DATA_SIZE                            20
-#define REPORT_DATA_SIZE                            2
+#define REPORT_DATA_SIZE                            8
 
 class USBH_HID : public USBHClass
 {
@@ -50,7 +50,7 @@ public:
     {
         MOUSE    = 0x01,
         KEYBOARD = 0x02,
-        UNKNOWN = 0xFF,
+        UNKNOWN  = 0xFF,
     };
 
     enum ERequest: uint8_t
@@ -121,6 +121,27 @@ public:
     } DescTypeDef;
     #pragma pack(pop)
 
+    typedef struct
+    {
+        union
+        {
+            uint8_t alts_all;
+            struct
+            {
+                uint8_t lctrl: 1;
+                uint8_t lshift: 1;
+                uint8_t lalt: 1;
+                uint8_t lgui: 1;
+                uint8_t rctrl: 1;
+                uint8_t rshift: 1;
+                uint8_t ralt: 1;
+                uint8_t rgui: 1;
+            } alts;
+        } a;
+        uint8_t keys[7];
+    } KbdReport;
+
+
     virtual uint8_t get_class_code() { return USB_HID_CLASS; }
     virtual const char* get_name() { return "HID"; }
     virtual USBHCore::EStatus init(USBHCore* host);
@@ -131,7 +152,7 @@ public:
 
     FORCE_INLINE EType get_type() { return m_type; }
     uint16_t get_pool_interval();
-    void decode();
+    USBHCore::EStatus decode(uint8_t *data);
 
 protected:
     uint8_t         m_out_pipe;
@@ -145,13 +166,11 @@ protected:
     EType           m_type;
     uint16_t        m_length;
     uint16_t        m_poll;
-    uint8_t*        m_data;
     uint32_t        m_timer;
     FIFO            m_fifo;
     DescTypeDef     m_HID_Desc;
 
     uint8_t         m_custom_data[CUSTOM_DATA_SIZE];
-    uint32_t        m_report_data[REPORT_DATA_SIZE];
 
 private:
     FORCE_INLINE USBHCore::EStatus get_HID_descriptor(uint16_t size)
