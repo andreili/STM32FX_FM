@@ -182,22 +182,22 @@ private:
     USBHCore::EStatus get_HID_report_descriptor(uint16_t size);
     FORCE_INLINE USBHCore::EStatus set_idle(uint8_t duration, uint8_t reportId)
     {
-        return m_host->ctrl_req_custom(USB_H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
+        return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
                                        ERequest::SET_IDLE, static_cast<uint16_t>((duration << 8) | reportId), 0, nullptr);
     }
     FORCE_INLINE USBHCore::EStatus set_protocol(uint8_t protocol)
     {
-        return m_host->ctrl_req_custom(USB_H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
+        return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
                                        ERequest::SET_PROTOCOL, (protocol != 0) ? 0 : 1, 0, nullptr);
     }
     FORCE_INLINE USBHCore::EStatus set_report(uint8_t type, uint8_t id, uint8_t *buf, uint16_t len)
     {
-        return m_host->ctrl_req_custom(USB_H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
+        return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
                                        ERequest::SET_REPORT, static_cast<uint16_t>((type << 8) | id), len, buf);
     }
     FORCE_INLINE USBHCore::EStatus get_report(uint8_t type, uint8_t id, uint8_t *buf, uint16_t len)
     {
-        return m_host->ctrl_req_custom(USB_D2H, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
+        return m_host->ctrl_req_custom(USBHCore::EReqDir::D2H, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
                                        ERequest::GET_REPORT, static_cast<uint16_t>((type << 8) | id), len, buf);
     }
 };

@@ -366,13 +366,14 @@ uint32_t USBHCore::handle_enum()
                                 m_device.Data, 0xff) == EStatus::OK)
             {
                 USBH_UsrLog("Manufacturer : %s", m_device.Data);
+                m_enum_state = EUSBState::GET_PRODUCT_STRING_DESC;
             }
         }
         else
         {
             USBH_UsrLog("Manufacturer : N/A");
+            m_enum_state = EUSBState::GET_PRODUCT_STRING_DESC;
         }
-        m_enum_state = EUSBState::GET_PRODUCT_STRING_DESC;
 #if (USBH_USE_OS == 1)
         osMessagePut( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
 #endif
@@ -384,13 +385,14 @@ uint32_t USBHCore::handle_enum()
                                 m_device.Data, 0xff) == EStatus::OK)
             {
                 USBH_UsrLog("Product : %s", m_device.Data);
+                m_enum_state = EUSBState::GET_SERIALNUM_STRING_DESC;
             }
         }
         else
         {
             USBH_UsrLog("Product : N/A");
+            m_enum_state = EUSBState::GET_SERIALNUM_STRING_DESC;
         }
-        m_enum_state = EUSBState::GET_SERIALNUM_STRING_DESC;
 #if (USBH_USE_OS == 1)
         osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
 #endif
@@ -492,7 +494,7 @@ void USBHCore::LL_init()
     {
         m_hcd = &usb_hs;
         m_hcd->set_data(static_cast<void*>(this));
-        if (usb_hs.init(USB_OTG_HS, STM32_HCD::EOTG_PHY::EMBEDDED, false, false, STM32_HCD::EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
+        if (usb_hs.init(USB_OTG_HS, STM32_HCD::EOTG_PHY::EMBEDDED, false, true, STM32_HCD::EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
             Error_Handler();
         LL_set_timer(usb_hs.get_current_frame());
     }
@@ -585,7 +587,7 @@ USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx,
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_D2H | req_type;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(EReqDir::D2H) | req_type;
         m_control.setup.b.bRequest = ERequest::GET_DESCRIPTOR;
         m_control.setup.b.wValue.w = value_idx;
 
@@ -620,7 +622,7 @@ USBHCore::EStatus USBHCore::set_cfg(uint16_t config_val)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(EReqDir::H2D) | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
         m_control.setup.b.bRequest = ERequest::SET_CONFIGURATION;
         m_control.setup.b.wValue.w = config_val;
         m_control.setup.b.wIndex.w = 0;
@@ -648,7 +650,7 @@ USBHCore::EStatus USBHCore::set_address(uint8_t dev_address)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(EReqDir::H2D) | EReqRecipient::REQ_DEVICE | EReqType::STANDARD;
         m_control.setup.b.bRequest = ERequest::SET_ADDRESS;
         m_control.setup.b.wValue.w = dev_address;
         m_control.setup.b.wIndex.w = 0;
@@ -661,7 +663,7 @@ USBHCore::EStatus USBHCore::set_interface(uint8_t ep_num, uint8_t alt_setting)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(EReqDir::H2D) | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
         m_control.setup.b.bRequest = ERequest::SET_INTERFACE;
         m_control.setup.b.wValue.w = alt_setting;
         m_control.setup.b.wIndex.w = ep_num;
@@ -674,7 +676,7 @@ USBHCore::EStatus USBHCore::clr_feature(uint8_t ep_num)
 {
     if (m_request_state == ECMDState::SEND)
     {
-        m_control.setup.b.bmRequestType = USB_H2D | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(EReqDir::H2D) | EReqRecipient::REQ_INTERFACE | EReqType::STANDARD;
         m_control.setup.b.bRequest = ERequest::CLEAR_FEATURE;
         m_control.setup.b.wValue.w = FEATURE_SELECTOR_ENDPOINT;
         m_control.setup.b.wIndex.w = ep_num;
@@ -768,7 +770,7 @@ USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr
 USBHCore::EStatus USBHCore::handle_control()
 {
     STM32_HCD::EURBState urb_state = STM32_HCD::EURBState::IDLE;
-    uint8_t direction;
+    EReqDir direction;
     EStatus status = EStatus::BUSY;
     switch (m_control.state)
     {
@@ -780,17 +782,17 @@ USBHCore::EStatus USBHCore::handle_control()
         urb_state = m_hcd->HC_get_URB_state(m_control.pipe_out);
         if (urb_state == STM32_HCD::EURBState::DONE)
         {
-            direction = (m_control.setup.b.bmRequestType & USB_REQ_DIR_MASK);
+            direction = static_cast<EReqDir>(m_control.setup.b.bmRequestType & static_cast<uint8_t>(EReqDir::DIR_MASK));
             if (m_control.setup.b.wLength.w != 0)
             {
-                if (direction == USB_D2H)
+                if (direction == EReqDir::D2H)
                     m_control.state = ECTRLState::DATA_IN;
                 else
                     m_control.state = ECTRLState::DATA_OUT;
             }
             else
             {
-                if (direction == USB_D2H)
+                if (direction == EReqDir::D2H)
                     m_control.state = ECTRLState::STATUS_OUT;
                 else
                     m_control.state = ECTRLState::STATUS_IN;

@@ -876,12 +876,11 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
     HC_set_Xfer_size(hc->ch_num, hc->xfer_len, numpackets, static_cast<uint8_t>(hc->data_pid));
 
     if (dma)
-        HC_set_Xfer_DMA(hc->ch_num, hc->xfer_len);
+        HC_set_Xfer_DMA(hc->ch_num, hc->xfer_buff);
 
-    bool is_odd = is_cur_frame_odd();
+    uint32_t is_odd = is_cur_frame_odd();
     disable_HC_odd_frame(hc->ch_num);
-    if (is_odd)
-        enable_HC_odd_frame(hc->ch_num);
+    set_HC_odd_frame(hc->ch_num, (is_odd << USB_OTG_HCCHAR_ODDFRM_Pos));
 
     HC_reactivate(hc->ch_num);
 
@@ -1031,7 +1030,7 @@ void STM32_HCD::HC_in_IRQ_handler(uint8_t chnum)
         }
         else if (m_HC[chnum].ep_type == EEPType::INTR)
         {
-            enable_HC_odd_frame(chnum);
+            set_HC_odd_frame(chnum, USB_OTG_HCCHAR_ODDFRM);
             m_HC[chnum].urb_state = EURBState::DONE;
             HC_notify_URB_change_callback(this, chnum, m_HC[chnum].urb_state);
         }

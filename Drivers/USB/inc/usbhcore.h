@@ -9,11 +9,6 @@
 
 #include "usbh_config.h"
 
-/* bmRequestType :D7 Data Phase Transfer Direction  */
-#define  USB_REQ_DIR_MASK                               0x80
-#define  USB_H2D                                        0x00
-#define  USB_D2H                                        0x80
-
 #define USB_DEVICE_DESC_SIZE                               18
 #define USB_CONFIGURATION_DESC_SIZE                        9
 #define USB_HID_DESC_SIZE                                  9
@@ -220,6 +215,13 @@ public:
         STATE_CHANGED_EVENT,
     };
 
+    enum class EReqDir: uint8_t
+    {
+        DIR_MASK    = 0x80,
+        H2D         = 0x00,
+        D2H         = 0x80,
+    };
+
     typedef union
     {
       uint16_t w;
@@ -365,6 +367,10 @@ public:
 
     FORCE_INLINE void interrupt_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
+    FORCE_INLINE void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
+        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, false); }
+    FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH ? do_ping : 0)); }
 
     // device
     FORCE_INLINE uint8_t get_dev_addr() { return m_device.address; }
@@ -373,6 +379,8 @@ public:
 
     FORCE_INLINE void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
     FORCE_INLINE uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }
+
+    FORCE_INLINE uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
 
     FORCE_INLINE void to_user(EHostUser reason) { m_user(this, reason); }
 
@@ -391,9 +399,9 @@ public:
 
     EStatus clr_feature(uint8_t ep_num);
     EStatus get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
-    FORCE_INLINE EStatus ctrl_req_custom(uint8_t dir, uint8_t req_type, uint8_t req, uint16_t value_idx, uint16_t length, uint8_t* buff)
+    FORCE_INLINE EStatus ctrl_req_custom(EReqDir dir, uint8_t req_type, uint8_t req, uint16_t value_idx, uint16_t length, uint8_t* buff)
     {
-        m_control.setup.b.bmRequestType = dir | req_type;
+        m_control.setup.b.bmRequestType = static_cast<uint8_t>(dir) | req_type;
         m_control.setup.b.bRequest = req;
         m_control.setup.b.wValue.w = value_idx;
 
@@ -432,7 +440,6 @@ private:
 
     FORCE_INLINE STM32_HCD::EOTGSpeed LL_get_speed() { return m_hcd->get_current_speed(); }
     FORCE_INLINE void LL_reset_port() { m_hcd->reset_port(); }
-    FORCE_INLINE uint32_t LL_get_last_Xfer_size(uint8_t pipe) { return m_hcd->HC_get_Xfer_count(pipe); }
     void LL_driver_VBUS(uint8_t state);
 
     FORCE_INLINE uint32_t LL_open_pipe(uint8_t pipe_num, uint8_t ep_num, uint8_t dev_address, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
@@ -456,10 +463,6 @@ private:
         { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::CTRL, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH) ? do_ping : false); }
     FORCE_INLINE void ctrl_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::CTRL, USBH_PID_DATA, buff, length, false); }
-    FORCE_INLINE void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
-        { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, false); }
-    FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
-        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH) ? do_ping : false); }
     FORCE_INLINE void interrupt_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::INTR, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void isoc_recieve_data(uint8_t* buff, uint16_t length, uint8_t ch_num)

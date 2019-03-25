@@ -234,7 +234,7 @@ public:
     FORCE_INLINE void clear_out_ep_intr(uint8_t ep_num, uint32_t mask) { m_regs->out_eps[ep_num].DOEPINT = mask; }
 
     FORCE_INLINE uint32_t get_current_frame() { return (m_regs->host.HFNUM & USB_OTG_HFNUM_FRNUM); }
-    FORCE_INLINE bool is_cur_frame_odd() { return (m_regs->host.HFNUM & 0x01) == 0; }
+    FORCE_INLINE uint32_t is_cur_frame_odd() { return (m_regs->host.HFNUM & 0x01) ? 0 : 1; }
     FORCE_INLINE EOTGSpeed get_current_speed() { return get_host_speed(); }
 
     void set_toggle(uint8_t pipe, uint8_t toggle);
@@ -480,8 +480,8 @@ private:
                     ((numpkt << USB_OTG_HCTSIZ_PKTCNT_Pos) & USB_OTG_HCTSIZ_PKTCNT) |
                     ((PID << USB_OTG_HCTSIZ_DPID_Pos) & USB_OTG_HCTSIZ_DPID);
         }
-    FORCE_INLINE void HC_set_Xfer_DMA(uint8_t ch_num, uint32_t size) { m_regs->channels[ch_num].HCDMA = size; }
-    FORCE_INLINE void enable_HC_odd_frame(uint8_t ch_num) { m_regs->channels[ch_num].HCCHAR |= USB_OTG_HCCHAR_ODDFRM; }
+    FORCE_INLINE void HC_set_Xfer_DMA(uint8_t ch_num, uint8_t *buf) { m_regs->channels[ch_num].HCDMA = reinterpret_cast<uint32_t>(buf); }
+    FORCE_INLINE void set_HC_odd_frame(uint8_t ch_num, uint32_t val) { m_regs->channels[ch_num].HCCHAR |= val; }
     FORCE_INLINE void disable_HC_odd_frame(uint8_t ch_num) { m_regs->channels[ch_num].HCCHAR &= ~USB_OTG_HCCHAR_ODDFRM; }
     FORCE_INLINE uint16_t get_TX_NP_FIFO_size() { return m_regs->global.HNPTXSTS & 0xffff; }
     FORCE_INLINE uint16_t get_TX_NP_FIFO_hi_size() { return m_regs->global.HNPTXSTS & 0xff0000; }
