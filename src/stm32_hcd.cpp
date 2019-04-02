@@ -638,11 +638,11 @@ void STM32_HCD::EP0_start_Xfer(bool ep_is_in, uint8_t ep_num, uint16_t ep_maxpac
             Xfer_in_pkt_size(ep_num, 1);
             Xfer_in_pkt_end(ep_num, xfer_len);
         }
-        Xfer_in_ep_enable(ep_num);
         if (dma)
             Xfer_in_enable_DMA(ep_num, dma_addr);
         else if (xfer_len > 0)
             set_dev_empty_mask(ep_num);
+        Xfer_in_ep_enable(ep_num);
     }
     else
     {

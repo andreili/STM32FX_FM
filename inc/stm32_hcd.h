@@ -40,6 +40,8 @@
 #define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5U
 #define GRXSTS_PKTSTS_CH_HALTED                7U
 
+#define USB_OTG_FIFO_ONE_SIZE                  (USB_OTG_FIFO_SIZE / 4)
+
 #define USB_IN_EP_COUNT ((USB_OTG_OUT_ENDPOINT_BASE - USB_OTG_IN_ENDPOINT_BASE) / USB_OTG_EP_REG_SIZE)
 #define USB_OUT_EP_COUNT ((USB_OTG_PCGCCTL_BASE - USB_OTG_OUT_ENDPOINT_BASE) / USB_OTG_EP_REG_SIZE)
 #define USB_HOST_PORTS_COUNT ((USB_OTG_HOST_CHANNEL_BASE - USB_OTG_HOST_PORT_BASE) / sizeof(uint32_t))
@@ -412,8 +414,8 @@ private:
 
     void write_packet(uint8_t* src, uint8_t ch_ep_num, uint32_t len, uint8_t dma);
     void* read_packet(uint8_t* dest, uint32_t len);
-    FORCE_INLINE void write_FIFO(uint8_t cp_ep_num, uint32_t data) { m_regs->DFIFO[cp_ep_num] = data; }
-    FORCE_INLINE uint32_t read_FIFO(uint8_t cp_ep_num) { return m_regs->DFIFO[cp_ep_num]; }
+    FORCE_INLINE void write_FIFO(uint8_t cp_ep_num, uint32_t data) { m_regs->DFIFO[cp_ep_num * USB_OTG_FIFO_ONE_SIZE] = data; }
+    FORCE_INLINE uint32_t read_FIFO(uint8_t cp_ep_num) { return m_regs->DFIFO[cp_ep_num * USB_OTG_FIFO_ONE_SIZE]; }
 
     void EP_set_stall(bool ep_is_in, uint8_t ep_num);
     void EP_clear_stall(bool ep_is_in, uint8_t ep_num, EEPType ep_type);
