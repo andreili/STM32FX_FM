@@ -211,7 +211,7 @@ STM32_SD::ETransferState STM32_SD::get_status()
         return ETransferState::BUSY;
 }
 
-STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint32_t blocks)
+STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint16_t blocks)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t count = 0U, *tempbuff = reinterpret_cast<uint32_t*>(buf);
@@ -359,7 +359,7 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint32_t blocks)
+STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint16_t blocks)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t totalnumberofbytes = 0U, bytestransferred = 0U, count = 0U, restwords = 0U;

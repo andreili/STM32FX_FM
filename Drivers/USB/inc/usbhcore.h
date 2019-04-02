@@ -370,12 +370,13 @@ public:
     FORCE_INLINE void bulk_receive_data(uint8_t* buff, uint16_t length, uint8_t ch_num)
         { m_hcd->HC_submit_request(ch_num, true, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, false); }
     FORCE_INLINE void bulk_send_data(uint8_t* buff, uint16_t length, uint8_t ch_num, uint8_t do_ping)
-        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed == STM32_HCD::EOTGSpeed::HIGH ? do_ping : 0)); }
+        { m_hcd->HC_submit_request(ch_num, false, STM32_HCD::EEPType::BULK, USBH_PID_DATA, buff, length, (m_device.speed != STM32_HCD::EOTGSpeed::HIGH ? 0 : do_ping)); }
 
     // device
     FORCE_INLINE uint8_t get_dev_addr() { return m_device.address; }
     FORCE_INLINE STM32_HCD::EOTGSpeed get_dev_speed() { return m_device.speed; }
     FORCE_INLINE uint8_t* get_dev_data() { return m_device.Data; }
+    FORCE_INLINE bool is_connected() { return m_device.is_connected; }
 
     FORCE_INLINE void LL_set_toggle(uint8_t pipe, uint8_t toggle) { m_hcd->set_toggle(pipe, toggle); }
     FORCE_INLINE uint8_t LL_get_toggle(uint8_t pipe) { return m_hcd->get_toggle(pipe); }

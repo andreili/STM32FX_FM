@@ -16,6 +16,7 @@ public:
     static void init_all();
     void init_base(USART_TypeDef* uart);
     void init(uint32_t brate);
+    void deinit();
     
     void send_char(char ch);
     void send_str(const char *str, TXRX_MODE mode);

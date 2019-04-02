@@ -1,28 +1,27 @@
 #include "fatfs.h"
 #include "stm32_conf.h"
+#ifdef STM32_USE_SD
 #include STM32_FATFS_DRIVER_INC
+#endif
 
 DiskDrv FAT_FS::m_disk;
 
-extern STM32_FATFS_DRIVER sd_driver;
-TCHAR SD_path[4];
-
 void FAT_FS::init()
 {
+    debug_fn();
     m_disk.nbr = 0;
-    link_driver((DiskIODriver*)&sd_driver, SD_path, 0);
 }
 
 DSTATUS FAT_FS::disk_status(BYTE pdrv)
 {
-    return ((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->status(m_disk.lun[pdrv]);
+    return m_disk.drv[pdrv]->status(m_disk.lun[pdrv]);
 }
 
 DSTATUS FAT_FS::disk_initialize(BYTE pdrv)
 {
     if (m_disk.is_initialized[pdrv] == 0)
     {
-        if (((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->init(m_disk.lun[pdrv]) == STM32_SD::ESDError::OK)
+        if (m_disk.drv[pdrv]->init(m_disk.lun[pdrv]) == RES_OK)
         {
             m_disk.is_initialized[pdrv] = 1;
             return RES_OK;
@@ -33,24 +32,26 @@ DSTATUS FAT_FS::disk_initialize(BYTE pdrv)
 
 DSTATUS FAT_FS::disk_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count)
 {
-    return ((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->read(m_disk.lun[pdrv], buff, sector, count);
+    return m_disk.drv[pdrv]->read(m_disk.lun[pdrv], buff, sector, static_cast<uint16_t>(count));
 }
 
 #if _USE_WRITE == 1
 DSTATUS FAT_FS::disk_write(BYTE pdrv, BYTE *buff, DWORD sector, UINT count)
 {
-    return ((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->write(m_disk.lun[pdrv], buff, sector, count);
+    return m_disk.drv[pdrv]->write(m_disk.lun[pdrv], buff, sector, static_cast<uint16_t>(count));
 }
 #endif
+
 #if _USE_IOCTL == 1
-DSTATUS FAT_FS::disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
+DSTATUS FAT_FS::disk_ioctl(BYTE pdrv, FAT_FS::ECTRL cmd, void *buff)
 {
-    return((STM32_FATFS_DRIVER*)m_disk.drv[pdrv])->ioctl(m_disk.lun[pdrv], cmd, buff);
+    return m_disk.drv[pdrv]->ioctl(m_disk.lun[pdrv], cmd, buff);
 }
 #endif
 
 void FAT_FS::link_driver(DiskIODriver *drv, TCHAR *path, uint8_t lun)
 {
+    debug_fn();
     if (m_disk.nbr <= _VOLUMES)
     {
         m_disk.is_initialized[m_disk.nbr] = 0;
@@ -90,7 +91,7 @@ DSTATUS disk_write(BYTE pdrv, BYTE *buff, DWORD sector, UINT count)
 
 #endif
 #if _USE_IOCTL == 1
-DSTATUS disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
+DSTATUS disk_ioctl(BYTE pdrv, FAT_FS::ECTRL cmd, void *buff)
 {
     return FAT_FS::disk_ioctl(pdrv, cmd, buff);
 }

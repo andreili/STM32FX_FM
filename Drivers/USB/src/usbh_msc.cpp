@@ -1,5 +1,4 @@
 #include "usbh_msc.h"
-#include "my_func.h"
 
 #define USB_REQ_BOT_RESET                0xFF
 #define USB_REQ_GET_MAX_LUN              0xFE
@@ -14,21 +13,6 @@
 
 #define CBW_CB_LENGTH                       16
 #define CBW_LENGTH                          10
-
-#define SCSI_SENSE_KEY_NO_SENSE                          0x00
-#define SCSI_SENSE_KEY_RECOVERED_ERROR                   0x01
-#define SCSI_SENSE_KEY_NOT_READY                         0x02
-#define SCSI_SENSE_KEY_MEDIUM_ERROR                      0x03
-#define SCSI_SENSE_KEY_HARDWARE_ERROR                    0x04
-#define SCSI_SENSE_KEY_ILLEGAL_REQUEST                   0x05
-#define SCSI_SENSE_KEY_UNIT_ATTENTION                    0x06
-#define SCSI_SENSE_KEY_DATA_PROTECT                      0x07
-#define SCSI_SENSE_KEY_BLANK_CHECK                       0x08
-#define SCSI_SENSE_KEY_VENDOR_SPECIFIC                   0x09
-#define SCSI_SENSE_KEY_COPY_ABORTED                      0x0A
-#define SCSI_SENSE_KEY_ABORTED_COMMAND                   0x0B
-#define SCSI_SENSE_KEY_VOLUME_OVERFLOW                   0x0D
-#define SCSI_SENSE_KEY_MISCOMPARE                        0x0E
 
 USBHCore::EStatus USBH_MSC::init(USBHCore* host)
 {
@@ -106,6 +90,7 @@ USBHCore::EStatus USBH_MSC::deInit()
         m_host->free_pipe(m_out_pipe);
         m_out_pipe = 0;
     }
+    m_host = nullptr;
     return USBHCore::EStatus::OK;
 }
 
@@ -328,6 +313,136 @@ USBHCore::EStatus USBH_MSC::process()
 USBHCore::EStatus USBH_MSC::SOF_process()
 {
     return USBHCore::EStatus::OK;
+}
+
+USBHCore::EStatus USBH_MSC::read(uint8_t lun, uint32_t address, uint8_t* buf, uint16_t length)
+{
+    if ((!m_host->is_connected()) ||
+        (m_host->get_state() != USBHCore::EHostState::CLASS) ||
+        (m_unit[lun].state != EState::IDLE))
+        return USBHCore::EStatus::FAIL;
+
+    m_state = EState::READ;
+    m_unit[lun].state = EState::READ;
+    m_rw_lun = lun;
+    SCSI_read(lun, address, buf, length);
+    uint32_t timeout = m_host->get_timer() + 10 * 1000 * length;
+    while (rd_wr_process(lun) == USBHCore::EStatus::BUSY)
+        if ((m_host->get_timer() > timeout) ||
+            (!m_host->is_connected()))
+        {
+            m_state = EState::IDLE;
+            return USBHCore::EStatus::FAIL;
+        }
+    m_state = EState::IDLE;
+    return USBHCore::EStatus::OK;
+}
+
+USBHCore::EStatus USBH_MSC::write(uint8_t lun, uint32_t address, uint8_t* buf, uint16_t length)
+{
+    if ((!m_host->is_connected()) ||
+        (m_host->get_state() != USBHCore::EHostState::CLASS) ||
+        (m_unit[lun].state != EState::IDLE))
+        return USBHCore::EStatus::FAIL;
+
+    m_state = EState::WRITE;
+    m_unit[lun].state = EState::WRITE;
+    m_rw_lun = lun;
+    SCSI_write(lun, address, buf, length);
+    uint32_t timeout = m_host->get_timer() + 10 * 1000 * length;
+    while (rd_wr_process(lun) == USBHCore::EStatus::BUSY)
+        if ((m_host->get_timer() > timeout) ||
+            (!m_host->is_connected()))
+        {
+            m_state = EState::IDLE;
+            return USBHCore::EStatus::FAIL;
+        }
+    m_state = EState::IDLE;
+    return USBHCore::EStatus::OK;
+}
+
+USBHCore::EStatus USBH_MSC::rd_wr_process(uint8_t lun)
+{
+    USBHCore::EStatus error = USBHCore::EStatus::BUSY;
+    USBHCore::EStatus scsi_status = USBHCore::EStatus::BUSY;
+
+    MSC_LUN* p_lun = &m_unit[lun];
+    switch (p_lun->state)
+    {
+    case EState::READ:
+        scsi_status = SCSI_read(lun, 0, nullptr, 0);
+        switch (scsi_status)
+        {
+        case USBHCore::EStatus::OK:
+            p_lun->state = EState::IDLE;
+            error = USBHCore::EStatus::OK;
+            break;
+        case USBHCore::EStatus::FAIL:
+            p_lun->state = EState::REQUEST_SENSE;
+            break;
+        case USBHCore::EStatus::UNRECOVERED_ERROR:
+            p_lun->state = EState::UNRECOVERED_ERROR;
+            error = USBHCore::EStatus::FAIL;
+            break;
+        default:
+            break;
+        }
+#if (USBH_USE_OS == 1)
+        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+#endif
+        break;
+    case EState::WRITE:
+        scsi_status = SCSI_write(lun, 0, nullptr, 0);
+        switch (scsi_status)
+        {
+        case USBHCore::EStatus::OK:
+            p_lun->state = EState::IDLE;
+            error = USBHCore::EStatus::OK;
+            break;
+        case USBHCore::EStatus::FAIL:
+            p_lun->state = EState::REQUEST_SENSE;
+            break;
+        case USBHCore::EStatus::UNRECOVERED_ERROR:
+            p_lun->state = EState::UNRECOVERED_ERROR;
+            error = USBHCore::EStatus::FAIL;
+            break;
+        default:
+            break;
+        }
+#if (USBH_USE_OS == 1)
+        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+#endif
+        break;
+    case EState::REQUEST_SENSE:
+        scsi_status = SCSI_request_sense(lun);
+        switch (scsi_status)
+        {
+        case USBHCore::EStatus::OK:
+            USBH_UsrLog("Sense Key  : %x", p_lun->sense.key);
+            USBH_UsrLog("Additional Sense Code : %x", p_lun->sense.asc);
+            USBH_UsrLog("Additional Sense Code Qualifier: %x", p_lun->sense.ascq);
+            p_lun->state = EState::IDLE;
+            p_lun->error = EError::ERROR;
+            error = USBHCore::EStatus::FAIL;
+            break;
+        case USBHCore::EStatus::FAIL:
+            USBH_UsrLog("MSC Device NOT ready");
+            break;
+        case USBHCore::EStatus::UNRECOVERED_ERROR:
+            p_lun->state = EState::UNRECOVERED_ERROR;
+            error = USBHCore::EStatus::FAIL;
+            break;
+        default:
+            break;
+        }
+#if (USBH_USE_OS == 1)
+        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+#endif
+        break;
+    default:
+        break;
+    }
+    return error;
 }
 
 USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
@@ -581,7 +696,7 @@ USBHCore::EStatus USBH_MSC::SCSI_read_capacity(uint8_t lun)
         error = BOT_process(lun);
         if (error == USBHCore::EStatus::OK)
         {
-            SCSI_Capacity* cap = &m_unit[m_current_lun].capacity;
+            SCSI_Capacity* cap = &m_unit[lun].capacity;
             /*assign the capacity*/
             cap->block_nbr = __builtin_bswap32(m_hbot.data[0]);
             /*assign the page length*/
@@ -619,7 +734,7 @@ USBHCore::EStatus USBH_MSC::SCSI_inquiry(uint8_t lun)
         error = BOT_process(lun);
         if (error == USBHCore::EStatus::OK)
         {
-            SCSI_StdInquiryData* inq = &m_unit[m_current_lun].inquiry;
+            SCSI_StdInquiryData* inq = &m_unit[lun].inquiry;
             memset(reinterpret_cast<uint8_t*>(inq), 0, sizeof(SCSI_StdInquiryData));
             /*assign Inquiry Data */
             inq->DeviceType = m_hbot.pbuf[0] & 0x1f;
@@ -661,7 +776,7 @@ USBHCore::EStatus USBH_MSC::SCSI_request_sense(uint8_t lun)
         error = BOT_process(lun);
         if (error == USBHCore::EStatus::OK)
         {
-            SCSI_Sense* sen = &m_unit[m_current_lun].sense;
+            SCSI_Sense* sen = &m_unit[lun].sense;
             sen->key = m_hbot.pbuf[2] & 0x0f;
             sen->asc = m_hbot.pbuf[12];
             sen->ascq = m_hbot.pbuf[13];

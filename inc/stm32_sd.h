@@ -386,11 +386,11 @@ public:
     static ESDError wide_bus_config(EBusWide mode);
     static ETransferState get_status();
 
-    static ESDError read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint32_t blocks);
+    static ESDError read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint16_t blocks);
     /// TODO read_blocks_DMA
     /// TODO HAL_SD_CheckReadOperation
 
-    static ESDError write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint32_t blocks);
+    static ESDError write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint16_t blocks);
     /// TODO write_blocks_DMA
     /// TODO HAL_SD_CheckWriteOperation
 
