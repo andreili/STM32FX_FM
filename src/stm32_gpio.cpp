@@ -120,6 +120,12 @@ void STM32_GPIO::init_all()
     gpioc.init(GPIOC_BASE);
     gpiod.init(GPIOD_BASE);
     gpioe.init(GPIOE_BASE);
+
+    gpioa.set_config(STM32_GPIO::PIN_All & (~(STM32_GPIO::PIN_13 | STM32_GPIO::PIN_14)), STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpiob.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpioc.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpiod.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpioe.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     #ifdef GPIOF_BASE
     gpiof.init(GPIOF_BASE);
     gpiog.init(GPIOG_BASE);
