@@ -38,6 +38,9 @@
 #ifdef STM32_USE_USB
 #include "stm32_hcd.h"
 #endif
+#ifdef STM32_USE_TIM
+    #include "stm32_tim.h"
+#endif //STM32_USE_TIM
 #include "bitbanding.h"
 
 #define STM32_LOCK(HN) \
