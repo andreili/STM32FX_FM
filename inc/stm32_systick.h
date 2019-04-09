@@ -18,10 +18,11 @@ public:
 
     static inline uint32_t get_tick() { return m_tick; }
 
-    static void on_tick();
+    static inline void on_tick() { ++m_tick; }
     static void delay(__IO uint32_t delay_ms);
     static void delay_to(__IO uint32_t delay_ms);
 
+    static inline void manual_trig() { BIT_BAND_PER(SCB->ICSR, SCB_ICSR_PENDSTSET_Msk) = ENABLE; }
     static inline void suspend() { BIT_BAND_PER(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk) = DISABLE; }
     static inline void resume() { BIT_BAND_PER(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk) = ENABLE; }
 

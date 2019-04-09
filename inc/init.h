@@ -6,5 +6,6 @@
 void RCCInit(void);
 void SystemInit(void);
 void SystemInit_ExtMemCtl(void);
+void timebase_init();
 
 #endif // __INIT__

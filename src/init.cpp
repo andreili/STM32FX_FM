@@ -1,6 +1,5 @@
 #include "stm32_inc.h"
 #include "init.h"
-#include "my_func.h"
 #ifdef STM32_FATFS_USE
 #include "sddriver.h"
 #endif
@@ -21,9 +20,6 @@ void base_init()
 
     //extern uint32_t _RAM_Start;
     //memset((uint8_t*)&_RAM_Start, 0, 1024*50);
-
-    STM32_RCC::deinit();
-    STM32_SYSTICK::init();
 
     #if defined (DATA_IN_ExtSDRAM)
     if (STM32_SDRAM::init() != STM32_RESULT_OK)
@@ -48,6 +44,7 @@ void base_init()
     #endif
 
     STM32_NVIC::init();
+    timebase_init();
 }
 
 void SystemInit()
@@ -55,13 +52,44 @@ void SystemInit()
     base_init();
     // system initialization
     STM32_RCC::init();
-    STM32_SYSTICK::init();
+    timebase_init();
 
     /* Initialize interrupt vectors for a peripheral */
     STM32_NVIC::init_vectors();
+    STM32_RCC::update_clock();
     __enable_fault_irq();
     __enable_irq();
 }
+
+#ifndef STM32_TIMEBASE_SYSTICK
+void timebase_cb(STM32_TIM* tim, uint32_t ch)
+{
+    UNUSED(tim);
+    UNUSED(ch);
+    STM32_SYSTICK::on_tick();
+}
+
+void timebase_init()
+{
+    #ifdef STM32_TIMEBASE_SYSTICK
+    STM32_SYSTICK::init();
+    #else
+    STM32_SYSTICK::deinit();
+    STM32_TIM::TimerBaseInit_t tim14_init;
+    tim14_init.period = (1000000/STM32_TIMEBASE_FREQ_HZ) - 1;
+    tim14_init.prescaler = ((2 * STM32_RCC::get_PCLK1_freq()) / 1000000) - 1; // (2*PCLK1Freq/1000000 - 1) to have a 1MHz counter clock.
+    tim14_init.clk_div = STM32_TIM::EClkDiv::DIV_1;
+    tim14_init.counter_mode = STM32_TIM::ECounterMode::UP;
+
+    STM32_NVIC::enable_and_set_prior_IRQ(TIM8_TRG_COM_TIM14_IRQn, 0, 0);
+    STM32_RCC::enable_clk_TIM14();
+    tim14.set_cb_period_elapsed(timebase_cb);
+
+    tim14.init(&tim14_init);
+    tim14.start_IT();
+    #endif //STM32_TIMEBASE_SYSTICK
+}
+#endif //STM32_TIMEBASE_SYSTICK
 
 void PeriphInit()
 {
@@ -80,6 +108,9 @@ void PeriphInit()
     #endif
     #ifdef STM32_USE_DMA
     STM32_DMA::init_all();
+    #endif
+    #ifdef STM32_USE_TIM
+    STM32_TIM::init_all();
     #endif
 }
 
@@ -115,9 +146,9 @@ extern uint32_t __bss_end__;
 void ISR::Reset()
 {
     INIT_SP();
-    SystemInit();
     __initialize_bss(&__bss_start__, &__bss_end__);
     __initialize_data(&__textdata__, &__data_start__, &__data_end__);
     PeriphInit();
+    SystemInit();
     main();
 }

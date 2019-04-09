@@ -19,7 +19,7 @@ void STM32_SYSTICK::deinit()
 
 void STM32_SYSTICK::update_freq()
 {
-    SysTick_Config(STM32_RCC::get_HCLK_freq() / 1000 - 1);
+    SysTick_Config(STM32_RCC::get_HCLK_freq() / STM32_SYSTICK_FREQ_HZ - 1);
     set_clock_source(SYSTICK_CLKSOURCE_HCLK);
 }
 
@@ -29,12 +29,6 @@ void STM32_SYSTICK::set_clock_source(uint32_t src)
         SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
     else
         SysTick->CTRL &= ~SYSTICK_CLKSOURCE_HCLK;
-}
-
-void STM32_SYSTICK::on_tick()
-{
-    ++m_tick;
-    systick_callback();
 }
 
 void STM32_SYSTICK::delay(__IO uint32_t delay_ms)
@@ -50,11 +44,9 @@ void STM32_SYSTICK::delay_to(__IO uint32_t delay_ms)
     while(m_tick < delay_ms) {}
 }
 
+#ifdef STM32_TIMEBASE_SYSTICK
 void ISR::SysTickTimer()
 {
     STM32_SYSTICK::on_tick();
 }
-
-__attribute__((weak)) void systick_callback()
-{
-}
+#endif //STM32_TIMEBASE_SYSTICK
