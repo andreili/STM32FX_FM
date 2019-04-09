@@ -1,4 +1,7 @@
-#include "my_func.h"
+//#include "my_func.h"
+
+extern "C" {
+#include <inttypes.h>
 
 #define BIG_BLOCK_SIZE (sizeof(int) << 2)
 #define LITTLE_BLOCK_SIZE (sizeof(int))
@@ -95,4 +98,6 @@ int memcmp(const uint8_t *s1, const uint8_t *s2, uint32_t len)
 	}
 
 	return d;
+}
+
 }
