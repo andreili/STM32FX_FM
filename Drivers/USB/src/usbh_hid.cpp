@@ -1,5 +1,6 @@
 #include "usbh_hid.h"
-#include "my_func.h"
+
+#ifdef STM32_USE_USB_HOST
 
 USBHCore::EStatus USBH_HID::init(USBHCore* host)
 {
@@ -253,7 +254,7 @@ USBHCore::EStatus USBH_HID::decode(uint8_t *data)
 
 void USBH_HID::parse_HID_desc()
 {
-    memcpy(reinterpret_cast<uint8_t*>(&m_HID_Desc), m_host->get_dev_data(), sizeof(DescTypeDef));
+    memcpy(&m_HID_Desc, m_host->get_dev_data(), sizeof(DescTypeDef));
 }
 
 USBHCore::EStatus USBH_HID::get_HID_report_descriptor(uint16_t size)
@@ -261,3 +262,5 @@ USBHCore::EStatus USBH_HID::get_HID_report_descriptor(uint16_t size)
     return m_host->get_descriptor(USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::STANDARD,
                                   USB_DESC_HID_REPORT, m_host->get_dev_data(), size);
 }
+
+#endif //STM32_USE_USB_HOST

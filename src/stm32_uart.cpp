@@ -1,5 +1,5 @@
 #include "stm32_uart.h"
-#include "my_func.h"
+#include <cstring>
 
 #define UART_BRR (F_CPU / BRATE)
 
@@ -279,7 +279,7 @@ void STM32_UART::send_buf(const char *buf, int size, TXRX_MODE mode)
     case TXRX_MODE::INTERRUPT:
         #ifdef STM32_UART_MODE_IT_ENABLE
         m_busy = true;
-        memcpy(reinterpret_cast<uint8_t*>(m_tx_buf), reinterpret_cast<const uint8_t*>(buf), size);
+        memcpy(m_tx_buf, buf, size);
         m_uart->CR1 |= USART_CR1_TXEIE;
         BIT_BAND_PER(m_uart->CR1, USART_CR1_TXEIE) = 1;
         #endif

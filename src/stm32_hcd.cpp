@@ -1,5 +1,7 @@
 #include "stm32_hcd.h"
 
+#ifdef STM32_USE_USB_HOST
+
 uint32_t STM32_HCD::init(USB_OTG_GlobalTypeDef* regs_addr, EOTG_PHY phy, bool use_ext_vbus, bool dma_enable,
                          EOTGSpeed speed, uint8_t host_channels)
 {
@@ -1346,3 +1348,5 @@ __attribute__((weak)) void HC_notify_URB_change_callback(STM32_HCD *hcd, uint8_t
     UNUSED(ch_num);
     UNUSED(urb_state);
 }
+
+#endif //STM32_USE_USB_HOST

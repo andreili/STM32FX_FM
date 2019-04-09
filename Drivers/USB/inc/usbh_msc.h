@@ -2,6 +2,9 @@
 #define USBH_MSC_H
 
 #include "usbh_class.h"
+
+#ifdef STM32_USE_USB_HOST
+
 #include "my_func.h"
 
 #define USB_MSC_CLASS               0x08
@@ -356,5 +359,7 @@ private:
     USBHCore::EStatus SCSI_write(uint8_t lun, uint32_t address, uint8_t* buf, uint16_t length);
     USBHCore::EStatus SCSI_read(uint8_t lun, uint32_t address, uint8_t* buf, uint16_t length);
 };
+
+#endif //STM32_USE_USB_HOST
 
 #endif //USBH_MSC_H

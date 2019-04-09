@@ -1,5 +1,7 @@
 #include "stm32_sd.h"
 
+#ifdef STM32_USE_SD
+
 #define DATA_BLOCK_SIZE                  EDataBlockSize::_512B
 
 #define SDIO_IT_CCRCFAIL                    SDIO_STA_CCRCFAIL
@@ -1740,3 +1742,5 @@ void ISR::SDIO_IRQ()
 {
     ///TODO
 }
+
+#endif //STM32_USE_SD

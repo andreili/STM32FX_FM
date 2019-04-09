@@ -1,8 +1,7 @@
 #include "usbhcore.h"
-#include "my_func.h"
 #include "usbh_class.h"
 
-#ifdef STM32_USE_USB
+#ifdef STM32_USE_USB_HOST
 
 #define USBH_ADDRESS_DEFAULT                     0
 #define USBH_ADDRESS_ASSIGNED                    1
@@ -428,7 +427,7 @@ void USBHCore::handle_SOF()
 
 void USBHCore::deInit_state_machine()
 {
-    memset(reinterpret_cast<uint8_t*>(m_pipes), 0, USBH_MAX_PIPES_NBR * sizeof(uint32_t));
+    memset(m_pipes, 0, USBH_MAX_PIPES_NBR * sizeof(uint32_t));
     memset(m_device.Data, 0, USBH_MAX_DATA_BUFFER);
 
     m_gstate = EHostState::IDLE;
@@ -689,13 +688,13 @@ void USBHCore::parse_dev_desc(USBHDevDesc_t *pdesc, uint8_t *buf, uint16_t lengt
 {
     if (length > 8)
     {
-        memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 18);
+        memcpy(pdesc, buf, 18);
         //pdesc->idVendor = __builtin_bswap16(pdesc->idVendor);
         //pdesc->idProduct = __builtin_bswap16(pdesc->idProduct);
         //pdesc->bcdDevice = __builtin_bswap16(pdesc->bcdDevice);
     }
     else
-        memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 8);
+        memcpy(pdesc, buf, 8);
     //pdesc->bcdUSB = __builtin_bswap16(pdesc->bcdUSB);
 }
 
@@ -715,7 +714,7 @@ void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
 
 void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
-    memcpy(reinterpret_cast<uint8_t*>(pdesc), buf, 9);
+    memcpy(pdesc, buf, 9);
     //pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
@@ -750,13 +749,13 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
 
 void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
 {
-    memcpy(reinterpret_cast<uint8_t*>(ep_desc), buf, 7);
+    memcpy(ep_desc, buf, 7);
     //ep_desc->wMaxPacketSize = __builtin_bswap16(ep_desc->wMaxPacketSize);
 }
 
 void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
 {
-    memcpy(reinterpret_cast<uint8_t*>(if_desc), buf, 9);
+    memcpy(if_desc, buf, 9);
 }
 
 USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr)
@@ -967,4 +966,4 @@ USBHCore usb_HS;
 USBHCore usb_FS;
 #endif
 
-#endif
+#endif //STM32_USE_USB_HOST

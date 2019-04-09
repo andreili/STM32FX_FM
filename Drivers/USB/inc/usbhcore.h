@@ -7,6 +7,8 @@
 
 #include "stm32_inc.h"
 
+#ifdef STM32_USE_USB_HOST
+
 #include "usbh_config.h"
 
 #define USB_DEVICE_DESC_SIZE                               18
@@ -499,5 +501,7 @@ extern USBHCore usb_FS;
 #endif
 
 extern uint8_t USBH_CfgDesc[512];
+
+#endif //STM32_USE_USB_HOST
 
 #endif

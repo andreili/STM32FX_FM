@@ -2,6 +2,8 @@
 #define __USBH_HID_H__
 
 #include "usbh_class.h"
+
+#ifdef STM32_USE_USB_HOST
 #include "fifo.h"
 
 /* HID Class Codes */
@@ -201,5 +203,7 @@ private:
                                        ERequest::GET_REPORT, static_cast<uint16_t>((type << 8) | id), len, buf);
     }
 };
+
+#endif //STM32_USE_USB_HOST
 
 #endif

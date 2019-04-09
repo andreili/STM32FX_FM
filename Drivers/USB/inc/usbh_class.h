@@ -8,6 +8,8 @@
 #include <inttypes.h>
 #include "usbhcore.h"
 
+#ifdef STM32_USE_USB_HOST
+
 class USBHClass
 {
 public:
@@ -21,5 +23,7 @@ public:
 protected:
     USBHCore*   m_host;
 };
+
+#endif //STM32_USE_USB_HOST
 
 #endif

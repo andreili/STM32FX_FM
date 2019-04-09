@@ -1,5 +1,7 @@
 #include "usbh_msc.h"
 
+#ifdef STM32_USE_USB_HOST
+
 #define USB_REQ_BOT_RESET                0xFF
 #define USB_REQ_GET_MAX_LUN              0xFE
 
@@ -55,7 +57,7 @@ USBHCore::EStatus USBH_MSC::init(USBHCore* host)
     m_hbot.state = EBOTState::SEND_CBW;
     m_hbot.cmd_state = EBOTCMDState::SEND;
 
-    memset(reinterpret_cast<uint8_t*>(m_unit), 0, sizeof(MSC_LUN) * MAX_SUPPORTED_LUN);
+    memset(m_unit, 0, sizeof(MSC_LUN) * MAX_SUPPORTED_LUN);
 
     m_host->open_pipe(m_out_pipe,
                       m_out_ep,
@@ -735,7 +737,7 @@ USBHCore::EStatus USBH_MSC::SCSI_inquiry(uint8_t lun)
         if (error == USBHCore::EStatus::OK)
         {
             SCSI_StdInquiryData* inq = &m_unit[lun].inquiry;
-            memset(reinterpret_cast<uint8_t*>(inq), 0, sizeof(SCSI_StdInquiryData));
+            memset(inq, 0, sizeof(SCSI_StdInquiryData));
             /*assign Inquiry Data */
             inq->DeviceType = m_hbot.pbuf[0] & 0x1f;
             inq->PeripheralQualifier = m_hbot.pbuf[0] >> 5;
@@ -861,3 +863,5 @@ USBHCore::EStatus USBH_MSC::SCSI_read(uint8_t lun, uint32_t address, uint8_t* bu
     }
     return error;
 }
+
+#endif // STM32_USE_USB_HOST

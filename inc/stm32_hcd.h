@@ -7,6 +7,8 @@
 
 #include "stm32_inc.h"
 
+#ifdef STM32_USE_USB_HOST
+
 #define USB_OTG_HS_MAX_PACKET_SIZE           512U
 #define USB_OTG_FS_MAX_PACKET_SIZE           64U
 #define USB_OTG_MAX_EP0_SIZE                 64U
@@ -525,5 +527,7 @@ extern STM32_HCD usb_fs;
 #ifdef STM32_USE_USB_HS
 extern STM32_HCD usb_hs;
 #endif
+
+#endif //STM32_USE_USB_HOST
 
 #endif

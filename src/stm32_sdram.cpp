@@ -2,7 +2,6 @@
 #include "stm32_rcc.h"
 #include "stm32_gpio.h"
 #include "stm32_systick.h"
-#include "my_func.h"
 
 STM32_SDRAM sdram;
 

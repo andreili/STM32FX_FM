@@ -1,5 +1,6 @@
 #include "fatfs.h"
 #include "stm32_conf.h"
+#include "diskiodriver.h"
 #ifdef STM32_USE_SD
 #include STM32_FATFS_DRIVER_INC
 #endif
@@ -8,7 +9,6 @@ DiskDrv FAT_FS::m_disk;
 
 void FAT_FS::init()
 {
-    debug_fn();
     m_disk.nbr = 0;
 }
 
@@ -51,7 +51,6 @@ DSTATUS FAT_FS::disk_ioctl(BYTE pdrv, FAT_FS::ECTRL cmd, void *buff)
 
 void FAT_FS::link_driver(DiskIODriver *drv, TCHAR *path, uint8_t lun)
 {
-    debug_fn();
     if (m_disk.nbr <= _VOLUMES)
     {
         m_disk.is_initialized[m_disk.nbr] = 0;
