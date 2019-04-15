@@ -6,6 +6,7 @@
  *   RAM.LENGTH: length of RAM bank 0
  */
 SEARCH_DIR("=/usr/arm-none-eabi/lib"); SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
+SEARCH_DIR("=/mingw32/lib/gcc/arm-none-eabi/8.3.0/"); SEARCH_DIR("=/mingw32/arm-none-eabi/lib/");
 
 _SRAM_SIZE1 = 0x00010000;
 _SRAM_SIZE2 = 0x00020000;
@@ -69,19 +70,25 @@ SECTIONS
         KEEP(*(.isr_vector))
         *(.text*)
 
+        __ctors_start__ = .;
+            /* .ctors */
+            KEEP(SORT(*)(.init_array)) /* eabi uses .init_array for static constructor lists */
+            *crtbegin.o(.ctors)
+            *crtbegin?.o(.ctors)
+            *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+            *(SORT(.ctors.*))
+            *(.ctors)
+        __ctors_end__ = .;
+
+        __dtors_start__ = .;
+        __dtors_end__ = .;
+
         PROVIDE (_init = .);
         *crti.o(.init)
         KEEP(*(.init))
         *crtn.o(.init)
         PROVIDE (_fini = .);
         KEEP(*(.fini))
-
-        /* .ctors */
-        *crtbegin.o(.ctors)
-        *crtbegin?.o(.ctors)
-        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-        *(SORT(.ctors.*))
-        *(.ctors)
 
         /* .dtors */
         *crtbegin.o(.dtors)

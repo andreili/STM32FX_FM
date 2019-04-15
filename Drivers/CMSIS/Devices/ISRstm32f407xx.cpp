@@ -1,4 +1,4 @@
-
+#define STM32_USE_RTOS
 /*********************************************************
  * ISRstm32f407xx.cpp
  * Automatic generated source file for MCU stm32f407xx
@@ -11,6 +11,10 @@ __attribute__((naked, noreturn)) void ISR::DefaultHandler()
    for(;;);
 }
 
+extern "C"
+{
+void PendSV_Handler();
+}
 
 #ifdef USE_MEMORY_ISR
 __attribute__((section(".isr_vector"))) const ISR::ShortVectors interruptsVectorTable =
@@ -37,7 +41,11 @@ __attribute__((section(".isr_vector2"))) ISR::Vectors MeminterruptsVectorTable =
    ISR::SVC,
    ISR::DebugMon,
    {0},
+#ifdef STM32_USE_RTOS
+   PendSV_Handler,
+#else
    ISR::PendSV,
+#endif
    ISR::SysTickTimer,
    ISR::WWDG_IRQ,
    ISR::PVD_IRQ,

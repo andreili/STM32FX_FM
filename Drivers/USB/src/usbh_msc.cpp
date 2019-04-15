@@ -284,7 +284,7 @@ USBHCore::EStatus USBH_MSC::process()
                 break;
             }
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+            m_host->send_message();
 #endif
         }
         else
@@ -292,7 +292,7 @@ USBHCore::EStatus USBH_MSC::process()
             m_current_lun = 0;
             m_state = EState::IDLE;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+            m_host->send_message();
 #endif
             m_host->to_user(USBHCore::EHostUser::CLASS_ACTIVE);
         }
@@ -390,7 +390,7 @@ USBHCore::EStatus USBH_MSC::rd_wr_process(uint8_t lun)
             break;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+        m_host->send_message();
 #endif
         break;
     case EState::WRITE:
@@ -412,7 +412,7 @@ USBHCore::EStatus USBH_MSC::rd_wr_process(uint8_t lun)
             break;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+        m_host->send_message();
 #endif
         break;
     case EState::REQUEST_SENSE:
@@ -438,7 +438,7 @@ USBHCore::EStatus USBH_MSC::rd_wr_process(uint8_t lun)
             break;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_CLASS_EVENT, 0);
+        m_host->send_message();
 #endif
         break;
     default:
@@ -471,20 +471,20 @@ USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
             else
                 m_hbot.state = EBOTState::RECEIVE_CSW;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::NOT_READY:
             /* Re-send CBW */
             m_hbot.state = EBOTState::SEND_CBW;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::STALL:
             m_hbot.state = EBOTState::ERROR_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::IDLE:
@@ -516,14 +516,14 @@ USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
                 m_hbot.state = EBOTState::RECEIVE_CSW;
             {
 #if (USBH_USE_OS == 1)
-                osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             }
             break;
         case STM32_HCD::EURBState::STALL:
             m_hbot.state = EBOTState::ERROR_IN;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::NOT_READY:
@@ -556,7 +556,7 @@ USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
                 m_hbot.state = EBOTState::RECEIVE_CSW;
             {
 #if (USBH_USE_OS == 1)
-                osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             }
             break;
@@ -564,13 +564,13 @@ USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
             /* Resend same data */
             m_hbot.state = EBOTState::DATA_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::STALL:
             m_hbot.state = EBOTState::ERROR_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::IDLE:
@@ -594,13 +594,13 @@ USBHCore::EStatus USBH_MSC::BOT_process(uint8_t lun)
             else
                 status = USBHCore::EStatus::FAIL;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::STALL:
             m_hbot.state = EBOTState::ERROR_IN;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
             break;
         case STM32_HCD::EURBState::NOT_READY:

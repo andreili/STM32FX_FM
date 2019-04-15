@@ -1,4 +1,5 @@
 #include "usbh_hid.h"
+#include <cstring>
 
 #ifdef STM32_USE_USB_HOST
 
@@ -166,7 +167,7 @@ USBHCore::EStatus USBH_HID::process()
         if (m_host->get_timer() & 1)
             m_state = EState::GET_DATA;
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+        m_host->send_message();
 #endif
         break;
     case EState::GET_DATA:
@@ -184,7 +185,7 @@ USBHCore::EStatus USBH_HID::process()
                 m_fifo.write(m_custom_data, m_length);
                 m_data_ready = true;
 #if (USBH_USE_OS == 1)
-                osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+                m_host->send_message();
 #endif
             }
             break;
@@ -212,7 +213,7 @@ USBHCore::EStatus USBH_HID::SOF_process()
         {
             m_state = EState::GET_DATA;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_URB_EVENT, 0);
+            m_host->send_message();
 #endif
         }
     return USBHCore::EStatus::OK;

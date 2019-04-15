@@ -93,6 +93,10 @@ void timebase_init()
 
 void PeriphInit()
 {
+#ifndef __SOFTFP__
+    SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2)); // set the CP10 and CP11 to all ones
+#endif
+
     STM32_RCC::update_clock();
 
     /* Other IO and peripheral initializations */
@@ -137,11 +141,19 @@ static inline void __initialize_bss (uint32_t* region_begin, uint32_t* region_en
         *p++ = 0;
 }
 
+static inline void __initalize_classes(uint32_t* ctors_begin, uint32_t* ctors_end)
+{
+    for (uint32_t* ctor=ctors_begin ; ctor<ctors_end ; ++ctor)
+        reinterpret_cast<void(*)(void)>(*ctor)();
+}
+
 extern uint32_t __textdata__;
 extern uint32_t __data_start__;
 extern uint32_t __data_end__;
 extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
+extern uint32_t __ctors_start__;
+extern uint32_t __ctors_end__;
 
 void ISR::Reset()
 {
@@ -150,5 +162,6 @@ void ISR::Reset()
     __initialize_data(&__textdata__, &__data_start__, &__data_end__);
     PeriphInit();
     SystemInit();
+    __initalize_classes(&__ctors_start__, &__ctors_end__);
     main();
 }

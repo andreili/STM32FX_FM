@@ -1,6 +1,5 @@
 #include "stm32_rcc.h"
 #include "stm32_pwr.h"
-#include "stm32_systick.h"
 #include "stm32_flash.h"
 #include "stm32_gpio.h"
 
@@ -153,8 +152,6 @@ void STM32_RCC::init()
     #ifdef STM32_USE_CSE
     enable_CSS();
     #endif
-
-    STM32_SYSTICK::update_freq();
 }
 
 uint32_t STM32_RCC::deinit()
@@ -176,7 +173,6 @@ uint32_t STM32_RCC::deinit()
     WAIT_TIMEOUT((get_source_SYSCLK() != RESET), HSI_TIMEOUT_VALUE);
 
     m_system_core_clock = HSI_VALUE;
-    STM32_SYSTICK::update_freq();
 
     RCC->CR &= ~(RCC_CR_PLLON
 			#if defined (STM32F4)
@@ -199,8 +195,7 @@ uint32_t STM32_RCC::deinit()
     CLEAR_BIT(RCC->CR, RCC_CR_HSEBYP);
     SET_BIT(RCC->CSR, RCC_CSR_RMVF);
     RCC->CIR = 0;
-    
-    STM32_SYSTICK::update_freq();
+
     m_system_core_clock = update_system_core_clock();
 
     return STM32_RESULT_OK;
@@ -403,7 +398,6 @@ uint32_t STM32_RCC::config_clock(uint8_t flash_latency)
     }
 
     update_clock();
-    STM32_SYSTICK::init();
 
     return STM32_RESULT_OK;
 }

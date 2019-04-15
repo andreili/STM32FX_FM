@@ -1,5 +1,6 @@
 #include "usbhcore.h"
 #include "usbh_class.h"
+#include <cstring>
 
 #ifdef STM32_USE_USB_HOST
 
@@ -8,11 +9,40 @@
 #define USBH_MPS_DEFAULT                         0x40
 
 #if (USBH_USE_OS == 1)
-static void USBH_Process_OS(void const * argument)
+#ifdef STM32_USE_USB_HS
+typedef OS::process<USBH_PROCESS_HS_PRIO, USBH_PROCESS_HS_STACK_SIZE> TProcUSB_HS;
+TProcUSB_HS ProcUSB_HS;
+namespace OS
 {
-    ((USBHCore*)argument)->process_OS();
+    template <>
+    OS_PROCESS void TProcUSB_HS::exec()
+    {
+        for(;;)
+        {
+            if (usb_HS.wait_message())
+                usb_HS.process();
+        }
+    }
 }
-#endif
+#endif //STM32_USE_USB_HS
+
+#ifdef STM32_USE_USB_FS
+typedef OS::process<USBH_PROCESS_FS_PRIO, USBH_PROCESS_FS_STACK_SIZE> TProcUSB_FS;
+TProcUSB_FS ProcUSB_FS;
+namespace OS
+{
+    template <>
+    OS_PROCESS void TProcUSB_FS::exec()
+    {
+        for(;;)
+        {
+            if (usb_FS.wait_message())
+                usb_FS.process();
+        }
+    }
+}
+#endif //STM32_USE_USB_FS
+#endif //USBH_USE_OS
 
 uint8_t USBH_CfgDesc[512];
 
@@ -24,9 +54,6 @@ void USBHCore::init(void (*puser)(USBHCore *,EHostUser), uint8_t id)
     deInit_state_machine();
     if (puser != nullptr)
         m_user = puser;
-#if (USBH_USE_OS == 1)
-#error TODO
-#endif
     LL_init();
     for (int idx=0 ; idx<USBH_MAX_NUM_SUPPORTED_CLASS ; ++idx)
         m_class[idx] = nullptr;
@@ -137,7 +164,7 @@ void USBHCore::re_enumerate()
     deInit_state_machine();
     start();
 #if (USBH_USE_OS == 1)
-    osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+    send_message();
 #endif
 }
 
@@ -153,7 +180,7 @@ void USBHCore::process()
             STM32_SYSTICK::delay(200);
             LL_reset_port();
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -183,7 +210,7 @@ void USBHCore::process()
                   STM32_HCD::EEPType::CTRL,
                   m_control.pipe_size);
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+        send_message();
 #endif
         break;
     case EHostState::ENUMERATION:
@@ -206,7 +233,7 @@ void USBHCore::process()
             m_user(this, EHostUser::SELECT_CONFIGURATION);
             m_gstate = EHostState::SET_CONFIGURATION;
 #if (USBH_USE_OS == 1)
-            osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -256,7 +283,7 @@ void USBHCore::process()
             }
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+        send_message();
 #endif
         break;
     case EHostState::CLASS_REQUEST:
@@ -271,7 +298,7 @@ void USBHCore::process()
             USBH_ErrLog("Invalid Class Driver.");
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+        send_message();
 #endif
         break;
     case EHostState::CLASS:
@@ -374,7 +401,7 @@ uint32_t USBHCore::handle_enum()
             m_enum_state = EUSBState::GET_PRODUCT_STRING_DESC;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+        send_message();
 #endif
         break;
     case EUSBState::GET_PRODUCT_STRING_DESC:
@@ -393,7 +420,7 @@ uint32_t USBHCore::handle_enum()
             m_enum_state = EUSBState::GET_SERIALNUM_STRING_DESC;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+        send_message();
 #endif
         break;
     case EUSBState::GET_SERIALNUM_STRING_DESC:
@@ -412,7 +439,7 @@ uint32_t USBHCore::handle_enum()
             status = STM32_RESULT_OK;
         }
 #if (USBH_USE_OS == 1)
-        osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
+        send_message();
 #endif
         break;
     }
@@ -454,7 +481,8 @@ void USBHCore::LL_connect()
     else if (m_gstate == EHostState::DEV_WAIT_FOR_ATTACHMENT)
         m_gstate = EHostState::DEV_ATTACHED;
 #if (USBH_USE_OS == 1)
-    osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+    send_message();
+    xprintf("send_message<\n\r");
 #endif
 }
 
@@ -470,7 +498,7 @@ void USBHCore::LL_disconnect()
     LL_start();
     m_gstate = EHostState::DEV_DISCONNECTED;
 #if (USBH_USE_OS == 1)
-    osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+    send_message();
 #endif
 }
 
@@ -521,19 +549,6 @@ void USBHCore::LL_driver_VBUS(uint8_t state)
     STM32_SYSTICK::delay(200);
 }
 
-#if (USBH_USE_OS == 1)
-void USBHCore::process_OS()
-{
-    osEvent event;
-    for(;;)
-    {
-        event = osMessageGet(m_event, osWaitForever);
-        if(event.status == osEventMessage)
-            process();
-    }
-}
-#endif
-
 uint8_t USBHCore::alloc_pipe(uint8_t ep_addr)
 {
     uint16_t pipe = get_free_pipe();
@@ -561,7 +576,7 @@ USBHCore::EStatus USBHCore::ctl_req(uint8_t* buff, uint16_t length)
         m_control.state = ECTRLState::SETUP;
         m_request_state = ECMDState::WAIT;
 #if (USBH_USE_OS == 1)
-        osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+        send_message();
 #endif
         break;
     case ECMDState::WAIT:
@@ -797,14 +812,14 @@ USBHCore::EStatus USBHCore::handle_control()
                     m_control.state = ECTRLState::STATUS_IN;
             }
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -819,21 +834,21 @@ USBHCore::EStatus USBHCore::handle_control()
         {
             m_control.state = ECTRLState::STATUS_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -848,7 +863,7 @@ USBHCore::EStatus USBHCore::handle_control()
         {
             m_control.state = ECTRLState::STATUS_IN;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::STALL)
@@ -856,14 +871,14 @@ USBHCore::EStatus USBHCore::handle_control()
             m_control.state = ECTRLState::STALLED;
             status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::NOT_READY)
         {
             m_control.state = ECTRLState::DATA_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::ERROR)
@@ -871,7 +886,7 @@ USBHCore::EStatus USBHCore::handle_control()
             m_control.state = ECTRLState::ERROR;
             status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -887,21 +902,21 @@ USBHCore::EStatus USBHCore::handle_control()
             m_control.state = ECTRLState::COMPLETE;
             status = EStatus::OK;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::STALL)
         {
             status = EStatus::FAIL;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         break;
@@ -917,21 +932,21 @@ USBHCore::EStatus USBHCore::handle_control()
             m_control.state = ECTRLState::COMPLETE;
             status = EStatus::OK;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::NOT_READY)
         {
             m_control.state = ECTRLState::STATUS_OUT;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         else if (urb_state == STM32_HCD::EURBState::ERROR)
         {
             m_control.state = ECTRLState::ERROR;
 #if (USBH_USE_OS == 1)
-            osMessagePut(m_event, USBH_CONTROL_EVENT, 0);
+            send_message();
 #endif
         }
         break;

@@ -412,6 +412,12 @@ public:
         m_control.setup.b.wLength.w = length;
         return ctl_req(buff, length);
     }
+#if (USBH_USE_OS == 1)
+    FORCE_INLINE void LL_notify_URB_change() { send_message(); }
+    FORCE_INLINE bool wait_message() { return m_events.wait(100); }
+    FORCE_INLINE void send_message() { m_events.signal(); }
+    FORCE_INLINE uint32_t get_message_depth() { return m_events.get_size(); }
+#endif
 private:
     uint8_t             m_id;
     EHostState          m_gstate;
@@ -427,8 +433,7 @@ private:
     STM32_HCD*          m_hcd;
     void                (*m_user)(USBHCore*,EHostUser);
 #if (USBH_USE_OS == 1)
-    osMessageQId        m_event;
-    osThreadId          m_thread;
+    OS::TEventsQueue    m_events;
 #endif
 
     uint32_t handle_enum();
@@ -450,11 +455,6 @@ private:
     FORCE_INLINE uint32_t LL_close_pipe(uint8_t pipe) { return m_hcd->HC_halt(pipe); }
     FORCE_INLINE void LL_submit_URB(uint8_t pipe, bool is_in, STM32_HCD::EEPType ep_type, bool token, uint8_t* pbuff, uint16_t length, uint8_t do_ping)
         { m_hcd->HC_submit_request(pipe, is_in, ep_type, token, pbuff, length, do_ping); }
-
-#if (USBH_USE_OS == 1)
-    void process_OS();
-    FORCE_INLINE void LL_notify_URB_change() { osMessagePut(m_event, USBH_URB_EVENT, 0); }
-#endif
 
     /* USBH Time base */
     FORCE_INLINE void LL_set_timer(uint32_t time) { m_timer = time; }

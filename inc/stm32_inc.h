@@ -28,6 +28,9 @@
 #endif
 #ifdef STM32_USE_SD
     #include "stm32_sd.h"
+    #ifdef STM32_FATFS_USE
+        #include STM32_FATFS_SD_DRIVER_INC
+    #endif //STM32_FATFS_USE
 #endif //STM32_USE_SD
 #ifdef STM32_USE_SPI
     #include "stm32_spi.h"
@@ -38,19 +41,13 @@
 #ifdef STM32_USE_USB
     #ifdef STM32_USE_USB_HOST
         #include "stm32_hcd.h"
-        #ifdef STM32_USE_USBH_HID
-            #include "usbh_hid.h"
-        #endif //STM32_USE_USBH_HID
-        #ifdef STM32_USE_USBH_MSC
-            #include "usbh_hid.h"
-        #endif //STM32_USE_USBH_MSC
     #endif // STM32_USE_USB_HOST
 #endif //STM32_USE_USB
 #ifdef STM32_USE_TIM
     #include "stm32_tim.h"
 #endif //STM32_USE_TIM
 #ifdef STM32_USE_RTOS
-    #include "rtos.h"
+    #include "scmRTOS.h"
 #endif //STM32_USE_RTOS
 #include "bitbanding.h"
 
