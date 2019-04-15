@@ -29,13 +29,16 @@ QMAKE_EXTRA_TARGETS += createlist
 
 INCLUDEPATH += ./inc/ ../../Drivers/CMSIS/Devices/ ../../Drivers/CMSIS/inc/ ../../inc/ ../../StdLib/inc/
 INCLUDEPATH += ../../Drivers/FATfs/inc/ ../../Third_Party/FatFs/ ../../Drivers/USB/inc/
+INCLUDEPATH += ../../Third_Party/scmRTOS/core/ ../../Third_Party/scmRTOS/port/cortex/mx-gcc/
 
 SOURCES += \
     src/main.cpp \
     ../../Drivers/CMSIS/Devices/ISRstm32f407xx.cpp \
     ../../src/init.cpp \
+    ../../src/stm32_dma.cpp \
     ../../src/stm32_flash.cpp \
     ../../src/stm32_gpio.cpp \
+    ../../src/stm32_hcd.cpp \
     ../../src/stm32_nvic.cpp \
     ../../src/stm32_pwr.cpp \
     ../../src/stm32_rcc.cpp \
@@ -44,10 +47,10 @@ SOURCES += \
     ../../src/stm32_sdram.cpp \
     ../../src/stm32_spi.cpp \
     ../../src/stm32_systick.cpp \
+    ../../src/stm32_tim.cpp \
     ../../src/stm32_uart.cpp \
     ../../StdLib/src/my_func.cpp \
     ../../StdLib/src/xprintf.cpp \
-    ../../src/stm32_dma.cpp \
     ../../Drivers/FATfs/src/fatfs.cpp \
     ../../Drivers/FATfs/src/sddriver.cpp \
     ../../Third_Party/FatFs/ff.c \
@@ -55,7 +58,10 @@ SOURCES += \
     ../../Third_Party/FatFs/option/ccsbcs.c \
     ../../Third_Party/FatFs/option/syscall.c \
     ../../Drivers/USB/src/usbhcore.cpp \
-    ../../src/stm32_hcd.cpp
+    ../../Third_Party/scmRTOS/core/os_kernel.cpp \
+    ../../Third_Party/scmRTOS/core/os_services.cpp \
+    ../../Third_Party/scmRTOS/core/usrlib.cpp \
+    ../../Third_Party/scmRTOS/port/cortex/mx-gcc/os_target.cpp \
 
 HEADERS += \
     inc/stm32_conf.h \
@@ -90,6 +96,12 @@ HEADERS += \
     ../../Drivers/USB/inc/usbhcore.h \
     inc/usbh_config.h \
     ../../Drivers/USB/inc/usbh_class.h \
-    ../../inc/stm32_hcd.h
+    ../../inc/stm32_hcd.h \
+    ../../Third_Party/scmRTOS/core/os_kernel.h \
+    ../../Third_Party/scmRTOS/core/os_services.h \
+    ../../Third_Party/scmRTOS/core/scmRTOS.h \
+    ../../Third_Party/scmRTOS/core/scmRTOS_defs.h \
+    ../../Third_Party/scmRTOS/core/usrlib.h \
+    ../../Third_Party/scmRTOS/port/cortex/mx-gcc/os_target.h
 
 

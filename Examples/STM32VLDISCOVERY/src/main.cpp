@@ -2,8 +2,8 @@
 #include "my_func.h"
 #include "xprintf.h"
 
-#define LED_OK GPIO_PIN_11
-#define LED_FAULT GPIO_PIN_8
+#define LED_OK GPIO_PIN_8
+#define LED_FAULT GPIO_PIN_11
 
 void xfunc_out(unsigned char c)
 {
@@ -18,8 +18,10 @@ int main()
     STM32_RCC::enable_clk_GPIOB();
 
     // inputs
-    gpiob.set_config(GPIO_PIN_All, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
-    gpioa.set_config(GPIO_PIN_12 | GPIO_PIN_15, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_NOPULL);
+    gpiob.set_config(GPIO_PIN_All, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_PULLUP);
+    gpioa.set_config(GPIO_PIN_12 | GPIO_PIN_15, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_HIGH, GPIO_PULLUP);
+    //gpiob.pin_OFF(GPIO_PIN_All);
+    //gpioa.pin_OFF(GPIO_PIN_12 | GPIO_PIN_15);
 
     // communications
     gpioa.set_config(GPIO_PIN_3, GPIO_MODE_INPUT, 0, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP); //SEL-OUT
@@ -31,6 +33,7 @@ int main()
     uart1.init(STM32_BRATE_UART1);
 
     gpioa.pin_ON(LED_OK);
+    gpioa.pin_ON(LED_FAULT);
     uart1.send_str("\n\rSTM32F4DISCOVERY demo project"
                    "\n\r\tBased on C++ framework\n\r", TXRX_MODE::INTERRUPT);
 
@@ -44,7 +47,8 @@ int main()
             xprintf("ticks=%d; iteration=%d\r", ticks, val_i++);
         }
 
-        STM32_SYSTICK::delay_to(ticks + 1);
+        gpioa.pin_toggle(LED_FAULT);
+        STM32_SYSTICK::delay_to(ticks + 500);
     }
     return 0;
 }
