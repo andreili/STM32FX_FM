@@ -23,13 +23,7 @@ public:
     virtual uint8_t ioctl(uint8_t, FAT_FS::ECTRL, void*);
     #endif
 
-    static inline void init_gpio() {
-        debug_fn();
-        STM32_RCC::STM32_FATFS_CARD_EN_CLK();
-                                     STM32_FATFS_CARD_DETECT_PORT.set_config(STM32_FATFS_CARD_DETECT_PIN,
-                                                                      STM32_GPIO::EMode::INPUT, 0,
-                                                                      STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::PULLUP); }
-
+    static void init_gpio();
     static inline bool is_card_present() { return (STM32_FATFS_CARD_DETECT_PORT.pin_read(STM32_FATFS_CARD_DETECT_PIN) == RESET); }
 private:
     uint8_t m_state;
