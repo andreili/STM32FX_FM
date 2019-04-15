@@ -724,7 +724,11 @@ enum class FLASH_VoltageRange
 #else
 
  #define FLASH_IT_EOP               FLASH_CR_EOPIE          /*!< End of FLASH Operation Interrupt source */
+#if  defined(STM32F101x6) || defined(STM32F102x6) || defined(STM32F103x6) \
+  || defined(STM32F100xB) || defined(STM32F101xB) || defined(STM32F102xB) \
+  || defined(STM32F103xB)
  #define FLASH_IT_ERR               FLASH_CR_ERRIE          /*!< Error Interrupt source                  */
+#endif
 
 #endif
 

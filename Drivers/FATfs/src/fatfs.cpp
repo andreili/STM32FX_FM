@@ -2,8 +2,11 @@
 #include "stm32_conf.h"
 #include "diskiodriver.h"
 #ifdef STM32_USE_SD
-#include STM32_FATFS_DRIVER_INC
+    #include STM32_FATFS_SD_DRIVER_INC
 #endif
+#ifdef STM32_USE_USBH_MSC
+    #include STM32_FATFS_MSC_DRIVER_INC
+#endif //STM32_USE_USBH_MSC
 
 DiskDrv FAT_FS::m_disk;
 

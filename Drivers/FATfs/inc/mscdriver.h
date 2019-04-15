@@ -4,10 +4,6 @@
 #include "stm32_inc.h"
 #include "diskiodriver.h"
 
-#define SD_PRESENT      0x01
-#define SD_NOT_PRESENT  0x00
-#define SD_DATATIMEOUT  ((uint32_t)100000000)
-
 #ifdef STM32_USE_USB
 
 class USBH_MSC;
@@ -29,8 +25,6 @@ private:
     uint8_t     m_state;
     USBH_MSC*   m_msc;
 };
-
-extern MSCDriver msc_driver;
 
 #endif //STM32_USE_USB
 

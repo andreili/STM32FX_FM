@@ -3,8 +3,6 @@
 #ifdef STM32_USE_USB
 #include "usbh_msc.h"
 
-MSCDriver msc_driver;
-
 /* Block Size in Bytes */
 #define USB_DEFAULT_BLOCK_SIZE  512
 

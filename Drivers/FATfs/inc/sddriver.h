@@ -6,7 +6,6 @@
 
 #define SD_PRESENT      0x01
 #define SD_NOT_PRESENT  0x00
-#define SD_DATATIMEOUT  ((uint32_t)100000000)
 
 #ifdef STM32_USE_SD
 

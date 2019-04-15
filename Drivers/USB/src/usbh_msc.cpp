@@ -138,7 +138,6 @@ USBHCore::EStatus USBH_MSC::class_request()
 
 USBHCore::EStatus USBH_MSC::process()
 {
-    debug_fn();
     switch (m_state)
     {
     case EState::INIT:

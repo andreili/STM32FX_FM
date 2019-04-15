@@ -1,6 +1,8 @@
 #include "stm32_uart.h"
 #include <cstring>
 
+#ifdef STM32_USE_UART
+
 #define UART_BRR (F_CPU / BRATE)
 
 #define UART_DISABLE() BIT_BAND_PER(m_uart->CR1, USART_CR1_UE) = 0
@@ -441,3 +443,5 @@ void ISR::UART8_IRQ()
 }
 #endif
 #endif
+
+#endif //STM32_USE_UART

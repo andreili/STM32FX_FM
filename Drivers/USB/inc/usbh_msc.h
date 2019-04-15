@@ -5,7 +5,7 @@
 
 #ifdef STM32_USE_USB_HOST
 
-#include "my_func.h"
+#include <cstring>
 
 #define USB_MSC_CLASS               0x08
 

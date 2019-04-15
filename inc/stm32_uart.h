@@ -3,6 +3,8 @@
 
 #include "stm32_inc.h"
 
+#ifdef STM32_USE_UART
+
 enum class UART_MODE
 {
     DIRECT,
@@ -51,5 +53,7 @@ extern STM32_UART uart5;
 extern STM32_UART uart6;
 extern STM32_UART uart7;
 extern STM32_UART uart8;
+
+#endif //STM32_USE_UART
 
 #endif // __UART__

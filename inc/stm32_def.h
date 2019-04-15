@@ -101,7 +101,7 @@ enum class TXRX_MODE
 
 #ifdef STM32_DEBUG
 #include "xprintf.h"
-#define debug_out(s) uart6.send_str(s, TXRX_MODE::DIRECT)
+#define debug_out(s) uart3.send_str(s, TXRX_MODE::DIRECT)
 #define debug_printf(s, ...) xprintf(s, __VA_ARGS__)
 #define debug_fn() xprintf(__PRETTY_FUNCTION__); xprintf("\n\r")
 #else
