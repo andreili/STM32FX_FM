@@ -100,4 +100,9 @@ int memcmp(const uint8_t *s1, const uint8_t *s2, uint32_t len)
 	return d;
 }
 
+void strcpy(char *dst, const char *src)
+{
+    memcpy(reinterpret_cast<uint8_t*>(dst), reinterpret_cast<const uint8_t*>(src), strlen(src) + 1);
+}
+
 }
