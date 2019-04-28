@@ -270,6 +270,8 @@ uint32_t STM32_FLASH::erase(FLASH_TypeErase type_erase, FLASH_VoltageRange volta
                             uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error)
 {
     STM32_LOCK(m_lock);
+    clear_flag(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
+               FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
 
     uint32_t status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
 
