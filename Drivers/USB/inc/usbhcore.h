@@ -415,7 +415,7 @@ public:
 #if (USBH_USE_OS == 1)
     FORCE_INLINE void LL_notify_URB_change() { send_message(); }
     FORCE_INLINE bool wait_message() { return m_events.wait(100); }
-    FORCE_INLINE void send_message() { m_events.signal(); }
+    FORCE_INLINE void send_message() { m_events.signal_isr(); }
     FORCE_INLINE uint32_t get_message_depth() { return m_events.get_size(); }
 #endif
 private:

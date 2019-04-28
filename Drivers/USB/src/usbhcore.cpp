@@ -17,6 +17,7 @@ namespace OS
     template <>
     OS_PROCESS void TProcUSB_HS::exec()
     {
+        sleep(100);
         for(;;)
         {
             if (usb_HS.wait_message())
@@ -482,7 +483,6 @@ void USBHCore::LL_connect()
         m_gstate = EHostState::DEV_ATTACHED;
 #if (USBH_USE_OS == 1)
     send_message();
-    xprintf("send_message<\n\r");
 #endif
 }
 
