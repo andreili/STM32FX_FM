@@ -306,6 +306,7 @@ public:
     inline bool pin_read(uint32_t pin) { return ((m_gpio->IDR & pin) == pin); }
     inline uint32_t pins_read(uint32_t pin) { return (m_gpio->IDR & pin); }
     inline void pins_write(uint32_t data) { m_gpio->ODR = data; }
+    inline void pins_write_mask(uint32_t data, uint32_t mask) { m_gpio->ODR = ((m_gpio->ODR & (~mask)) | data); }
     inline void pin_toggle(uint32_t pin) { m_gpio->ODR ^= pin; }
     uint32_t pin_lock(uint32_t pin);
 
