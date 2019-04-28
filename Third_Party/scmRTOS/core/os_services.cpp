@@ -126,19 +126,24 @@ bool OS::TEventFlag::wait(timeout_t timeout)
 bool OS::TEventsQueue::wait(timeout_t timeout)
 {
     TCritSect cs;
-    cur_proc_timeout() = timeout;
-
-    suspend(ProcessMap);
-
-    if (is_timeouted(ProcessMap))
-        return false;                               // waked up by timeout or by externals
-
     // extract first message
     if (Queue > 0)
+    {
         --Queue;
+        return true;
+    }
+    else
+    {
+        cur_proc_timeout() = timeout;
 
-    cur_proc_timeout() = 0;
-    return true;
+        suspend(ProcessMap);
+
+        if (is_timeouted(ProcessMap))
+            return false;                               // waked up by timeout or by externals
+
+        cur_proc_timeout() = 0;
+        return true;
+    }
 }
 //------------------------------------------------------------------------------
 
