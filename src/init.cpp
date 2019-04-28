@@ -68,6 +68,7 @@ void timebase_cb(STM32_TIM* tim, uint32_t ch)
     UNUSED(ch);
     STM32_SYSTICK::on_tick();
 }
+#endif //STM32_TIMEBASE_SYSTICK
 
 void timebase_init()
 {
@@ -89,12 +90,20 @@ void timebase_init()
     tim14.start_IT();
     #endif //STM32_TIMEBASE_SYSTICK
 }
-#endif //STM32_TIMEBASE_SYSTICK
+
+/* CPACR CPn: Access privileges values */
+#define SCB_CPACR_NONE			0	/* Access denied */
+#define SCB_CPACR_PRIV			1	/* Privileged access only */
+#define SCB_CPACR_FULL			3	/* Full access */
+/* CPACR [20:21]: Access privileges for coprocessor 10 */
+#define SCB_CPACR_CP10			(1 << 20)
+/* CPACR [22:23]: Access privileges for coprocessor 11 */
+#define SCB_CPACR_CP11			(1 << 22)
 
 void PeriphInit()
 {
 #ifndef __SOFTFP__
-    SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2)); // set the CP10 and CP11 to all ones
+    SCB->CPACR |= SCB_CPACR_FULL * (SCB_CPACR_CP10 | SCB_CPACR_CP11); // set the CP10 and CP11 to all ones
 #endif
 
     STM32_RCC::update_clock();
