@@ -13,7 +13,7 @@
 
 #include "stm32_flash.h"
 #include "stm32_rcc.h"
-#include "stm32_gpio.h"
+#include "stm32_gpio.hpp"
 #include "stm32_nvic.h"
 #include "stm32_pwr.h"
 #ifdef STM32_USE_DMA

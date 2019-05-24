@@ -836,10 +836,10 @@ void STM32_SD::init_gpio()
 
     gpioc.set_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 |
                      STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12, STM32_GPIO::EMode::AF_PP,
-                     GPIO_AF12_SDIO, STM32_GPIO::ESpeed::VERY_HIGH,
+                     STM32_GPIO::EAF::AF12_SDIO, STM32_GPIO::ESpeed::VERY_HIGH,
                      STM32_GPIO::EPull::NOPULL);
 
-    gpiod.set_config(STM32_GPIO::PIN_2, STM32_GPIO::EMode::AF_PP, GPIO_AF12_SDIO,
+    gpiod.set_config(STM32_GPIO::PIN_2, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF12_SDIO,
                      STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
 }
 

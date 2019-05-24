@@ -1,7 +1,4 @@
 #include "stm32_rcc.h"
-#include "stm32_pwr.h"
-#include "stm32_flash.h"
-#include "stm32_gpio.h"
 
 uint32_t STM32_RCC::m_system_core_clock;
 uint32_t unused_reg;
@@ -438,7 +435,7 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
                 MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, 0, STM32_GPIO::ESpeed::HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, RCC_MCOSource);
 				#elif defined(STM32F4)
-        MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, GPIO_AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
+        MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
 				#endif
     }
@@ -446,7 +443,7 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
     else
     {
         __MCO2_CLK_ENABLE();
-        MCO2_GPIO_PORT.set_config(MCO2_PIN, STM32_GPIO::EMode::AF_PP, GPIO_AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
+        MCO2_GPIO_PORT.set_config(MCO2_PIN, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (RCC_MCOSource | RCC_MCODiv));
     }
     #endif

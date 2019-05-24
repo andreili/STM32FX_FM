@@ -69,10 +69,10 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         STM32_RCC::enable_clk_USART1();
         STM32_RCC::enable_clk_GPIOA();
         #if defined(STM32F1)
-        gpiob.set_config(STM32_GPIO::PIN_9, STM32_GPIO::EMode::AF_PP, 0, STM32_GPIO::ESpeed::HIGH, STM32_GPIO::EPull::PULLUP);
-        gpiob.set_config(STM32_GPIO::PIN_10, STM32_GPIO::EMode::INPUT, 0, STM32_GPIO::ESpeed::HIGH, GPIO_NOPULL);
+        gpiob.set_config(STM32_GPIO::PIN_9, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::NONE, STM32_GPIO::ESpeed::HIGH, STM32_GPIO::EPull::PULLUP);
+        gpiob.set_config(STM32_GPIO::PIN_10, STM32_GPIO::EMode::INPUT, STM32_GPIO::EAF::NONE, STM32_GPIO::ESpeed::HIGH, GPIO_NOPULL);
         #elif defined(STM32F4)
-        gpioa.set_config(STM32_GPIO::PIN_9|STM32_GPIO::PIN_10, STM32_GPIO::EMode::AF_PP, GPIO_AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        gpioa.set_config(STM32_GPIO::PIN_9|STM32_GPIO::PIN_10, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
         break;
     #endif
@@ -81,10 +81,10 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         STM32_RCC::enable_clk_USART1();
         STM32_RCC::enable_clk_GPIOA();
         #if defined(STM32F1)
-        gpiob.set_config(STM32_GPIO::PIN_2, STM32_GPIO::EMode::AF_PP, 0, GPIO_SPEED_FREQ_HIGH, STM32_GPIO::EPull::PULLUP);
-        gpiob.set_config(STM32_GPIO::PIN_3, STM32_GPIO::EMode::INPUT, 0, GPIO_SPEED_FREQ_HIGH, STM32_GPIO::EPull::NOPULL);
+        gpiob.set_config(STM32_GPIO::PIN_2, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::NONE, GPIO_SPEED_FREQ_HIGH, STM32_GPIO::EPull::PULLUP);
+        gpiob.set_config(STM32_GPIO::PIN_3, STM32_GPIO::EMode::INPUT, STM32_GPIO::EAF::NONE, GPIO_SPEED_FREQ_HIGH, STM32_GPIO::EPull::NOPULL);
         #elif defined(STM32F4)
-        gpioa.set_config(STM32_GPIO::PIN_2|STM32_GPIO::PIN_3, STM32_GPIO::EMode::AF_PP, GPIO_AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        gpioa.set_config(STM32_GPIO::PIN_2|STM32_GPIO::PIN_3, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
         break;
     #endif
@@ -92,7 +92,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
     case USART3_BASE:
         STM32_RCC::enable_clk_USART3();
         STM32_RCC::enable_clk_GPIOB();
-        gpiob.set_config(STM32_GPIO::PIN_10|STM32_GPIO::PIN_11, STM32_GPIO::EMode::AF_PP, GPIO_AF7_USART3, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        gpiob.set_config(STM32_GPIO::PIN_10|STM32_GPIO::PIN_11, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART3, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         break;
     #endif
     #ifdef STM32_USE_UART4
@@ -107,7 +107,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
     case USART6_BASE:
         STM32_RCC::enable_clk_USART6();
         STM32_RCC::enable_clk_GPIOC();
-        gpioc.set_config(STM32_GPIO::PIN_6|STM32_GPIO::PIN_7, STM32_GPIO::EMode::AF_PP, GPIO_AF8_USART6, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        gpioc.set_config(STM32_GPIO::PIN_6|STM32_GPIO::PIN_7, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF8_USART6, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         break;
     #endif
     #ifdef STM32_USE_UART7
