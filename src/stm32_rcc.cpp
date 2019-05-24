@@ -198,6 +198,28 @@ uint32_t STM32_RCC::deinit()
     return STM32_RESULT_OK;
 }
 
+void STM32_RCC::deinit_per()
+{
+    //Peripheral reset enable (не трогаем reserved bits)
+    RCC->AHB1RSTR = 0x22E017FF;
+    RCC->AHB2RSTR = 0x000000F1;
+    RCC->AHB3RSTR = 0x00000001;
+    RCC->APB1RSTR = 0xF6FEC9FF;
+    RCC->APB2RSTR = 0x04777933;
+    //Peripheral  reset disable
+    RCC->AHB1RSTR = 0;
+    RCC->AHB2RSTR = 0;
+    RCC->AHB3RSTR = 0;
+    RCC->APB1RSTR = 0;
+    RCC->APB2RSTR = 0;
+    //Peripheral  disable clock
+    RCC->AHB1ENR = 0x00100000;
+    RCC->AHB2ENR = 0;
+    RCC->AHB3ENR = 0;
+    RCC->APB1ENR = 0;
+    RCC->APB2ENR = 0;
+}
+
 void STM32_RCC::config_HSE(uint32_t state)
 {
     switch (state)

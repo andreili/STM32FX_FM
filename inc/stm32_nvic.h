@@ -38,6 +38,7 @@ class STM32_NVIC
 {
 public:
     static void init();
+    static void deInit();
     static void init_vectors();
 
     static FORCE_INLINE void set_priority_grouping(uint32_t val) { NVIC_SetPriorityGrouping(val); }

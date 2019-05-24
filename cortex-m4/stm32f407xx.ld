@@ -18,6 +18,7 @@ PROVIDE ( _Heap_Begin = _end_noinit ) ;
 PROVIDE ( _Heap_Limit = __stack - _Main_Stack_Size ) ;
 _RAM_Start = ORIGIN(RAM);
 _RAM_Len = _estack - _RAM_Start;
+_FLASH_START = ORIGIN(FLASH);
 
 ENTRY(Reset)
 

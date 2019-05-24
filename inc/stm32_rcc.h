@@ -163,6 +163,7 @@ public:
 
     static void init();
     static uint32_t deinit();
+    static void deinit_per();
 
     ENDIS_REG_FLAG(HSI, RCC->CR, RCC_CR_HSION)
     static inline void set_calibration_value_HSI(uint32_t value) { MODIFY_REG(RCC->CR, RCC_CR_HSITRIM,

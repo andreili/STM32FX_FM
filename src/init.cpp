@@ -9,6 +9,7 @@ int main();
 /* #define VECT_TAB_SRAM */
 #define VECT_TAB_OFFSET  0x00 /*!< Vector Table base offset field. 
                                    This value must be a multiple of 0x200. */
+extern volatile uint32_t _FLASH_START;
 
 // base initialization
 void base_init()
@@ -30,7 +31,7 @@ void base_init()
     #ifdef VECT_TAB_SRAM
     SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
     #else
-    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+    SCB->VTOR = uint32_t(&_FLASH_START) | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
     #endif
 
     #ifdef INSTRUCTION_CACHE_ENABLE

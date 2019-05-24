@@ -14,6 +14,19 @@ void STM32_NVIC::init()
     enable_IRQ(FLASH_IRQn);
 }
 
+void STM32_NVIC::deInit()
+{
+    //disable all interrupts in NVIC
+    NVIC->ICER[0] = 0xFFFFFFFF;
+    NVIC->ICER[1] = 0xFFFFFFFF;
+    NVIC->ICER[2] = 0xFFFFFFFF;
+
+    //clear all pending bit
+    NVIC->ICPR[0] = 0xFFFFFFFF;
+    NVIC->ICPR[1] = 0xFFFFFFFF;
+    NVIC->ICPR[2] = 0xFFFFFFFF;
+}
+
 void STM32_NVIC::init_vectors()
 {
     #ifdef STM32_USE_UART1
