@@ -8,23 +8,12 @@
 SEARCH_DIR("=/usr/arm-none-eabi/lib"); SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
 SEARCH_DIR("=/mingw32/lib/gcc/arm-none-eabi/8.3.0/"); SEARCH_DIR("=/mingw32/arm-none-eabi/lib/");
 
-_SRAM_SIZE1 = 0x00010000;
-_SRAM_SIZE2 = 0x00020000;
-
-MEMORY
-{
-  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 0x00100000 /* 1M */
-  RAM   (rwx): ORIGIN = 0x20000000, LENGTH = _SRAM_SIZE2 /* 128K */
-  CCMRAM(rwx): ORIGIN = 0x10000000, LENGTH = _SRAM_SIZE1 /* 64K */
-}
 
 __stack = ORIGIN(RAM) + LENGTH(RAM);
-__Main_Stack_Size = 4096 ;
 _estack = __stack - __Main_Stack_Size; 	/* STM specific definition */
 PROVIDE ( _Main_Stack_Size = __Main_Stack_Size ) ;
 __Main_Stack_Limit = __stack  - __Main_Stack_Size ;
 PROVIDE ( _Main_Stack_Limit = __Main_Stack_Limit ) ;
-_Minimum_Stack_Size = 512 ;
 PROVIDE ( _Heap_Begin = _end_noinit ) ;
 PROVIDE ( _Heap_Limit = __stack - _Main_Stack_Size ) ;
 _RAM_Start = ORIGIN(RAM);

@@ -1,0 +1,13 @@
+_SRAM_SIZE1 = 0x00010000;
+_SRAM_SIZE2 = 0x00020000;
+__Main_Stack_Size = 4096 ;
+_Minimum_Stack_Size = 512 ;
+
+MEMORY
+{
+  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 0x00100000 /* 1M */
+  RAM   (rwx): ORIGIN = 0x20000000, LENGTH = _SRAM_SIZE2 /* 128K */
+  CCMRAM(rwx): ORIGIN = 0x10000000, LENGTH = _SRAM_SIZE1 /* 64K */
+}
+
+INCLUDE "../../STM32F4/cortex-m4/stm32f407xx.ld";
