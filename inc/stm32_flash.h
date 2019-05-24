@@ -775,6 +775,8 @@ public:
     static void reset_data_cache();
     #endif
 
+    static void enable_remap_system_flash();
+
     static inline void enable_IT(uint32_t it_vector) { FLASH->CR |= it_vector; }
     static inline void disable_IT(uint32_t it_vector) { FLASH->CR &= ~it_vector; }
 

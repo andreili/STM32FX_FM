@@ -46,6 +46,15 @@ void STM32_FLASH::reset_data_cache()
 }
 #endif
 
+void STM32_FLASH::enable_remap_system_flash()
+{
+#if defined(STM32F4)
+    SYSCFG->MEMRMP = SYSCFG_MEMRMP_MEM_MODE;
+#else
+#error
+#endif
+}
+
 uint32_t STM32_FLASH::program(FLASH_TypeProgram type_program, uint32_t address, uint64_t data)
 {
 	uint32_t status;
