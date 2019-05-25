@@ -833,6 +833,8 @@ STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
 void STM32_SD::init_gpio()
 {
     STM32_RCC::enable_clk_SDIO();
+    STM32_RCC::enable_clk_GPIOC();
+    STM32_RCC::enable_clk_GPIOD();
 
     gpioc.set_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 |
                      STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12, STM32_GPIO::EMode::AF_PP,
@@ -848,6 +850,8 @@ void STM32_SD::deinit_gpio()
     gpioc.unset_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 |
                        STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12);
     gpiod.unset_config(STM32_GPIO::PIN_2);
+    STM32_RCC::disable_clk_GPIOC();
+    STM32_RCC::disable_clk_GPIOD();
 }
 
 void STM32_SD::init_low(EClockEdge clock_edge, EClockBypass clock_bypass,
