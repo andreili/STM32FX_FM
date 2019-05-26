@@ -17,7 +17,7 @@ namespace OS
     template <>
     OS_PROCESS void TProcUSB_HS::exec()
     {
-        sleep(100);
+        sleep(1);
         for(;;)
         {
             if (usb_HS.wait_message())
@@ -35,6 +35,7 @@ namespace OS
     template <>
     OS_PROCESS void TProcUSB_FS::exec()
     {
+        sleep(1);
         for(;;)
         {
             if (usb_FS.wait_message())
