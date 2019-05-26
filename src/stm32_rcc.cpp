@@ -151,6 +151,23 @@ void STM32_RCC::init()
     #endif
 }
 
+void STM32_RCC::deinit_cold()
+{
+    /* Reset the RCC clock configuration to the default reset state ------------*/
+    /* Set HSION bit */
+    RCC->CR |= RCC_CR_HSION;
+    /* Reset CFGR register */
+    RCC->CFGR = 0;
+    /* Reset HSEON, CSSON and PLLON bits */
+    RCC->CR &= ~(RCC_CR_PLLON | RCC_CR_CSSON | RCC_CR_HSEON);
+    /* Reset PLLCFGR register */
+    RCC->PLLCFGR = ((1 << 29) | RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLM_4);
+    /* Reset HSEBYP bit */
+    RCC->CR &= ~(RCC_CR_HSEBYP);
+    /* Disable all interrupts */
+    RCC->CIR = 0;
+}
+
 uint32_t STM32_RCC::deinit()
 {
     m_system_core_clock = HSI_VALUE;

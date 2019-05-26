@@ -33,35 +33,42 @@
 void STM32_UART::init_all()
 {
     #ifdef STM32_USE_UART1
-    uart1.init_base(USART1);
+    uart1.m_uart = USART1;
+    uart1.m_busy = false;
     #endif
     #ifdef STM32_USE_UART2
-    uart2.init_base(USART2);
+    uart2.m_uart = USART2;
+    uart2.m_busy = false;
     #endif
     #ifdef STM32_USE_UART3
-    uart3.init_base(USART3);
+    uart3.m_uart = USART3;
+    uart3.m_busy = false;
     #endif
     #ifdef STM32_USE_UART4
-    uart4.init_base(UART4);
+    uart4.m_uart = UART4;
+    uart4.m_busy = false;
     #endif
     #ifdef STM32_USE_UART5
-    uart5.init_base(UART5);
+    uart5.m_uart = UART5;
+    uart5.m_busy = false;
     #endif
     #ifdef STM32_USE_UART6
-    uart6.init_base(USART6);
+    uart6.m_uart = USART6;
+    uart6.m_busy = false;
     #endif
     #ifdef STM32_USE_UART7
-    uart7.init_base(UART7);
+    uart7.m_uart = UART7;
+    uart7.m_busy = false;
     #endif
     #ifdef STM32_USE_UART8
-    uart8.init_base(UART8);
+    uart8.m_uart = UART8;
+    uart8.m_busy = false;
     #endif
 }
 
-void STM32_UART::init_base(USART_TypeDef* uart)
+void STM32_UART::init(uint32_t brate)
 {
-    m_uart = uart;
-    m_busy = false;
+    // Clock enable
     switch (reinterpret_cast<uint32_t>(m_uart))
     {
     #ifdef STM32_USE_UART1
@@ -74,6 +81,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         #elif defined(STM32F4)
         gpioa.set_config(STM32_GPIO::PIN_9|STM32_GPIO::PIN_10, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
+        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART2
@@ -86,6 +94,7 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         #elif defined(STM32F4)
         gpioa.set_config(STM32_GPIO::PIN_2|STM32_GPIO::PIN_3, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART2EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART3
@@ -93,14 +102,17 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         STM32_RCC::enable_clk_USART3();
         STM32_RCC::enable_clk_GPIOB();
         gpiob.set_config(STM32_GPIO::PIN_10|STM32_GPIO::PIN_11, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART3, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART4
     case UART4_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART5
     case UART5_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART6
@@ -108,58 +120,19 @@ void STM32_UART::init_base(USART_TypeDef* uart)
         STM32_RCC::enable_clk_USART6();
         STM32_RCC::enable_clk_GPIOC();
         gpioc.set_config(STM32_GPIO::PIN_6|STM32_GPIO::PIN_7, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF8_USART6, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
+        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART7
     case UART7_BASE:
+        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART8
     case UART8_BASE:
-        break;
-    #endif
-    }
-}
-
-void STM32_UART::init(uint32_t brate)
-{
-    // Clock enable
-    switch (reinterpret_cast<uint32_t>(m_uart))
-    {
-    case USART1_BASE:
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = ENABLE;
-        break;
-    case USART2_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART2EN) = ENABLE;
-        break;
-    case USART3_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = ENABLE;
-        break;
-		#ifdef UART4_BASE
-    case UART4_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = ENABLE;
-        break;
-		#endif
-		#ifdef UART5_BASE
-    case UART5_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = ENABLE;
-        break;
-		#endif
-		#ifdef UART6_BASE
-    case USART6_BASE:
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = ENABLE;
-        break;
-		#endif
-#ifdef UART7_BASE
-    case UART7_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = ENABLE;
-        break;
-#endif
-#ifdef UART8_BASE
-    case UART8_BASE:
         BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART8EN) = ENABLE;
         break;
-#endif
+    #endif
     }
 
     UART_DISABLE();

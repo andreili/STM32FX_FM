@@ -19,8 +19,7 @@ void base_init()
     SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
     #endif
 
-    //extern uint32_t _RAM_Start;
-    //memset((uint8_t*)&_RAM_Start, 0, 1024*50);
+    STM32_RCC::deinit_cold();
 
     #if defined (DATA_IN_ExtSDRAM)
     if (STM32_SDRAM::init() != STM32_RESULT_OK)
@@ -33,33 +32,6 @@ void base_init()
     #else
     SCB->VTOR = uint32_t(&_FLASH_START) | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
     #endif
-
-    #ifdef INSTRUCTION_CACHE_ENABLE
-    STM32_FLASH::enable_instruction_cache();
-    #endif
-    #ifdef DATA_CACHE_ENABLE
-    STM32_FLASH::enable_data_cache();
-    #endif
-    #ifdef PREFETCH_ENABLE
-    STM32_FLASH::enable_prefetch_buffer();
-    #endif
-
-    STM32_NVIC::init();
-    timebase_init();
-}
-
-void SystemInit()
-{
-    base_init();
-    // system initialization
-    STM32_RCC::init();
-    timebase_init();
-
-    /* Initialize interrupt vectors for a peripheral */
-    STM32_NVIC::init_vectors();
-    STM32_RCC::update_clock();
-    __enable_fault_irq();
-    __enable_irq();
 }
 
 #ifndef STM32_TIMEBASE_SYSTICK
@@ -92,21 +64,8 @@ void timebase_init()
     #endif //STM32_TIMEBASE_SYSTICK
 }
 
-/* CPACR CPn: Access privileges values */
-#define SCB_CPACR_NONE			0	/* Access denied */
-#define SCB_CPACR_PRIV			1	/* Privileged access only */
-#define SCB_CPACR_FULL			3	/* Full access */
-/* CPACR [20:21]: Access privileges for coprocessor 10 */
-#define SCB_CPACR_CP10			(1 << 20)
-/* CPACR [22:23]: Access privileges for coprocessor 11 */
-#define SCB_CPACR_CP11			(1 << 22)
-
 void PeriphInit()
 {
-#ifndef __SOFTFP__
-    SCB->CPACR |= SCB_CPACR_FULL * (SCB_CPACR_CP10 | SCB_CPACR_CP11); // set the CP10 and CP11 to all ones
-#endif
-
     STM32_RCC::update_clock();
 
     /* Other IO and peripheral initializations */
@@ -126,6 +85,31 @@ void PeriphInit()
     #ifdef STM32_USE_TIM
     STM32_TIM::init_all();
     #endif
+    timebase_init();
+}
+
+void SystemInit()
+{
+    base_init();
+    // system initialization
+    STM32_RCC::init();
+    PeriphInit();
+
+    /* Initialize interrupt vectors for a peripheral */
+    STM32_NVIC::init_vectors();
+    STM32_RCC::update_clock();
+
+    #ifdef INSTRUCTION_CACHE_ENABLE
+    STM32_FLASH::enable_instruction_cache();
+    #endif
+    #ifdef DATA_CACHE_ENABLE
+    STM32_FLASH::enable_data_cache();
+    #endif
+    #ifdef PREFETCH_ENABLE
+    STM32_FLASH::enable_prefetch_buffer();
+    #endif
+
+    STM32_NVIC::init();
 }
 
 #define INIT_SP() \
@@ -167,11 +151,13 @@ extern uint32_t __ctors_end__;
 
 void ISR::Reset()
 {
+    SystemInit();
     INIT_SP();
     __initialize_bss(&__bss_start__, &__bss_end__);
     __initialize_data(&__textdata__, &__data_start__, &__data_end__);
-    PeriphInit();
-    SystemInit();
     __initalize_classes(&__ctors_start__, &__ctors_end__);
+    PeriphInit();
+    __enable_fault_irq();
+    __enable_irq();
     main();
 }

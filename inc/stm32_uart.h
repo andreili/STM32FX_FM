@@ -16,7 +16,6 @@ class STM32_UART
 {
 public:
     static void init_all();
-    void init_base(USART_TypeDef* uart);
     void init(uint32_t brate);
     void deinit();
     

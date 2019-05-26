@@ -162,6 +162,7 @@ public:
 #define RCC_CLOCKTYPE_PCLK2              ((uint32_t)0x00000008U)*/
 
     static void init();
+    static void deinit_cold();
     static uint32_t deinit();
     static void deinit_per();
 

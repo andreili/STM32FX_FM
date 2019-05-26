@@ -184,8 +184,6 @@ public:
     static inline void EXTI_IRQ_Handler(uint32_t pin);
 private:
     GPIO_TypeDef*   m_gpio;
-
-    inline void init(uint32_t base_addr);
 };
 
 void EXTI_cb(uint32_t pin);

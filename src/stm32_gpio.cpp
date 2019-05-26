@@ -24,28 +24,23 @@
 
 void STM32_GPIO::init_all()
 {
-    gpioa.init(GPIOA_BASE);
-    gpiob.init(GPIOB_BASE);
-    gpioc.init(GPIOC_BASE);
-    gpiod.init(GPIOD_BASE);
-    gpioe.init(GPIOE_BASE);
+    gpioa.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOA_BASE);
+    gpiob.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOB_BASE);
+    gpioc.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOC_BASE);
+    gpiod.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOD_BASE);
+    gpioe.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOE_BASE);
 
-    gpioa.set_config(STM32_GPIO::PIN_All & (~(STM32_GPIO::PIN_13 | STM32_GPIO::PIN_14)), STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    /*gpioa.set_config(STM32_GPIO::PIN_All & (~(STM32_GPIO::PIN_13 | STM32_GPIO::PIN_14)), STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpiob.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpioc.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpiod.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
-    gpioe.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpioe.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);*/
     #ifdef GPIOF_BASE
-    gpiof.init(GPIOF_BASE);
-    gpiog.init(GPIOG_BASE);
-    gpioh.init(GPIOH_BASE);
-    gpioi.init(GPIOI_BASE);
+    gpiof.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOF_BASE);
+    gpiog.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOG_BASE);
+    gpioh.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOH_BASE);
+    gpioi.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOI_BASE);
     #endif
-}
-
-void STM32_GPIO::init(uint32_t base_addr)
-{
-    m_gpio = reinterpret_cast<GPIO_TypeDef*>(base_addr);
 }
 
 void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, EAF pin_alt, ESpeed pin_speed, EPull pin_pull)
