@@ -57,10 +57,13 @@ SECTIONS
 {
     .text :
     {
+		. = ALIGN(4);
         KEEP(*(.isr_vector))
+		. = ALIGN(4);
         *(.text*)
+		. = ALIGN(4);
 
-        __ctors_start__ = ALIGN(4);
+        __ctors_start__ = .;
             /* .ctors */
             KEEP(SORT(*)(.init_array)) /* eabi uses .init_array for static constructor lists */
             *crtbegin.o(.ctors)
@@ -69,11 +72,13 @@ SECTIONS
             *(SORT(.ctors.*))
             *(.ctors)
         __ctors_end__ = .;
+		. = ALIGN(4);
 
-        __dtors_start__ = ALIGN(4);
+        __dtors_start__ = .;
         __dtors_end__ = .;
+		. = ALIGN(4);
 
-        PROVIDE (_init = ALIGN(4));
+        PROVIDE (_init = .);
         *crti.o(.init)
         KEEP(*(.init))
         *crtn.o(.init)
@@ -87,6 +92,7 @@ SECTIONS
         *(SORT(.dtors.*))
         *(.dtors)
 
+		. = ALIGN(4);
         *(.rodata*)
         
         /* GLOBAL OFFSET TABLE*/
@@ -152,6 +158,7 @@ SECTIONS
         __data_start__ = .;
         *(vtable)
         _sdata = .;        /* create a global symbol at data start */
+		. = ALIGN(4);
         *(.data*)
         *(.ramtext)
 
@@ -199,7 +206,7 @@ SECTIONS
         __bss_end__ = _ebss;
     } > RAM
 
-    .heap (COPY):
+    .heap (COPY): ALIGN(4)
     {
         __end__ = .;
         PROVIDE(end = .);

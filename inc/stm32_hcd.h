@@ -476,7 +476,7 @@ private:
 
     FORCE_INLINE EOTGSpeed get_host_speed() { return static_cast<EOTGSpeed>((m_regs->ports[0] & USB_OTG_HPRT_PSPD) >> USB_OTG_HPRT_PSPD_Pos); }
 
-    void HC_start_Xfer(OTG_HC_t *hc, bool dma);
+    void HC_start_Xfer(OTG_HC_t *hc);
     FORCE_INLINE uint32_t HC_get_Xfer_size(uint8_t ch_num) { return m_regs->channels[ch_num].HCTSIZ; }
     FORCE_INLINE void HC_set_Xfer_size(uint8_t ch_num, uint32_t size, uint32_t numpkt, uint8_t PID)
         {

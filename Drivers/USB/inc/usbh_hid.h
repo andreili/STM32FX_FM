@@ -173,7 +173,7 @@ protected:
     FIFO            m_fifo;
     DescTypeDef     m_HID_Desc;
 
-    uint8_t         m_custom_data[CUSTOM_DATA_SIZE];
+    uint8_t         m_custom_data[CUSTOM_DATA_SIZE] __attribute__((aligned(4)));
 
 private:
     FORCE_INLINE USBHCore::EStatus get_HID_descriptor(uint16_t size)

@@ -335,7 +335,7 @@ public:
     #if (USBH_KEEP_CFG_DESCRIPTOR == 1)
         uint8_t         CfgDesc_Raw[USBH_MAX_SIZE_CONFIGURATION];
     #endif
-        uint8_t         Data[USBH_MAX_DATA_BUFFER];
+        uint8_t         Data[USBH_MAX_DATA_BUFFER] __attribute__((aligned(4)));
         uint8_t         address;
         STM32_HCD::EOTGSpeed speed;
         __IO uint8_t    is_connected;

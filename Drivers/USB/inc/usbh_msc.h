@@ -204,11 +204,11 @@ public:
 
     typedef struct
     {
-        uint32_t        data[16];
+        uint32_t        data[16] __attribute__((aligned(4)));
         EBOTState       state;
         EBOTState       prev_state;
         EBOTCMDState    cmd_state;
-        BOT_CBW         cbw;
+        BOT_CBW         cbw __attribute__((aligned(4)));
         uint8_t         Reserved1;
         BOT_CSW         csw;
         uint8_t         Reserved2[3];

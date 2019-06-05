@@ -213,7 +213,7 @@ void STM32_HCD::HC_submit_request(uint8_t ch_num, bool is_in, EEPType ep_type, b
     m_HC[ch_num].xfer_count = 0;
     m_HC[ch_num].ch_num = ch_num;
     m_HC[ch_num].state = EHCState::IDLE;
-    HC_start_Xfer(&m_HC[ch_num], m_dma_enable);
+    HC_start_Xfer(&m_HC[ch_num]);
 }
 
 uint32_t STM32_HCD::HC_halt(uint8_t hc_num)
@@ -842,17 +842,17 @@ void STM32_HCD::init_FSLSPClk_sel(EClockSpeed freq)
 }
 
 //#pragma GCC optimize ("O0")
-void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
+void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc)
 {
     debug_fn();
     if ((m_regs != reinterpret_cast<OTGRegs_t*>(USB_OTG_FS)) && (hc->speed == EOTGSpeed::HIGH))
     {
-        if ((!dma) && hc->do_ping)
+        if ((!m_dma_enable) && hc->do_ping)
         {
             do_ping(hc->ch_num);
             return;
         }
-        else if (dma)
+        else if (m_dma_enable)
         {
             mask_HC_int(hc->ch_num, USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
             hc->do_ping = false;
@@ -877,7 +877,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 
     HC_set_Xfer_size(hc->ch_num, hc->xfer_len, numpackets, static_cast<uint8_t>(hc->data_pid));
 
-    if (dma)
+    if (m_dma_enable)
         HC_set_Xfer_DMA(hc->ch_num, hc->xfer_buff);
 
     uint32_t is_odd = is_cur_frame_odd();
@@ -886,7 +886,7 @@ void STM32_HCD::HC_start_Xfer(OTG_HC_t* hc, bool dma)
 
     HC_reactivate(hc->ch_num);
 
-    if (!dma)
+    if (!m_dma_enable)
     {
         if ((!hc->ep_is_in) && (hc->xfer_len > 0))
         {
