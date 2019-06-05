@@ -6,7 +6,7 @@
  *
  **/
 #include "ISRstm32f407xx.h"
-__attribute__((naked, noreturn)) void ISR::DefaultHandler()
+void ISR::DefaultHandler()
 {
    for(;;);
 }

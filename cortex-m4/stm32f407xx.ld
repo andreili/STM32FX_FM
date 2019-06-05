@@ -60,7 +60,7 @@ SECTIONS
         KEEP(*(.isr_vector))
         *(.text*)
 
-        __ctors_start__ = .;
+        __ctors_start__ = ALIGN(4);
             /* .ctors */
             KEEP(SORT(*)(.init_array)) /* eabi uses .init_array for static constructor lists */
             *crtbegin.o(.ctors)
@@ -70,10 +70,10 @@ SECTIONS
             *(.ctors)
         __ctors_end__ = .;
 
-        __dtors_start__ = .;
+        __dtors_start__ = ALIGN(4);
         __dtors_end__ = .;
 
-        PROVIDE (_init = .);
+        PROVIDE (_init = ALIGN(4));
         *crti.o(.init)
         KEEP(*(.init))
         *crtn.o(.init)

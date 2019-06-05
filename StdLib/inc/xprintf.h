@@ -11,6 +11,9 @@
 #define _USE_XFUNC_IN	1	/* 1: Use input function */
 #define	_LINE_ECHO		1	/* 1: Echo back input chars in xgets function */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if _USE_XFUNC_OUT
 void xputc (char c);
@@ -29,6 +32,11 @@ extern unsigned char (*xfunc_in)(void);
 int xgets (char* buff, int len);
 int xfgets (unsigned char (*func)(void), char* buff, int len);
 int xatoi (char** str, long* res);
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

@@ -12,7 +12,7 @@ extern "C" {
 #define UNALLIGNED2(X, Y) \
     (((uint32_t)X & (sizeof(uint32_t) - 1)) | ((uint32_t)Y & (sizeof(uint32_t) - 1)))
 
-int strlen(const char* str)
+unsigned int strlen(const char* str)
 {
 	int len = 0;
 	while (*str++)
@@ -23,7 +23,7 @@ int strlen(const char* str)
 
 
 
-void memcpy(uint8_t* dst, const uint8_t* src, int len)
+void memcpy(uint8_t* dst, const uint8_t* src, unsigned int len)
 {
     if (TOO_SMALL4(len) && (!UNALLIGNED2(src, dst)))
     {
@@ -49,7 +49,7 @@ void memcpy(uint8_t* dst, const uint8_t* src, int len)
 		*dst++ = *src++;
 }
 
-void memset(uint8_t* dst, char val, int len)
+void memset(uint8_t* dst, char val, unsigned int len)
 {
     while (UNALLIGNED1(val))
     {
@@ -100,9 +100,10 @@ int memcmp(const uint8_t *s1, const uint8_t *s2, uint32_t len)
 	return d;
 }
 
-void strcpy(char *dst, const char *src)
+char* strcpy(char *dst, const char *src)
 {
     memcpy(reinterpret_cast<uint8_t*>(dst), reinterpret_cast<const uint8_t*>(src), strlen(src) + 1);
+    return dst;
 }
 
 }
