@@ -3,6 +3,12 @@
 
 #ifdef STM32_USE_USB_HOST
 
+USBH_HID::USBH_HID()
+    : m_type (EType::UNKNOWN)
+    , m_length (0)
+{
+}
+
 USBHCore::EStatus USBH_HID::init(USBHCore* host)
 {
     debug_fn();

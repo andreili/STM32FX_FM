@@ -143,7 +143,7 @@ public:
         uint8_t keys[7];
     } KbdReport;
 
-
+    USBH_HID();
     virtual uint8_t get_class_code() { return USB_HID_CLASS; }
     virtual const char* get_name() { return "HID"; }
     virtual USBHCore::EStatus init(USBHCore* host);
@@ -154,6 +154,7 @@ public:
 
     FORCE_INLINE EType get_type() { return m_type; }
     uint16_t get_pool_interval();
+    uint16_t get_data_length() { return m_length; }
     USBHCore::EStatus decode(uint8_t *data);
 
 protected:
