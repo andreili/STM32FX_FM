@@ -110,12 +110,12 @@ uint32_t USBHCore::select_interface(uint8_t interface)
     }
 }
 
-uint8_t USBHCore::find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol)
+uint8_t USBHCore::find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol, uint8_t start_idx)
 {
     USBHInterfaceDesc_t* pif = nullptr;
     USBHCfgDesc_t* pcfg = &m_device.CfgDesc;
 
-    uint8_t if_idx = 0;
+    uint8_t if_idx = start_idx;
     while (if_idx < USBH_MAX_NUM_INTERFACES)
     {
         pif = &pcfg->Itf_Desc[if_idx];
@@ -281,7 +281,7 @@ void USBHCore::process()
             else
             {
                 m_gstate = EHostState::ABORT_STATE;
-                USBH_UsrLog("No registered class for this device.");
+                USBH_UsrLog("No registered class for this device (%d).", m_device.CfgDesc.Itf_Desc[0].bInterfaceClass);
             }
         }
 #if (USBH_USE_OS == 1)
@@ -598,7 +598,7 @@ USBHCore::EStatus USBHCore::ctl_req(uint8_t* buff, uint16_t length)
     return status;
 }
 
-USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length)
+USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx, uint16_t index, uint8_t* buff, uint16_t length)
 {
     if (m_request_state == ECMDState::SEND)
     {
@@ -609,7 +609,7 @@ USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx,
         if ((value_idx & 0xff00) == USB_DESC_STRING)
             m_control.setup.b.wIndex.w = 0x0409;
         else
-            m_control.setup.b.wIndex.w = 0;
+            m_control.setup.b.wIndex.w = index;
         m_control.setup.b.wLength.w = length;
     }
     return ctl_req(buff, length);
@@ -618,7 +618,7 @@ USBHCore::EStatus USBHCore::get_descriptor(uint8_t req_type, uint16_t value_idx,
 USBHCore::EStatus USBHCore::get_dev_desc(uint16_t length)
 {
     EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                    USB_DESC_DEVICE, m_device.Data, length);
+                                    USB_DESC_DEVICE, 0, m_device.Data, length);
     if (status == EStatus::OK)
         parse_dev_desc(&m_device.DevDesc, m_device.Data, length);
     return status;
@@ -627,7 +627,7 @@ USBHCore::EStatus USBHCore::get_dev_desc(uint16_t length)
 USBHCore::EStatus USBHCore::get_string_desc(uint8_t string_index, uint8_t* buff, uint16_t length)
 {
     EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                    USB_DESC_STRING | string_index, m_device.Data, length);
+                                    USB_DESC_STRING | string_index, 0, m_device.Data, length);
     if (status == EStatus::OK)
         parse_string_desc(m_device.Data, buff, length);
     return status;
@@ -655,7 +655,7 @@ USBHCore::EStatus USBHCore::get_cfg_desc(uint16_t length)
     pData = m_device.Data;
 #endif
     EStatus status = get_descriptor(EReqRecipient::REQ_DEVICE | EReqType::STANDARD,
-                                    USB_DESC_CONFIGURATION, pData, length);
+                                    USB_DESC_CONFIGURATION, 0, pData, length);
     if (status == EStatus::OK)
         parse_cfg_desc(&m_device.CfgDesc, pData, length);
     return status;
@@ -704,7 +704,7 @@ void USBHCore::parse_dev_desc(USBHDevDesc_t *pdesc, uint8_t *buf, uint16_t lengt
 {
     if (length > 8)
     {
-        memcpy(pdesc, buf, 18);
+        memcpy(pdesc, buf, sizeof(USBHDevDesc_t));
         //pdesc->idVendor = __builtin_bswap16(pdesc->idVendor);
         //pdesc->idProduct = __builtin_bswap16(pdesc->idProduct);
         //pdesc->bcdDevice = __builtin_bswap16(pdesc->bcdDevice);
@@ -730,37 +730,39 @@ void USBHCore::parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length)
 
 void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t length)
 {
-    memcpy(pdesc, buf, 9);
-    //pdesc->wTotalLength = __builtin_bswap16(pdesc->wTotalLength);
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
         int8_t if_idx = 0;
-        uint16_t ptr = static_cast<uint16_t>(ELen::CFG_DESC);;
-        USBHDescHeader_t* pheader;
-        while ((if_idx < USBH_MAX_NUM_INTERFACES) && (ptr < pdesc->wTotalLength))
+        int8_t ep_idx;
+        uint16_t pos = 0;
+        USBHInterfaceDesc_t* pif = nullptr;
+        while ((if_idx < USBH_MAX_NUM_INTERFACES) && (pos < length))
         {
-            pheader = get_next_desc(buf, &ptr);
-            if (pheader->bDescriptorType == EDescType::INTERFACE)
+            switch (static_cast<EDescType>(buf[1]))
             {
-                USBHInterfaceDesc_t* pif = &pdesc->Itf_Desc[if_idx];
-                parse_interface_desc(pif, reinterpret_cast<uint8_t*>(pheader));
-
-                int8_t ep_idx = 0;
-                USBHEpDesc_t* pep = nullptr;
-                while ((ep_idx < pif->bNumEndpoints) && (ptr < pdesc->wTotalLength))
-                {
-                    pheader = get_next_desc(reinterpret_cast<uint8_t*>(pheader), &ptr);
-                    if (pheader->bDescriptorType == EDescType::ENDPOINT)
-                    {
-                        pep = &pif->Ep_Desc[ep_idx];
-                        parse_ep_desc(pep, reinterpret_cast<uint8_t*>(pheader));
-                        ++ep_idx;
-                    }
-                }
-                ++if_idx;
+            case EDescType::CONFIGURATION:
+                memcpy(pdesc, buf, buf[0]);
+                break;
+            case EDescType::INTERFACE:
+                pif = &pdesc->Itf_Desc[if_idx];
+                ep_idx = 0;
+                memcpy(pif, buf, buf[0]);
+                break;
+            case EDescType::ENDPOINT:
+                memcpy(&pif->Ep_Desc[ep_idx], buf, buf[0]);
+                break;
+            case EDescType::HID:
+                memcpy(&pif->HID_desc, buf, buf[0]);
+                break;
+            default:
+                break;
             }
+            pos += buf[0];
+            buf += buf[0];
         }
     }
+    else
+        memcpy(pdesc, buf, buf[0]);
 }
 
 void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
@@ -774,11 +776,10 @@ void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
     memcpy(if_desc, buf, 9);
 }
 
-USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(uint8_t* buff, uint16_t* ptr)
+USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(USBHDescHeader_t* pnext, uint16_t* ptr)
 {
-    USBHDescHeader_t* pnext = reinterpret_cast<USBHDescHeader_t*>(buff);
     *ptr += pnext->bLength;
-    pnext = reinterpret_cast<USBHDescHeader_t*>((buff + pnext->bLength));
+    pnext = reinterpret_cast<USBHDescHeader_t*>((reinterpret_cast<uint8_t*>(pnext) + pnext->bLength));
     return pnext;
 }
 

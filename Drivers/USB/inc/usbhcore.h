@@ -70,11 +70,12 @@ class USBHCore
 {
 public:
 
-    enum class ELen: uint8_t
+    enum class ELen: uint16_t
     {
         DESC_HDR    = 0x02,
         DEV_DESC    = 0x12,
         CFG_DESC    = 0x09,
+        HID_DESC    = 0x09,
         IF_DESC     = 0x09,
         EP_DESC     = 0x07,
         OTG_DESC    = 0x03,
@@ -112,7 +113,7 @@ public:
         SYNCH_FRAME         = 0x0C,
     };
 
-    enum EDescType: uint16_t
+    enum EDescType: uint8_t
     {
         DEVICE                              = 1,
         CONFIGURATION                       = 2,
@@ -303,6 +304,17 @@ public:
 
     typedef struct
     {
+        uint8_t     bLength;
+        uint8_t     bDescriptorType;
+        uint16_t    bcdHID;
+        uint8_t     bCountryCode;
+        uint8_t     bNumDescriptors;
+        uint8_t     bType;
+        uint16_t    wDescriptorLength;
+    } USBHHIDDesc_t;
+
+    typedef struct
+    {
         uint8_t bLength;
         uint8_t bDescriptorType;
         uint8_t bInterfaceNumber;
@@ -312,6 +324,7 @@ public:
         uint8_t bInterfaceSubClass;   /* Subclass Code (Assigned by USB Org) */
         uint8_t bInterfaceProtocol;   /* Protocol Code */
         uint8_t iInterface;           /* Index of String Descriptor Describing this interface */
+        USBHHIDDesc_t  HID_desc;
         USBHEpDesc_t   Ep_Desc[USBH_MAX_NUM_ENDPOINTS];
     } USBHInterfaceDesc_t;
 
@@ -352,12 +365,13 @@ public:
     uint32_t register_class(USBHClass *pclass);
 
     uint32_t select_interface(uint8_t interface);
-    uint8_t find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol);
+    uint8_t find_interface(uint8_t Class, uint8_t subclass, uint8_t protocol, uint8_t start_idx = 0);
     uint8_t find_interface_index(uint8_t interface_number, uint8_t alt_settings);
 
     //FORCE_INLINE uint8_t get_active_class() { return m_device.CfgDesc.Itf_Desc[m_device.current_interface].bInterfaceClass; }
     FORCE_INLINE USBHClass* get_active_class() { return m_active_class; }
     FORCE_INLINE USBHInterfaceDesc_t* get_current_interface() { return &m_device.CfgDesc.Itf_Desc[m_device.current_interface]; }
+    FORCE_INLINE USBHInterfaceDesc_t* get_interface(uint8_t idx) { return &m_device.CfgDesc.Itf_Desc[idx]; }
 
     /* Pipes */
     FORCE_INLINE uint32_t open_pipe(uint8_t ch_num, uint8_t epnum, uint8_t dev_addr, STM32_HCD::EOTGSpeed speed, STM32_HCD::EEPType ep_type, uint16_t mps)
@@ -401,7 +415,7 @@ public:
     FORCE_INLINE STM32_HCD::EURBState LL_get_URB_state(uint8_t pipe) { return m_hcd->HC_get_URB_state(pipe); }
 
     EStatus clr_feature(uint8_t ep_num);
-    EStatus get_descriptor(uint8_t req_type, uint16_t value_idx, uint8_t* buff, uint16_t length);
+    EStatus get_descriptor(uint8_t req_type, uint16_t value_idx, uint16_t index, uint8_t* buff, uint16_t length);
     FORCE_INLINE EStatus ctrl_req_custom(EReqDir dir, uint8_t req_type, uint8_t req, uint16_t value_idx, uint16_t length, uint8_t* buff)
     {
         m_control.setup.b.bmRequestType = static_cast<uint8_t>(dir) | req_type;
@@ -481,7 +495,7 @@ private:
     EStatus get_cfg_desc(uint16_t length);
     EStatus set_address(uint8_t dev_address);
     EStatus set_interface(uint8_t ep_num, uint8_t alt_setting);
-    USBHDescHeader_t* get_next_desc(uint8_t* buff, uint16_t* ptr);
+    USBHDescHeader_t* get_next_desc(USBHDescHeader_t *buff, uint16_t* ptr);
 
     void parse_dev_desc(USBHDevDesc_t* pdesc, uint8_t *buf, uint16_t length);
     void parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length);

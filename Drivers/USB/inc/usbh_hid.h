@@ -22,6 +22,8 @@
 #define CUSTOM_DATA_SIZE                            20
 #define REPORT_DATA_SIZE                            8
 
+#define HID_IFACE_COUNT                             2
+
 class USBH_HID : public USBHClass
 {
 public:
@@ -42,6 +44,7 @@ public:
         REQ_INIT = 0,
         REQ_IDLE,
         REQ_GET_REPORT_DESC,
+        REQ_NEXT_IFACE,
         REQ_GET_HID_DESC,
         REQ_SET_IDLE,
         REQ_SET_PROTOCOL,
@@ -125,6 +128,11 @@ public:
 
     typedef struct
     {
+        uint8_t     usage_page;
+    } ReportDescTypeDef;
+
+    typedef struct
+    {
         union
         {
             uint8_t alts_all;
@@ -142,6 +150,12 @@ public:
         } a;
         uint8_t keys[7];
     } KbdReport;
+
+    typedef struct
+    {
+        uint8_t                         iface_idx;
+        USBHCore::USBHInterfaceDesc_t*  iface;
+    } HIDIfaceTypeDef;
 
     USBH_HID();
     virtual uint8_t get_class_code() { return USB_HID_CLASS; }
@@ -165,6 +179,8 @@ protected:
     EState          m_state;
     ECtlState       m_ctl_state;
     uint8_t         m_ep_addr;
+    uint8_t         m_iface_idx;
+    uint8_t         m_iface_count;
     bool            m_data_ready;
     EType           m_type;
     uint16_t        m_length;
@@ -172,17 +188,21 @@ protected:
     uint32_t        m_timer;
     FIFO            m_fifo;
     DescTypeDef     m_HID_Desc;
+    ReportDescTypeDef   m_report_desc;
 
     uint8_t         m_custom_data[CUSTOM_DATA_SIZE] __attribute__((aligned(4)));
+    HIDIfaceTypeDef m_iface[HID_IFACE_COUNT];
+    HIDIfaceTypeDef*m_iface_current;
 
 private:
     FORCE_INLINE USBHCore::EStatus get_HID_descriptor(uint16_t size)
     {
         return m_host->get_descriptor(USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::STANDARD,
-                                      USB_DESC_HID, m_host->get_dev_data(), size);
+                                      USB_DESC_HID, 0, m_host->get_dev_data(), size);
     }
     void parse_HID_desc();
-    USBHCore::EStatus get_HID_report_descriptor(uint16_t size);
+    USBHCore::EStatus get_HID_report_descriptor(uint16_t size, uint8_t iface_idx);
+    void parse_HID_report_descriptor(uint16_t size);
     FORCE_INLINE USBHCore::EStatus set_idle(uint8_t duration, uint8_t reportId)
     {
         return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
