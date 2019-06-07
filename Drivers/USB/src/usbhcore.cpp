@@ -765,24 +765,6 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
         memcpy(pdesc, buf, buf[0]);
 }
 
-void USBHCore::parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf)
-{
-    memcpy(ep_desc, buf, 7);
-    //ep_desc->wMaxPacketSize = __builtin_bswap16(ep_desc->wMaxPacketSize);
-}
-
-void USBHCore::parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf)
-{
-    memcpy(if_desc, buf, 9);
-}
-
-USBHCore::USBHDescHeader_t* USBHCore::get_next_desc(USBHDescHeader_t* pnext, uint16_t* ptr)
-{
-    *ptr += pnext->bLength;
-    pnext = reinterpret_cast<USBHDescHeader_t*>((reinterpret_cast<uint8_t*>(pnext) + pnext->bLength));
-    return pnext;
-}
-
 USBHCore::EStatus USBHCore::handle_control()
 {
     STM32_HCD::EURBState urb_state = STM32_HCD::EURBState::IDLE;

@@ -495,13 +495,10 @@ private:
     EStatus get_cfg_desc(uint16_t length);
     EStatus set_address(uint8_t dev_address);
     EStatus set_interface(uint8_t ep_num, uint8_t alt_setting);
-    USBHDescHeader_t* get_next_desc(USBHDescHeader_t *buff, uint16_t* ptr);
 
     void parse_dev_desc(USBHDevDesc_t* pdesc, uint8_t *buf, uint16_t length);
     void parse_string_desc(uint8_t *psrc, uint8_t *pdst, uint16_t length);
     void parse_cfg_desc(USBHCfgDesc_t* pdesc, uint8_t *buf, uint16_t length);
-    void parse_ep_desc(USBHEpDesc_t *ep_desc, uint8_t *buf);
-    void parse_interface_desc(USBHInterfaceDesc_t *if_desc, uint8_t *buf);
 
     EStatus handle_control();
 };
