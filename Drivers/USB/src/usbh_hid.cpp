@@ -5,8 +5,7 @@
 
 USBH_HID::USBH_HID()
     : m_iface_count (0)
-    , m_type (EType::UNKNOWN)
-    , m_length (0)
+    , m_type_mask (EType::NONE)
 {
 }
 
@@ -14,150 +13,156 @@ USBHCore::EStatus USBH_HID::init(USBHCore* host)
 {
     debug_fn();
     m_host = host;
-    USBHClass* act_class = m_host->get_active_class();
-    uint8_t interface = m_host->find_interface(act_class->get_class_code(), HID_BOOT_CODE, 0xff);
-    if (interface == 0xff)
+
+
+    for (int interface=0 ; interface<USBH_MAX_NUM_INTERFACES ; ++interface)
     {
-        USBH_DbgLog("Cannot Find the interface for %s class.", act_class->get_name());
-        return USBHCore::EStatus::FAIL;
-    }
-    m_host->select_interface(interface);
+        USBHCore::USBHInterfaceDesc_t* pif = m_host->get_interface(interface);
+        xprintf("Iface #%d, class=%d, subclass=%d proto=%d\n\r", interface, pif->bInterfaceClass,
+                pif->bInterfaceSubClass, pif->bInterfaceProtocol);
 
-    m_state = EState::ERROR;
+        // check only for HID interfaces
+        if ((pif->bInterfaceClass != get_class_code()) ||
+            (pif->bInterfaceSubClass != HID_BOOT_CODE))
+            continue;
 
-    USBHCore::USBHInterfaceDesc_t* iface = m_host->get_current_interface();
-    m_iface[0].iface_idx = interface;
-    m_iface[0].iface = iface;
-    m_iface_count = 1;
+        if (m_host->get_current_interface() == nullptr)
+            m_host->select_interface(interface);
 
-    if (iface->bInterfaceProtocol == HID_KEYBRD_BOOT_CODE)
-    {
-        USBH_UsrLog ("KeyBoard device found!");
-        m_type = EType::KEYBOARD;
-    }
-    else if (iface->bInterfaceProtocol == HID_MOUSE_BOOT_CODE)
-    {
-        USBH_UsrLog ("Mouse device found!");
-        m_type = EType::MOUSE;
-    }
-    else
-    {
-        USBH_UsrLog ("Protocol not supported.");
-        m_type = EType::UNKNOWN;
-        return USBHCore::EStatus::FAIL;
-    }
+        HIDIfaceTypeDef *pdif = &m_iface[m_iface_count++];
+        pdif->idx = interface;
+        pdif->pif = pif;
+        pdif->state = EState::ERROR;
+        pdif->parent = this;
 
-    m_state = EState::INIT;
-    m_ctl_state = ECtlState::REQ_INIT;
-    m_ep_addr = iface->Ep_Desc[0].bEndpointAddress;
-    m_length = iface->Ep_Desc[0].wMaxPacketSize;
-    m_poll = iface->Ep_Desc[0].bInterval;
-    if (m_poll < HID_MIN_POLL)
-        m_poll = HID_MIN_POLL;
-
-    for (int i=0 ; i<CUSTOM_DATA_SIZE ; ++i)
-        m_custom_data[i] = 0;
-    uint8_t *data = m_host->get_dev_data();
-    for (int i=0 ; i<(HID_QUEUE_SIZE * REPORT_DATA_SIZE) ; ++i)
-        data[i] = 0;
-    m_fifo.init(m_host->get_dev_data(), HID_QUEUE_SIZE * REPORT_DATA_SIZE);
-
-    /* Check fo available number of endpoints */
-    /* Find the number of EPs in the Interface Descriptor */
-    /* Choose the lower number in order not to overrun the buffer allocated */
-    uint8_t max_ep = (iface->bNumEndpoints <= USBH_MAX_NUM_ENDPOINTS) ? iface->bNumEndpoints : USBH_MAX_NUM_ENDPOINTS;
-
-    for (uint8_t num=0 ; num<max_ep ; ++num)
-    {
-        if (iface->Ep_Desc[num].bEndpointAddress & 0x80)
+        switch (pif->bInterfaceProtocol)
         {
-            m_in_ep = iface->Ep_Desc[num].bEndpointAddress;
-            m_in_pipe = m_host->alloc_pipe(m_in_ep);
-            m_host->open_pipe(m_in_pipe,
-                              m_in_ep,
+        case HID_KEYBRD_BOOT_CODE:
+            USBH_UsrLog("KeyBoard device found!");
+            pdif->type = EType::KEYBOARD;
+            m_type_mask |= EType::KEYBOARD;
+            break;
+        case HID_MOUSE_BOOT_CODE:
+            USBH_UsrLog("Mouse device found!");
+            pdif->type = EType::MOUSE;
+            m_type_mask |= EType::MOUSE;
+            break;
+        default:
+            USBH_UsrLog("Protocol 0x#%02X not supported.", pif->bInterfaceProtocol);
+            pdif->type = EType::UNKNOWN;
+            return USBHCore::EStatus::FAIL;
+        }
+
+        pdif->state = EState::INIT;
+        pdif->ctl_state = ECtlState::REQ_INIT;
+        pdif->ep_addr = pif->Ep_Desc[0].bEndpointAddress;
+        pdif->length = pif->Ep_Desc[0].wMaxPacketSize;
+        pdif->poll = pif->Ep_Desc[0].bInterval;
+        pdif->interface = pif->bInterfaceNumber;
+        if (pdif->poll < HID_MIN_POLL)
+            pdif->poll = HID_MIN_POLL;
+        memset(pdif->data_in, 0, HID_DATA_SIZE);
+        memset(pdif->data_out, 0, HID_DATA_SIZE);
+
+        if (pif->bNumEndpoints != 1)
+        {
+            USBH_DbgLog("Interface contain %d End Points - not supported!.", pif->bNumEndpoints);
+            return USBHCore::EStatus::FAIL;
+        }
+
+        USBHCore::USBHEpDesc_t* pep = &pif->Ep_Desc[0];
+        if (pep->bEndpointAddress & 0x80)
+        {
+            pdif->in_ep = pep->bEndpointAddress;
+            pdif->in_pipe = m_host->alloc_pipe(pdif->in_ep);
+            m_host->open_pipe(pdif->in_pipe,
+                              pdif->in_ep,
                               m_host->get_dev_addr(),
                               m_host->get_dev_speed(),
                               STM32_HCD::EEPType::INTR,
-                              m_length);
-            m_host->LL_set_toggle(m_in_pipe, 0);
+                              pdif->length);
+            m_host->LL_set_toggle(pdif->in_pipe, 0);
         }
         else
         {
-            m_out_ep = iface->Ep_Desc[num].bEndpointAddress;
-            m_out_pipe = m_host->alloc_pipe(m_out_ep);
-            m_host->open_pipe(m_out_pipe,
-                              m_out_ep,
+            pdif->out_ep = pep->bEndpointAddress;
+            pdif->out_pipe = m_host->alloc_pipe(pdif->out_ep);
+            m_host->open_pipe(pdif->out_pipe,
+                              pdif->out_ep,
                               m_host->get_dev_addr(),
                               m_host->get_dev_speed(),
                               STM32_HCD::EEPType::INTR,
-                              m_length);
-            m_host->LL_set_toggle(m_out_pipe, 0);
+                              pdif->length);
+            m_host->LL_set_toggle(pdif->out_pipe, 0);
         }
     }
+
+    if (m_iface_count == 0)
+    {
+        USBH_DbgLog("Cannot Find the interface for %s class.", get_name());
+        return USBHCore::EStatus::FAIL;
+    }
+
+    m_iface_current = &m_iface[0];
+    m_iface_idx = 0;
+
     return USBHCore::EStatus::OK;
 }
 
 USBHCore::EStatus USBH_HID::deInit()
 {
-    if (m_in_pipe != 0)
+    for (int interface=0 ; interface<m_iface_count ; ++interface)
     {
-        m_host->close_pipe(m_in_pipe);
-        m_host->free_pipe(m_in_pipe);
-        m_in_pipe = 0;
-    }
-    if (m_out_pipe != 0)
-    {
-        m_host->close_pipe(m_out_pipe);
-        m_host->free_pipe(m_out_pipe);
-        m_out_pipe = 0;
+        HIDIfaceTypeDef *pdif = &m_iface[interface];
+        if (pdif->in_pipe != 0)
+        {
+            m_host->close_pipe(pdif->in_pipe);
+            m_host->free_pipe(pdif->in_pipe);
+            pdif->in_pipe = 0;
+        }
+        if (pdif->out_pipe != 0)
+        {
+            m_host->close_pipe(pdif->out_pipe);
+            m_host->free_pipe(pdif->out_pipe);
+            pdif->out_pipe = 0;
+        }
     }
     return USBHCore::EStatus::OK;
 }
 
 USBHCore::EStatus USBH_HID::class_request()
 {
-    switch (m_ctl_state)
+    switch (m_iface_current->ctl_state)
     {
     case ECtlState::REQ_INIT:
-        m_iface_idx = 0;
-        m_iface_current = &m_iface[m_iface_idx];
         [[clang::fallthrough]];
     case ECtlState::REQ_GET_HID_DESC:
         if (get_HID_descriptor(USB_HID_DESC_SIZE) == USBHCore::EStatus::OK)
         {
             parse_HID_desc();
-            m_ctl_state = ECtlState::REQ_GET_REPORT_DESC;
+            m_iface_current->ctl_state = ECtlState::REQ_GET_REPORT_DESC;
         }
         break;
     case ECtlState::REQ_GET_REPORT_DESC:
-        if (get_HID_report_descriptor(m_iface_current->iface->HID_desc.wDescriptorLength, m_iface_current->iface->bInterfaceNumber) == USBHCore::EStatus::OK)
+        if (get_HID_report_descriptor(m_iface_current->pif->HID_desc.wDescriptorLength, m_iface_current->interface) == USBHCore::EStatus::OK)
         {
-            parse_HID_report_descriptor(m_iface_current->iface->HID_desc.wDescriptorLength);
-            m_ctl_state = ECtlState::REQ_NEXT_IFACE;
+            parse_HID_report_descriptor(m_iface_current->pif->HID_desc.wDescriptorLength);
+            m_iface_current->ctl_state = ECtlState::REQ_NEXT_IFACE;
         }
         break;
     case ECtlState::REQ_NEXT_IFACE:
-        {
-            uint8_t iface_idx = m_host->find_interface(get_class_code(), HID_BOOT_CODE, 0xff, m_iface[m_iface_count - 1].iface_idx + 1);
-            if (iface_idx == 0xff)
-                m_ctl_state = ECtlState::REQ_SET_IDLE;
-            else
-            {
-                m_iface[m_iface_count].iface_idx = iface_idx;
-                m_iface[m_iface_count].iface = m_host->get_interface(iface_idx);
-                m_iface_idx = m_iface_count++;
-                m_ctl_state = ECtlState::REQ_GET_REPORT_DESC;
-            }
-        }
+        m_iface_current->ctl_state = ECtlState::REQ_SET_IDLE;
+        if (switch_to_next_interface())
+            m_iface_current->ctl_state = ECtlState::REQ_GET_REPORT_DESC;
         break;
     case ECtlState::REQ_SET_IDLE:
         switch (set_idle(0, 0))
         {
         case USBHCore::EStatus::OK:
-            m_ctl_state = ECtlState::REQ_SET_PROTOCOL;
+            m_iface_current->ctl_state = ECtlState::REQ_SET_PROTOCOL;
             break;
         case USBHCore::EStatus::NOT_SUPPORTED:
-            m_ctl_state = ECtlState::REQ_SET_PROTOCOL;
+            m_iface_current->ctl_state = ECtlState::REQ_SET_PROTOCOL;
             break;
         default:
             break;
@@ -166,7 +171,7 @@ USBHCore::EStatus USBH_HID::class_request()
     case ECtlState::REQ_SET_PROTOCOL:
         if (set_protocol(0) == USBHCore::EStatus::OK)
         {
-            m_ctl_state = ECtlState::REQ_IDLE;
+            m_iface_current->ctl_state = ECtlState::REQ_IDLE;
             m_host->to_user(USBHCore::EHostUser::CLASS_ACTIVE);
             return USBHCore::EStatus::OK;
         }
@@ -181,48 +186,54 @@ USBHCore::EStatus USBH_HID::class_request()
 USBHCore::EStatus USBH_HID::process()
 {
     debug_fn();
-    switch (m_state)
+    switch (m_iface_current->state)
     {
     case EState::INIT:
         // NOTHING
     [[clang::fallthrough]];
     case EState::IDLE:
-        if (get_report(0x01, 0, m_custom_data, m_length) == USBHCore::EStatus::OK)
+        if (get_report(0x01, m_iface_current->interface, m_iface_current->data_in,
+                       m_iface_current->length) == USBHCore::EStatus::OK)
         {
-            m_fifo.write(m_custom_data, m_length);
-            m_state = EState::SYNC;
+            m_iface_current->state = EState::SYNC;
+            if (switch_to_next_interface())
+                return USBHCore::EStatus::OK;
         }
         break;
     case EState::SYNC:
         /* Sync with start of Even Frame */
         if (m_host->get_timer() & 1)
-            m_state = EState::GET_DATA;
+            m_iface_current->state = EState::GET_DATA;
 #if (USBH_USE_OS == 1)
         m_host->send_message();
 #endif
         break;
     case EState::GET_DATA:
-        m_host->interrupt_recieve_data(m_custom_data, m_length, m_in_pipe);
-        m_state = EState::POLL;
-        m_timer = m_host->get_timer();
-        m_data_ready = false;
+        m_host->interrupt_recieve_data(m_iface_current->data_in, m_iface_current->length, m_iface_current->in_pipe);
+        m_iface_current->state = EState::POLL;
+        m_iface_current->timer = m_host->get_timer();
+        m_iface_current->data_ready = false;
+        if (switch_to_next_interface())
+            return USBHCore::EStatus::OK;
         break;
     case EState::POLL:
-        switch (m_host->LL_get_URB_state(m_in_pipe))
+        switch (m_host->LL_get_URB_state(m_iface_current->in_pipe))
         {
         case STM32_HCD::EURBState::DONE:
-            if (!m_data_ready)
+            if (!m_iface_current->data_ready)
             {
-                m_fifo.write(m_custom_data, m_length);
-                m_data_ready = true;
+                m_iface_current->data_ready = true;
 #if (USBH_USE_OS == 1)
                 m_host->send_message();
 #endif
             }
             break;
         case STM32_HCD::EURBState::STALL:
-            if (m_host->clr_feature(m_ep_addr) == USBHCore::EStatus::OK)
-                m_state = EState::GET_DATA;
+            if (m_host->clr_feature(m_iface_current->ep_addr) == USBHCore::EStatus::OK)
+            {
+                m_iface_current->state = EState::GET_DATA;
+                switch_to_next_interface();
+            }
             break;
         default:
             break;
@@ -239,10 +250,10 @@ USBHCore::EStatus USBH_HID::process()
 USBHCore::EStatus USBH_HID::SOF_process()
 {
     debug_fn();
-    if (m_state == EState::POLL)
-        if ((m_host->get_timer() - m_timer) >= m_poll)
+    if (m_iface_current->state == EState::POLL)
+        if ((m_host->get_timer() - m_iface_current->timer) >= m_iface_current->poll)
         {
-            m_state = EState::GET_DATA;
+            m_iface_current->state = EState::GET_DATA;
 #if (USBH_USE_OS == 1)
             m_host->send_message();
 #endif
@@ -259,29 +270,58 @@ uint16_t USBH_HID::get_pool_interval()
     case USBHCore::EHostState::SET_CONFIGURATION:
     case USBHCore::EHostState::CHECK_CLASS:
     case USBHCore::EHostState::CLASS:
-        return m_poll;
+        return m_iface[0].poll;
     default:
         return 0;
     }
 }
 
-USBHCore::EStatus USBH_HID::decode(uint8_t *data)
+USBH_HID::HIDIfaceTypeDef* USBH_HID::get_iface_for_type(EType type)
+{
+    for (int interface=0 ; interface<m_iface_count ; ++interface)
+    {
+        HIDIfaceTypeDef *pdif = &m_iface[interface];
+        if (pdif->type == type)
+            return pdif;
+    }
+    return nullptr;
+}
+
+USBHCore::EStatus USBH_HID::get_reports_data(uint8_t iface, uint8_t *data)
 {
     debug_fn();
-    if (m_length == 0)
+    if (iface >= m_iface_count)
         return USBHCore::EStatus::FAIL;
-    switch (m_type)
+
+    HIDIfaceTypeDef* pdef = &m_iface[iface];
+    if (pdef->length == 0)
+        return USBHCore::EStatus::FAIL;
+    switch (pdef->type)
     {
     case EType::MOUSE:
-        break;
     case EType::KEYBOARD:
-        if (m_fifo.read(data, m_length) == m_length)
-            return USBHCore::EStatus::OK;
-        break;
+        memcpy(data, pdef->data_in, pdef->length);
+        return USBHCore::EStatus::OK;
+    case EType::NONE:
     case EType::UNKNOWN:
         break;
     }
     return USBHCore::EStatus::FAIL;
+}
+
+bool USBH_HID::switch_to_next_interface()
+{
+    if (++m_iface_idx >= m_iface_count)
+    {
+        m_iface_idx = 0;
+        m_iface_current = &m_iface[0];
+        return false;
+    }
+    else
+    {
+        m_iface_current = &m_iface[m_iface_idx];
+        return true;
+    }
 }
 
 void USBH_HID::parse_HID_desc()
@@ -526,14 +566,6 @@ const char* get_usage(uint8_t page, uint16_t usage)
 void USBH_HID::parse_HID_report_descriptor(uint16_t size)
 {
     uint8_t* data = m_host->get_dev_data();
-
-    for (uint16_t i=0 ; i<size ; ++i)
-    {
-        if ((i % 32) == 0)
-            xprintf("\n\r");
-        xprintf("%02X ", data[i]);
-    }
-    xprintf("\n\r");
 
     uint16_t pos = 0;
     while (pos < size)

@@ -732,7 +732,7 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
 {
     if (length > USB_CONFIGURATION_DESC_SIZE)
     {
-        int8_t if_idx = 0;
+        int8_t if_idx = -1;
         int8_t ep_idx;
         uint16_t pos = 0;
         USBHInterfaceDesc_t* pif = nullptr;
@@ -744,7 +744,7 @@ void USBHCore::parse_cfg_desc(USBHCfgDesc_t *pdesc, uint8_t *buf, uint16_t lengt
                 memcpy(pdesc, buf, buf[0]);
                 break;
             case EDescType::INTERFACE:
-                pif = &pdesc->Itf_Desc[if_idx];
+                pif = &pdesc->Itf_Desc[++if_idx];
                 ep_idx = 0;
                 memcpy(pif, buf, buf[0]);
                 break;

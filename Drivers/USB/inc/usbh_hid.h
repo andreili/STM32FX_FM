@@ -4,7 +4,6 @@
 #include "usbh_class.h"
 
 #ifdef STM32_USE_USB_HOST
-#include "fifo.h"
 
 /* HID Class Codes */
 #define USB_HID_CLASS                               0x03
@@ -19,7 +18,7 @@
 #define HID_MAX_NBR_REPORT_FMT                      10
 #define HID_QUEUE_SIZE                              10
 
-#define CUSTOM_DATA_SIZE                            20
+#define HID_DATA_SIZE                               20
 #define REPORT_DATA_SIZE                            8
 
 #define HID_IFACE_COUNT                             2
@@ -39,6 +38,14 @@ public:
         ERROR,
     };
 
+    enum EType: uint8_t
+    {
+        NONE     = 0x00,
+        MOUSE    = 0x01,
+        KEYBOARD = 0x02,
+        UNKNOWN  = 0xFF,
+    };
+
     enum class ECtlState: uint8_t
     {
         REQ_INIT = 0,
@@ -49,13 +56,6 @@ public:
         REQ_SET_IDLE,
         REQ_SET_PROTOCOL,
         REQ_SET_REPORT,
-    };
-
-    enum class EType: uint8_t
-    {
-        MOUSE    = 0x01,
-        KEYBOARD = 0x02,
-        UNKNOWN  = 0xFF,
     };
 
     enum ERequest: uint8_t
@@ -153,8 +153,24 @@ public:
 
     typedef struct
     {
-        uint8_t                         iface_idx;
-        USBHCore::USBHInterfaceDesc_t*  iface;
+        uint8_t                         idx;
+        EType                           type;
+        EState                          state;
+        ECtlState                       ctl_state;
+        uint8_t                         ep_addr;
+        uint8_t                         out_pipe;
+        uint8_t                         in_pipe;
+        uint8_t                         out_ep;
+        uint8_t                         in_ep;
+        uint8_t                         interface;
+        bool                            data_ready;
+        uint16_t                        length;
+        uint16_t                        poll;
+        USBHCore::USBHInterfaceDesc_t*  pif;
+        uint32_t                        timer;
+        USBH_HID*                       parent;
+        uint8_t                         data_in[HID_DATA_SIZE] __attribute__((aligned(4)));
+        uint8_t                         data_out[HID_DATA_SIZE] __attribute__((aligned(4)));
     } HIDIfaceTypeDef;
 
     USBH_HID();
@@ -166,35 +182,25 @@ public:
     virtual USBHCore::EStatus process();
     virtual USBHCore::EStatus SOF_process();
 
-    FORCE_INLINE EType get_type() { return m_type; }
+    FORCE_INLINE bool is_keyboard() { return (m_type_mask & EType::KEYBOARD) == EType::KEYBOARD; }
+    FORCE_INLINE bool is_mouse() { return (m_type_mask & EType::MOUSE) == EType::MOUSE; }
     uint16_t get_pool_interval();
-    uint16_t get_data_length() { return m_length; }
-    USBHCore::EStatus decode(uint8_t *data);
+    HIDIfaceTypeDef* get_iface_for_type(EType type);
+    USBHCore::EStatus get_reports_data(uint8_t iface, uint8_t *data);
 
 protected:
-    uint8_t         m_out_pipe;
-    uint8_t         m_in_pipe;
-    uint8_t         m_out_ep;
-    uint8_t         m_in_ep;
-    EState          m_state;
-    ECtlState       m_ctl_state;
-    uint8_t         m_ep_addr;
     uint8_t         m_iface_idx;
     uint8_t         m_iface_count;
-    bool            m_data_ready;
-    EType           m_type;
-    uint16_t        m_length;
-    uint16_t        m_poll;
-    uint32_t        m_timer;
-    FIFO            m_fifo;
+    uint8_t         m_type_mask;
     DescTypeDef     m_HID_Desc;
     ReportDescTypeDef   m_report_desc;
 
-    uint8_t         m_custom_data[CUSTOM_DATA_SIZE] __attribute__((aligned(4)));
     HIDIfaceTypeDef m_iface[HID_IFACE_COUNT];
     HIDIfaceTypeDef*m_iface_current;
 
 private:
+    bool switch_to_next_interface();
+
     FORCE_INLINE USBHCore::EStatus get_HID_descriptor(uint16_t size)
     {
         return m_host->get_descriptor(USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::STANDARD,
@@ -213,15 +219,15 @@ private:
         return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
                                        ERequest::SET_PROTOCOL, (protocol != 0) ? 0 : 1, 0, nullptr);
     }
-    FORCE_INLINE USBHCore::EStatus set_report(uint8_t type, uint8_t id, uint8_t *buf, uint16_t len)
+    FORCE_INLINE USBHCore::EStatus set_report(uint8_t type, uint8_t endpoint, uint8_t *buf, uint16_t len)
     {
         return m_host->ctrl_req_custom(USBHCore::EReqDir::H2D, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
-                                       ERequest::SET_REPORT, static_cast<uint16_t>((type << 8) | id), len, buf);
+                                       ERequest::SET_REPORT, static_cast<uint16_t>((type << 8) | endpoint), len, buf);
     }
-    FORCE_INLINE USBHCore::EStatus get_report(uint8_t type, uint8_t id, uint8_t *buf, uint16_t len)
+    FORCE_INLINE USBHCore::EStatus get_report(uint8_t type, uint8_t endpoint, uint8_t *buf, uint16_t len)
     {
         return m_host->ctrl_req_custom(USBHCore::EReqDir::D2H, USBHCore::EReqRecipient::REQ_INTERFACE | USBHCore::EReqType::CLASS,
-                                       ERequest::GET_REPORT, static_cast<uint16_t>((type << 8) | id), len, buf);
+                                       ERequest::GET_REPORT, static_cast<uint16_t>((type << 8) | endpoint), len, buf);
     }
 };
 
