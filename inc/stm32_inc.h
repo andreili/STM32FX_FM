@@ -49,6 +49,9 @@
 #ifdef STM32_USE_RTOS
     #include "scmRTOS.h"
 #endif //STM32_USE_RTOS
+#ifdef STM32_PROFILER
+#include "profiler.hpp"
+#endif //STM32_PROFILER
 #include "bitbanding.h"
 
 #define STM32_LOCK(HN) \

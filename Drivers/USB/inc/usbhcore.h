@@ -442,6 +442,7 @@ private:
     USBHClass*          m_class[USBH_MAX_NUM_SUPPORTED_CLASS];
     USBHClass*          m_active_class;
     uint32_t            m_class_number;
+    PROFILER_DECL_VAR
     uint32_t            m_pipes[15];
     __IO uint32_t       m_timer;
     STM32_HCD*          m_hcd;

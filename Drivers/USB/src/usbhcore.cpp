@@ -172,6 +172,7 @@ void USBHCore::re_enumerate()
 
 void USBHCore::process()
 {
+    PROFILER_START_EV();
     switch (m_gstate)
     {
     case EHostState::IDLE:
@@ -320,6 +321,7 @@ void USBHCore::process()
     case EHostState::SUSPEND:
         break;
     }
+    PROFILER_END_EV();
 }
 
 uint32_t USBHCore::handle_enum()
@@ -508,6 +510,7 @@ void USBHCore::LL_init()
     if (m_id == HOST_FS)
 #ifdef STM32_USE_USB_FS
     {
+        PROFILER_INIT_CL("USBH FS");
         m_hcd = &usb_fs;
         m_hcd->set_data(static_cast<void*>(this));
         if (usb_fs.init(USB_OTG_FS, STM32_HCD::EOTG_PHY::EMBEDDED, false, false, STM32_HCD::EOTGSpeed::FULL, 8) != STM32_RESULT_OK)
@@ -520,6 +523,7 @@ void USBHCore::LL_init()
     else
 #ifdef STM32_USE_USB_HS
     {
+        PROFILER_INIT_CL("USBH HS");
         m_hcd = &usb_hs;
         m_hcd->set_data(static_cast<void*>(this));
         if (usb_hs.init(USB_OTG_HS, STM32_HCD::EOTG_PHY::EMBEDDED, false, true, STM32_HCD::EOTGSpeed::FULL, 12) != STM32_RESULT_OK)
