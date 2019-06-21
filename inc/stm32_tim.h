@@ -324,6 +324,11 @@ public:
 
     inline void generate_event(uint32_t source) { m_inst->EGR = source; }
 
+    inline uint32_t get_value() { return m_inst->CNT; }
+    inline void set_value(uint32_t val) { m_inst->CNT = val; }
+
+    uint32_t get_clock();
+
     void IRQ_handler();
 
 private:

@@ -454,6 +454,30 @@ void STM32_TIM::stop_encoder_IT(uint32_t channel)
     disable();
 }
 
+uint32_t STM32_TIM::get_clock()
+{
+    switch (reinterpret_cast<uint32_t>(m_inst))
+    {
+    case TIM2_BASE:
+    case TIM3_BASE:
+    case TIM4_BASE:
+    case TIM5_BASE:
+    case TIM6_BASE:
+    case TIM7_BASE:
+    case TIM12_BASE:
+    case TIM13_BASE:
+    case TIM14_BASE:
+        return STM32_RCC::get_PCLK1_freq() * 2;
+    case TIM1_BASE:
+    case TIM8_BASE:
+    case TIM9_BASE:
+    case TIM10_BASE:
+    case TIM11_BASE:
+        return STM32_RCC::get_PCLK2_freq() * 2;
+    }
+    return 0;
+}
+
 void STM32_TIM::IRQ_handler()
 {
     uint32_t it_all = get_IT_sources();
