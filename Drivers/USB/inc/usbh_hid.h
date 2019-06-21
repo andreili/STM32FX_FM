@@ -18,7 +18,7 @@
 #define HID_MAX_NBR_REPORT_FMT                      10
 #define HID_QUEUE_SIZE                              10
 
-#define HID_DATA_SIZE                               20
+#define HID_DATA_SIZE                               12
 #define REPORT_DATA_SIZE                            8
 
 #define HID_IFACE_COUNT                             2
@@ -68,11 +68,41 @@ public:
         SET_PROTOCOL    = 0x0B,
     };
 
+    enum class EReportType: uint8_t
+    {
+        INPUT       = 0,
+        OUTPUT      = 1,
+        FEATURE     = 3,
+    };
+
+    enum class EUsagePage: uint16_t
+    {
+        UNDEFINED               = 0x00,
+        GENERIC_DESKTOP_CTRLS   = 0x01,
+        SIMULATION_CTRLS        = 0x02,
+        VR_CTRLS                = 0x03,
+        SPORT_CTRLS             = 0x04,
+        GAME_CTRLS              = 0x05,
+        GENERIC_DEV_CTRLS       = 0x06,
+        KEYBOARD_KEYPAD         = 0x07,
+        LEDS                    = 0x08,
+        BUTTON                  = 0x09,
+        ORDINAL                 = 0x0A,
+        TELEPHONY               = 0x0B,
+        CONSUMER                = 0x0C,
+        DIGITIZER               = 0x0D,
+        PID_PAGE                = 0x0F,
+        UNICODE                 = 0x10,
+        ALPHANUM_DISPLAY        = 0x14,
+        MEDICAL_INSTRUMENTS     = 0x40,
+    };
+
     typedef struct
     {
         uint8_t   ReportID;
-        uint8_t   ReportType;
-        uint16_t  UsagePage;
+        EReportType ReportType;
+        uint8_t     StartByte;
+        EUsagePage  UsagePage;
         uint32_t  Usage[HID_MAX_USAGE];
         uint32_t  NbrUsage;
         uint32_t  UsageMin;
@@ -91,6 +121,8 @@ public:
         uint32_t  LogUsage;
     } ReportDataTypeDef;
 
+    typedef void(*report_callback_t)(USBH_HID*,ReportDataTypeDef*);
+
     typedef struct
     {
         uint8_t  Size;         /* Report size return by the device id            */
@@ -108,7 +140,7 @@ public:
     typedef struct
     {
         uint32_t            Usage;
-        uint8_t             Type;
+        EUsagePage          UsagePage;
         uint8_t             NbrReportFmt;
         ReportDataTypeDef   ReportData[HID_MAX_NBR_REPORT_FMT];
     } AppCollectionTypeDef;
@@ -125,11 +157,6 @@ public:
         uint16_t  wItemLength;          /* is used to specify the polling interval of certain transfers. */
     } DescTypeDef;
     #pragma pack(pop)
-
-    typedef struct
-    {
-        uint8_t     usage_page;
-    } ReportDescTypeDef;
 
     typedef struct
     {
@@ -170,7 +197,9 @@ public:
         uint32_t                        timer;
         USBH_HID*                       parent;
         uint8_t                         data_in[HID_DATA_SIZE] __attribute__((aligned(4)));
+        uint8_t                         data_in_buf[HID_DATA_SIZE] __attribute__((aligned(4)));
         uint8_t                         data_out[HID_DATA_SIZE] __attribute__((aligned(4)));
+        AppCollectionTypeDef            collection;
     } HIDIfaceTypeDef;
 
     USBH_HID();
@@ -186,17 +215,19 @@ public:
     FORCE_INLINE bool is_mouse() { return (m_type_mask & EType::MOUSE) == EType::MOUSE; }
     uint16_t get_pool_interval();
     HIDIfaceTypeDef* get_iface_for_type(EType type);
-    USBHCore::EStatus get_reports_data(uint8_t iface, uint8_t *data);
+    uint8_t *get_reports_data(uint8_t iface);
+
+    void set_on_report_cb(report_callback_t val) { m_on_report = val; }
 
 protected:
     uint8_t         m_iface_idx;
     uint8_t         m_iface_count;
     uint8_t         m_type_mask;
     DescTypeDef     m_HID_Desc;
-    ReportDescTypeDef   m_report_desc;
 
-    HIDIfaceTypeDef m_iface[HID_IFACE_COUNT];
-    HIDIfaceTypeDef*m_iface_current;
+    HIDIfaceTypeDef     m_iface[HID_IFACE_COUNT];
+    HIDIfaceTypeDef*    m_iface_current;
+    report_callback_t   m_on_report;
 
 private:
     bool switch_to_next_interface();

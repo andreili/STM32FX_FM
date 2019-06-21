@@ -6,6 +6,7 @@
 USBH_HID::USBH_HID()
     : m_iface_count (0)
     , m_type_mask (EType::NONE)
+    , m_on_report (nullptr)
 {
 }
 
@@ -223,6 +224,7 @@ USBHCore::EStatus USBH_HID::process()
             if (!m_iface_current->data_ready)
             {
                 m_iface_current->data_ready = true;
+                memcpy(m_iface_current->data_in_buf, m_iface_current->data_in, m_iface_current->length);
 #if (USBH_USE_OS == 1)
                 m_host->send_message();
 #endif
@@ -287,26 +289,25 @@ USBH_HID::HIDIfaceTypeDef* USBH_HID::get_iface_for_type(EType type)
     return nullptr;
 }
 
-USBHCore::EStatus USBH_HID::get_reports_data(uint8_t iface, uint8_t *data)
+uint8_t* USBH_HID::get_reports_data(uint8_t iface)
 {
     debug_fn();
     if (iface >= m_iface_count)
-        return USBHCore::EStatus::FAIL;
+        return nullptr;
 
     HIDIfaceTypeDef* pdef = &m_iface[iface];
     if (pdef->length == 0)
-        return USBHCore::EStatus::FAIL;
+        return nullptr;
     switch (pdef->type)
     {
     case EType::MOUSE:
     case EType::KEYBOARD:
-        memcpy(data, pdef->data_in, pdef->length);
-        return USBHCore::EStatus::OK;
+        return pdef->data_in_buf;
     case EType::NONE:
     case EType::UNKNOWN:
         break;
     }
-    return USBHCore::EStatus::FAIL;
+    return nullptr;
 }
 
 bool USBH_HID::switch_to_next_interface()
@@ -335,239 +336,18 @@ USBHCore::EStatus USBH_HID::get_HID_report_descriptor(uint16_t size, uint8_t ifa
                                   USB_DESC_HID_REPORT, iface_idx, m_host->get_dev_data(), size);
 }
 
-const char* get_collection_descr(uint8_t col)
-{
-    switch (col)
-    {
-    case 0:
-        return "Physical";
-    case 1:
-        return "Application";
-    case 2:
-        return "Logical";
-    case 3:
-        return "Report";
-    case 4:
-        return "Named Array";
-    case 5:
-        return "Usage Switch";
-    case 6:
-        return "Usage Modifier";
-    case 0x80 ... 0xFF:
-        return "Vendor Defined";
-    case 0x07 ... 0x7F:
-        return "Reserved";
-    }
-}
-
-const char* get_usage_page(uint16_t page)
-{
-    switch (page)
-    {
-    case 0x00:
-        return "Undefined";
-    case 0x01:
-        return "Generic Desktop Ctrls";
-    case 0x02:
-        return "Sim Ctrls";
-    case 0x03:
-        return "VR Ctrls";
-    case 0x04:
-        return "Sport Ctrls";
-    case 0x05:
-        return "Game Ctrls";
-    case 0x06:
-        return "Generic Dev Ctrls";
-    case 0x07:
-        return "Kbrd/Keypad";
-    case 0x08:
-        return "LEDs";
-    case 0x09:
-        return "Button";
-    case 0x0A:
-        return "Ordinal";
-    case 0x0B:
-        return "Telephony";
-    case 0x0C:
-        return "Consumer";
-    case 0x0D:
-        return "Digitizer";
-    case 0x0E:
-        return "Reserved 0x0E";
-    case 0x0F:
-        return "PID Page";
-    case 0x10:
-        return "Unicode";
-    case 0x11:
-        return "Reserved 0x11";
-    case 0x12:
-        return "Reserved 0x12";
-    case 0x13:
-        return "Reserved 0x13";
-    case 0x14:
-        return "Alphanumeric Display";
-    case 0x40:
-        return "Medical Instruments";
-    case 0x80:
-    case 0x81:
-    case 0x82:
-    case 0x83:
-        return "Monitor Pages";
-    case 0x84:
-    case 0x85:
-    case 0x86:
-    case 0x87:
-        return "Power Pages";
-    case 0x8C:
-        return "Bar Code Scanner Page";
-    case 0x8D:
-        return "Scale Page";
-    case 0x8E:
-        return "MagStripe Reading Devices";
-    case 0x8F:
-        return "Rsv'ed Point-of-Sale Pages";
-    case 0x90:
-        return "Camera Control Page";
-    case 0x91:
-        return "Arcade Page";
-    case 0x0092 ... 0xFEFF:
-        return "Reserved";
-    case 0xFF00 ... 0xFFFF:
-        return "Vendor Defined";
-    default:
-        return "-NONE-";
-    }
-}
-
-const char* get_usage(uint8_t page, uint16_t usage)
-{
-    switch (page)
-    {
-    case 0x00:
-        return "Undefined";
-        break;
-    case 0x01: // generic desktop
-        switch (usage)
-        {
-        case 0x00:
-            return "Undefined";
-        case 0x01:
-            return "Pointer";
-        case 0x02:
-            return "Mouse";
-        case 0x03:
-            return "Reserved";
-        case 0x04:
-            return "Joystick";
-        case 0x05:
-            return "Game Pad";
-        case 0x06:
-            return "Keyboard";
-        case 0x07:
-            return "Keypad";
-        case 0x08:
-            return "Multi-axis Controller";
-        case 0x09 ... 0x2F:
-            return "Reserved";
-        case 0x30:
-            return "X";
-        case 0x31:
-            return "Y";
-        case 0x32:
-            return "Z";
-        case 0x33:
-            return "Rx";
-        case 0x34:
-            return "Ry";
-        case 0x35:
-            return "Rz";
-        case 0x36:
-            return "Slider";
-        case 0x37:
-            return "Dial";
-        case 0x38:
-            return "Wheel";
-        case 0x39:
-            return "Hat switch";
-        case 0x3A:
-            return "Counted Buffer";
-        case 0x3B:
-            return "Byte Count";
-        case 0x3C:
-            return "Motion Wakeup";
-        case 0x3D:
-            return "Start";
-        case 0x3E:
-            return "Select";
-        case 0x3F:
-            return "Reserved";
-        case 0x40:
-            return "Vx";
-        case 0x41:
-            return "Vy";
-        case 0x42:
-            return "Vz";
-        case 0x43:
-            return "Vbrx";
-        case 0x44:
-            return "Vbry";
-        case 0x45:
-            return "Vbrz";
-        case 0x46:
-            return "Vno";
-        case 0x47:
-            return "Feature Notification";
-        case 0x48:
-            return "Resolution Multiplier";
-        case 0x49 ... 0x7F:
-            return "Reserved";
-        case 0x80 ... 0xFF:
-            return "-NONE-LAZY-";
-        }
-        break;
-    case 0x07:
-        return "-KEYBOARD-";
-    case 0x08:
-        switch (usage)
-        {
-        case 0x00:
-            return "Undefined";
-        case 0x01:
-            return "Num Lock";
-        case 0x02:
-            return "Caps Lock";
-        case 0x03:
-            return "Scroll Lock";
-        case 0x04:
-            return "Compose";
-        case 0x05:
-            return "Kana";
-        case 0x06:
-            return "Power";
-        case 0x07:
-            return "Shift";
-        case 0x08:
-            return "Do Not Disturb";
-        case 0x09:
-            return "Mute";
-        default:
-            return "-LAZY-";
-        }
-        break;
-    case 0x09:
-    case 0x0A:
-    case 0x10:
-    default:
-        return "-NONE-";
-    }
-    return "-NONE-";
-}
-
 void USBH_HID::parse_HID_report_descriptor(uint16_t size)
 {
     uint8_t* data = m_host->get_dev_data();
 
     uint16_t pos = 0;
+    AppCollectionTypeDef* collection = &m_iface_current->collection;
+    collection->NbrReportFmt = 0;
+    ReportDataTypeDef* report = &collection->ReportData[0];
+    ReportDataTypeDef report_cur;
+    bool is_collection = false;
+    uint8_t start_byte[2] = {0,0};
+    uint8_t start_bit[2] = {0,0};
     while (pos < size)
     {
         uint8_t b0 = data[pos++];
@@ -578,7 +358,7 @@ void USBH_HID::parse_HID_report_descriptor(uint16_t size)
 
         if ((bType == 0x03) && (bTag == 0x0f) && (bSize == 2) && ((pos + 2) < size))
         {
-            xprintf("Long data not supported!!!\n\r");
+            USBH_ErrLog("Long data not supported!!!\n\r");
         }
         else
         {
@@ -598,22 +378,45 @@ void USBH_HID::parse_HID_report_descriptor(uint16_t size)
                 switch (bTag)
                 {
                 case 0x08:
-                    xprintf("Input\n\r");
-                    break;
                 case 0x09:
-                    xprintf("Output\n\r");
-                    break;
                 case 0x0B:
-                    xprintf("Feature\n\r");
+                    if (report_cur.UsagePage == EUsagePage::UNDEFINED)
+                        report_cur.UsagePage = collection->UsagePage;
+                    report_cur.ReportType = static_cast<EReportType>(bTag - 0x08);
+                    report_cur.Flag = itemVal;
+
+                    if (report_cur.ReportType == EReportType::INPUT)
+                    {
+                        report_cur.StartByte = start_byte[0];
+                        start_bit[0] += report_cur.ReportSize * report_cur.ReportCnt;
+                        start_byte[0] += start_bit[0] / 8;
+                        start_bit[0] %= 8;
+                    }
+                    else
+                    {
+                        report_cur.StartByte = start_byte[1];
+                        start_bit[1] += report_cur.ReportSize * report_cur.ReportCnt;
+                        start_byte[1] += start_bit[1] >> 3;
+                        start_bit[1] &= 0x07;
+                    }
+
+                    memcpy(report, &report_cur, sizeof(ReportDataTypeDef));
+                    if (m_on_report != nullptr)
+                        m_on_report(this, report);
+
+                    report = &collection->ReportData[++collection->NbrReportFmt];
                     break;
                 case 0x0A:
-                    xprintf("Collection (%s)\n\r", get_collection_descr(itemVal));
+                    is_collection = true;
+                    memset(&report_cur, 0, sizeof(ReportDataTypeDef));
+                    report_cur.UsagePage = collection->UsagePage;
+                    report_cur.Usage[0] = collection->Usage;
+                    report_cur.NbrUsage = 1;
                     break;
                 case 0x0C:
-                    xprintf("End Collection\n\r");
+                    is_collection = false;
                     break;
                 default:
-                    xprintf("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
                     break;
                 }
             }
@@ -622,44 +425,46 @@ void USBH_HID::parse_HID_report_descriptor(uint16_t size)
                 switch (bTag)
                 {
                 case 0x00:
-                    xprintf("Usage Page(%s)\n\r", get_usage_page(itemVal));
-                    m_report_desc.usage_page = itemVal;
+                    if (is_collection)
+                        report_cur.UsagePage = static_cast<EUsagePage>(itemVal);
+                    else
+                        collection->UsagePage = static_cast<EUsagePage>(itemVal);
                     break;
                 case 0x01:
-                    xprintf("Logical Minimum=%d\n\r", itemVal);
+                    report_cur.LogMin = itemVal;
                     break;
                 case 0x02:
-                    xprintf("Logical Maximum=%d\n\r", itemVal);
+                    report_cur.LogMax = itemVal;
                     break;
                 case 0x03:
-                    xprintf("Physical Minimum=%d\n\r", itemVal);
+                    report_cur.PhyMin = itemVal;
                     break;
                 case 0x04:
-                    xprintf("Physical Maximum=%d\n\r", itemVal);
+                    report_cur.PhyMax = itemVal;
                     break;
                 case 0x05:
-                    xprintf("Unit Exponent=%d\n\r", (itemVal < 8) ? itemVal : (itemVal - 16));
+                    report_cur.UnitExp = (itemVal < 8) ? itemVal : (itemVal - 16);
                     break;
                 case 0x06:
-                    xprintf("Unit=UNSUPPORTED\n\r");
+                    report_cur.Unit = itemVal;
                     break;
                 case 0x07:
-                    xprintf("Report Size=%d\n\r", itemVal);
+                    report_cur.ReportSize = itemVal;
                     break;
                 case 0x08:
-                    xprintf("Report ID=%d\n\r", itemVal);
+                    report_cur.ReportID = itemVal;
                     break;
                 case 0x09:
-                    xprintf("Report Count=%d\n\r", itemVal);
+                    report_cur.ReportCnt = itemVal;
                     break;
                 case 0x0A:
-                    xprintf("Push\n\r");
+                    USBH_ErrLog("Push\n\r");
                     break;
                 case 0x0B:
-                    xprintf("Pop\n\r");
+                    USBH_ErrLog("Pop\n\r");
                     break;
                 default:
-                    xprintf("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
+                    USBH_ErrLog("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
                     break;
                 }
             }
@@ -668,43 +473,46 @@ void USBH_HID::parse_HID_report_descriptor(uint16_t size)
                 switch (bTag)
                 {
                 case 0x00:
-                    xprintf("Usage (%s)\n\r", get_usage(m_report_desc.usage_page, itemVal));
+                    if (is_collection)
+                        report_cur.Usage[report_cur.NbrUsage++] = itemVal;
+                    else
+                        collection->Usage = itemVal;
                     break;
                 case 0x01:
-                    xprintf("Usage Minimum (%s)\n\r", get_usage(m_report_desc.usage_page, itemVal));
+                    report_cur.UsageMin = itemVal;
                     break;
                 case 0x02:
-                    xprintf("Usage Maximum (%s)\n\r", get_usage(m_report_desc.usage_page, itemVal));
+                    report_cur.UsageMax = itemVal;
                     break;
                 case 0x03:
-                    xprintf("Designator Index=%d\n\r", itemVal);
+                    USBH_ErrLog("Designator Index=%d\n\r", itemVal);
                     break;
                 case 0x04:
-                    xprintf("Designator Minimum=%d\n\r", itemVal);
+                    USBH_ErrLog("Designator Minimum=%d\n\r", itemVal);
                     break;
                 case 0x05:
-                    xprintf("Designator Maximum=%d\n\r", itemVal);
+                    USBH_ErrLog("Designator Maximum=%d\n\r", itemVal);
                     break;
                 case 0x07:
-                    xprintf("String Index=%d\n\r", itemVal);
+                    USBH_ErrLog("String Index=%d\n\r", itemVal);
                     break;
                 case 0x08:
-                    xprintf("String Minimum=%d\n\r", itemVal);
+                    USBH_ErrLog("String Minimum=%d\n\r", itemVal);
                     break;
                 case 0x09:
-                    xprintf("String Maximum=%d\n\r", itemVal);
+                    USBH_ErrLog("String Maximum=%d\n\r", itemVal);
                     break;
                 case 0x0A:
-                    xprintf("Delimiter=%d\n\r", itemVal);
+                    USBH_ErrLog("Delimiter=%d\n\r", itemVal);
                     break;
                 default:
-                    xprintf("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
+                    USBH_ErrLog("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
                     break;
                 }
             }
             else
             {
-                xprintf("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
+                USBH_ErrLog("Unknown (Tag=0x%02X Type=0x%02X)\n\r", bTag, bType);
             }
         }
     }
