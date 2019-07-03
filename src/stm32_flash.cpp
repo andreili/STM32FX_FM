@@ -2,6 +2,8 @@
 
 #define FLASH_TIMEOUT_VALUE       50000U /* 50 s */
 
+#define FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
+
 FLASH_Procedure   STM32_FLASH::m_on_going = FLASH_Procedure::NONE;
 uint32_t          STM32_FLASH::m_nb_sector_to_erase;
 FLASH_VoltageRange STM32_FLASH::m_voltage_for_erase;
@@ -275,6 +277,7 @@ void STM32_FLASH::set_error_code()
 }
 
 #if defined(STM32F4)
+#include "xprintf.h"
 uint32_t STM32_FLASH::erase(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range, uint32_t banks,
                             uint32_t sector_start, uint32_t nb_sectors, uint32_t &sector_error)
 {
@@ -298,6 +301,7 @@ uint32_t STM32_FLASH::erase(FLASH_TypeErase type_erase, FLASH_VoltageRange volta
         {
             for (uint32_t index=sector_start ; index<(sector_start + nb_sectors) ; ++index)
             {
+                xprintf("\tErase sector %d\n\r", index);
                 erase_sector(index, voltage_range);
                 status = wait_for_last_operation(FLASH_TIMEOUT_VALUE);
                 /* If the erase operation is completed, disable the SER and SNB Bits */

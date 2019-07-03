@@ -5,7 +5,7 @@
 #if defined(STM32F100xB)
 #include "stm32f1xx.h"
 #elif defined(STM32F429xx) || defined (STM32F407xx)
-#include "stm32f4xx.h"
+#include "stm32f4xx.hpp"
 #endif
 #include "bitbanding.h"
 

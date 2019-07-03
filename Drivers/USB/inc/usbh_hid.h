@@ -121,8 +121,6 @@ public:
         uint32_t  LogUsage;
     } ReportDataTypeDef;
 
-    typedef void(*report_callback_t)(USBH_HID*,ReportDataTypeDef*);
-
     typedef struct
     {
         uint8_t  Size;         /* Report size return by the device id            */
@@ -201,6 +199,8 @@ public:
         uint8_t                         data_out[HID_DATA_SIZE] __attribute__((aligned(4)));
         AppCollectionTypeDef            collection;
     } HIDIfaceTypeDef;
+
+    typedef void(*report_callback_t)(HIDIfaceTypeDef*,ReportDataTypeDef*);
 
     USBH_HID();
     virtual uint8_t get_class_code() { return USB_HID_CLASS; }

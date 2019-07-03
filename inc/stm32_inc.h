@@ -41,6 +41,9 @@
 #ifdef STM32_USE_USB
     #ifdef STM32_USE_USB_HOST
         #include "stm32_hcd.h"
+        #ifdef STM32_USE_USBH_HID_KBD
+            #include "usbh_hid_keyb.h"
+        #endif //STM32_USE_USBH_HID_KBD
     #endif // STM32_USE_USB_HOST
 #endif //STM32_USE_USB
 #ifdef STM32_USE_TIM

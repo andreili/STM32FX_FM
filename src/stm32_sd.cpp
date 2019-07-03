@@ -2,6 +2,8 @@
 
 #ifdef STM32_USE_SD
 
+#define SDIO_                (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))
+
 #define DATA_BLOCK_SIZE                  EDataBlockSize::_512B
 
 #define SDIO_IT_CCRCFAIL                    SDIO_STA_CCRCFAIL
@@ -122,7 +124,7 @@ STM32_SD::ESDError STM32_SD::init()
 {
     init_gpio();
     ///TODO init_DMA();
-    STM32_NVIC::enable_and_set_prior_IRQ(SDIO_IRQn, 0, 0);
+    STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::SDIO, 0, 0);
 
     init_low(EClockEdge::RISING, EClockBypass::DISABLE,
              EClockPowerSave::DISABLE, EBusWide::_1B,
@@ -162,7 +164,7 @@ void STM32_SD::deinit()
 
     //TODO deinit DMA
 
-    STM32_NVIC::disable_IRQ(SDIO_IRQn);
+    STM32_NVIC::disable_IRQ(STM32::IRQn::SDIO);
 }
 
 STM32_SD::ESDError STM32_SD::wide_bus_config(EBusWide mode)
@@ -219,7 +221,7 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     uint32_t count = 0U, *tempbuff = reinterpret_cast<uint32_t*>(buf);
 
     /* Initialize data control register */
-    SDIO->DCTRL = 0U;
+    SDIO_->DCTRL = 0U;
 
     if (m_card_type == ECardType::HIGH_CAPACITY)
     {
@@ -256,6 +258,9 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     }
 
     /* Read block(s) in polling mode */
+#ifdef STM32_USE_RTOS
+    TCritSect cs;
+#endif
     if (blocks > 1U)
     {
         /* Check for error conditions */
@@ -283,28 +288,29 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     }
     else
     {
-    /* Check for error conditions */
-    errorstate = cmd_resp1_error(ECMD::READ_SINGLE_BLOCK);
+        /* Check for error conditions */
+        errorstate = cmd_resp1_error(ECMD::READ_SINGLE_BLOCK);
+        //xprintf("error 3=%d\n\r", errorstate);
 
-    if (errorstate != ESDError::OK)
-        return errorstate;
+        if (errorstate != ESDError::OK)
+            return errorstate;
 
-    /* In case of single block transfer, no need of stop transfer at all */
-    #ifdef SDIO_STA_STBITERR
-    while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
-    #else /* SDIO_STA_STBITERR not defined */
-    while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
-    #endif /* SDIO_STA_STBITERR */
-    {
-        if (get_flag(SDIO_FLAG_RXFIFOHF))
+        /* In case of single block transfer, no need of stop transfer at all */
+        #ifdef SDIO_STA_STBITERR
+        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+        #else /* SDIO_STA_STBITERR not defined */
+        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+        #endif /* SDIO_STA_STBITERR */
         {
-            /* Read data from SDIO Rx FIFO */
-            for (count = 0U; count < 8U; count++)
-                *(tempbuff + count) = read_FIFO();
+            if (get_flag(SDIO_FLAG_RXFIFOHF))
+            {
+                /* Read data from SDIO Rx FIFO */
+                for (count = 0U; count < 8U; count++)
+                    *(tempbuff + count) = read_FIFO();
 
-            tempbuff += 8U;
+                tempbuff += 8U;
+            }
         }
-    }
     }
 
     /* Send stop transmission command in case of multiblock read */
@@ -369,7 +375,7 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     ECardState cardstate  = ECardState::READY;
 
     /* Initialize data control register */
-    SDIO->DCTRL = 0U;
+    SDIO_->DCTRL = 0U;
 
     if (m_card_type == ECardType::HIGH_CAPACITY)
     {
@@ -553,7 +559,7 @@ STM32_SD::ESDError STM32_SD::erase(uint32_t start_addr, uint32_t end_addr)
         return ESDError::REQUEST_NOT_APPLICABLE;
 
     /* Get max delay value */
-    maxdelay = 120000U / (((SDIO->CLKCR) & 0xFFU) + 2U);
+    maxdelay = 120000U / (((SDIO_->CLKCR) & 0xFFU) + 2U);
 
     if ((get_response(EResp::RESP1) & SD_CARD_LOCKED) == SD_CARD_LOCKED)
         return ESDError::LOCK_UNLOCK_FAILED;
@@ -630,7 +636,7 @@ STM32_SD::ESDError STM32_SD::high_speed()
     uint32_t count = 0U, *tempbuff = reinterpret_cast<uint32_t*>(SD_hs);
 
     /* Initialize the Data control register */
-    SDIO->DCTRL = 0U;
+    SDIO_->DCTRL = 0U;
 
     /* Get SCR Register */
     errorstate = find_SCR(SD_scr);
@@ -863,7 +869,7 @@ void STM32_SD::init_low(EClockEdge clock_edge, EClockBypass clock_bypass,
             static_cast<uint32_t>(clock_power_save) |
             static_cast<uint32_t>(bus_wide) |
             static_cast<uint32_t>(hw_control) | clock_div;
-    MODIFY_REG(SDIO->CLKCR, CLKCR_CLEAR_MASK, tmpreg);
+    MODIFY_REG(SDIO_->CLKCR, CLKCR_CLEAR_MASK, tmpreg);
 }
 
 STM32_SD::ESDError STM32_SD::power_ON()
@@ -953,7 +959,7 @@ STM32_SD::ESDError STM32_SD::power_ON()
 
 STM32_SD::ESDError STM32_SD::power_OFF()
 {
-    SDIO->POWER = 0x00000000U;
+    SDIO_->POWER = 0x00000000U;
     return ESDError::OK;
 }
 
@@ -1040,8 +1046,8 @@ void STM32_SD::send_command(uint32_t arg, ECMD cmd,
                             EResponse resp, EWait wait_IT,
                             ECPSM cpsm)
 {
-    SDIO->ARG = arg;
-    MODIFY_REG(SDIO->CMD, CMD_CLEAR_MASK, (static_cast<uint32_t>(cmd) |
+    SDIO_->ARG = arg;
+    MODIFY_REG(SDIO_->CMD, CMD_CLEAR_MASK, (static_cast<uint32_t>(cmd) |
                                            static_cast<uint32_t>(resp) |
                                            static_cast<uint32_t>(wait_IT) |
                                            static_cast<uint32_t>(cpsm)));
@@ -1232,13 +1238,13 @@ STM32_SD::ESDError STM32_SD::data_config(uint32_t time_out, uint32_t dat_len,
                                         EDataBlockSize block_size, ETransferDir transf_dir,
                                         ETransferMode transf_mode, EDPSM DPSM)
 {
-    SDIO->DTIMER = time_out;
-    SDIO->DLEN = dat_len;
+    SDIO_->DTIMER = time_out;
+    SDIO_->DLEN = dat_len;
     uint32_t tmpreg = static_cast<uint32_t>(block_size) |
                       static_cast<uint32_t>(transf_dir) |
                       static_cast<uint32_t>(transf_mode) |
                       static_cast<uint32_t>(DPSM);
-    MODIFY_REG(SDIO->DCTRL, DCTRL_CLEAR_MASK, tmpreg);
+    MODIFY_REG(SDIO_->DCTRL, DCTRL_CLEAR_MASK, tmpreg);
     return ESDError::OK;
 }
 

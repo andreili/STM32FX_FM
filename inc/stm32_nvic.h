@@ -32,7 +32,7 @@ inline uint32_t _NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t PreemptPr
            ((SubPriority     & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL)))
          );
 }
-inline uint32_t _NVIC_GetPriorityGrouping(void) { return ((uint32_t)((SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos)); }
+inline uint32_t _NVIC_GetPriorityGrouping(void) { return CORTEX::SCB::AIRCR::get_prior_group(); }
 
 class STM32_NVIC
 {
@@ -41,23 +41,23 @@ public:
     static void deInit();
     static void init_vectors();
 
-    static FORCE_INLINE void set_priority_grouping(uint32_t val) { NVIC_SetPriorityGrouping(val); }
+    static FORCE_INLINE void set_priority_grouping(uint32_t val) { CORTEX::NVIC::set_priority_grouping(val); }
     static FORCE_INLINE uint32_t get_priority_grouping() { return _NVIC_GetPriorityGrouping(); }
 
     static FORCE_INLINE uint32_t encode_priority(uint32_t group, uint32_t pre_prior, uint32_t sub_prior)
-            { return NVIC_EncodePriority(group, pre_prior, sub_prior); }
+            { return CORTEX::NVIC::encode_priority(group, pre_prior, sub_prior); }
 
-    static FORCE_INLINE void set_priority(IRQn_Type irqn, uint32_t val) { NVIC_SetPriority(irqn, val); }
-    static FORCE_INLINE void set_priority(IRQn_Type irqn, uint32_t prior, uint32_t subprior)
-            { NVIC_SetPriority(irqn,
+    static FORCE_INLINE void set_priority(STM32::IRQn irqn, uint32_t val) { CORTEX::NVIC::set_priority(irqn, val); }
+    static FORCE_INLINE void set_priority(STM32::IRQn irqn, uint32_t prior, uint32_t subprior)
+            { CORTEX::NVIC::set_priority(irqn,
                                _NVIC_EncodePriority(get_priority_grouping(),
                                                    prior, subprior)); }
 
-    static inline void enable_IRQ(IRQn_Type irqn) { NVIC_EnableIRQ(irqn); }
-    static inline void disable_IRQ(IRQn_Type irqn) { NVIC_DisableIRQ(irqn); }
-    static inline bool is_active(IRQn_Type irqn)
-    { return (NVIC->IABR[(((uint32_t)(int32_t)irqn) >> 5UL)] == (uint32_t)(1UL << (((uint32_t)(int32_t)irqn) & 0x1FUL))); }
-    static inline void enable_and_set_prior_IRQ(IRQn_Type irqn, uint32_t prior, uint32_t subprior)
+    static inline void enable_IRQ(STM32::IRQn irqn) { CORTEX::NVIC::enable_IRQ(irqn); }
+    static inline void disable_IRQ(STM32::IRQn irqn) { CORTEX::NVIC::disable_IRQ(irqn); }
+    static inline bool is_active(STM32::IRQn irqn)
+    { return CORTEX::NVIC::get_active_IRQ(irqn); }
+    static inline void enable_and_set_prior_IRQ(STM32::IRQn irqn, uint32_t prior, uint32_t subprior)
             { set_priority(irqn, prior, subprior);
               enable_IRQ(irqn); }
 };

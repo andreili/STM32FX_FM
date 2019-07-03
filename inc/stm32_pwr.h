@@ -90,8 +90,8 @@ public:
     static void enter_stop_mode(uint32_t Regulator, uint8_t STOPEntry);
     static void enter_standby_mode();
 
-    ENDIS_REG_FLAG(sleep_on_exit, SCB->SCR, SCB_SCR_SLEEPONEXIT_Msk)
-    ENDIS_REG_FLAG(SEV_on_pend, SCB->SCR, SCB_SCR_SEVONPEND_Msk)
+    static void set_sleep_on_exit(bool val) { CORTEX::SCB::SCR::set_sleep_on_exit(val); }
+    static void set_SEV_on_pend(bool val) { CORTEX::SCB::SCR::set_SEV_on_pend(val); }
 
     /* PWR PVD EXTI */
     ENDIS_REG_FLAG(EXTI_IT, EXTI->IMR, PWR_EXTI_LINE_PVD)

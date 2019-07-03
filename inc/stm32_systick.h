@@ -22,9 +22,9 @@ public:
     static void delay(__IO uint32_t delay_ms);
     static void delay_to(__IO uint32_t delay_ms);
 
-    static inline void manual_trig() { BIT_BAND_PER(SCB->ICSR, SCB_ICSR_PENDSTSET_Msk) = ENABLE; }
-    static inline void suspend() { BIT_BAND_PER(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk) = DISABLE; }
-    static inline void resume() { BIT_BAND_PER(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk) = ENABLE; }
+    static inline void manual_trig() { CORTEX::SCB::ICSR::set_pend_ST(); }
+    static inline void suspend() { CORTEX::SysTick::suspend(); }
+    static inline void resume() { CORTEX::SysTick::resume(); }
 
     ENDIS_REG_FLAG(DBG_sleep_mode, DBGMCU->CR, DBGMCU_CR_DBG_SLEEP)
     ENDIS_REG_FLAG(DBG_stop_mode, DBGMCU->CR, DBGMCU_CR_DBG_SLEEP)

@@ -757,17 +757,17 @@ class STM32_FLASH
 public:
     #if defined(FLASH_ACR_LATENCY)
     static inline void set_latency(uint8_t latency) { *((__IO uint8_t *)(FLASH_R_BASE + 0)) = latency; }
-    static inline uint8_t get_latency() { return FLASH->ACR & FLASH_ACR_LATENCY; }
+    static inline uint8_t get_latency() { return ((FLASH_TypeDef *) FLASH_R_BASE)->ACR & FLASH_ACR_LATENCY; }
     #endif
 
     #if defined(FLASH_ACR_PRFTBE)
     ENDIS_REG_FLAG(prefetch_buffer, FLASH->ACR, FLASH_ACR_PRFTBE)
 		#elif defined (FLASH_ACR_PRFTEN)
-    ENDIS_REG_FLAG(prefetch_buffer, FLASH->ACR, FLASH_ACR_PRFTEN)
+    ENDIS_REG_FLAG(prefetch_buffer, ((FLASH_TypeDef *) FLASH_R_BASE)->ACR, FLASH_ACR_PRFTEN)
     #endif
     #ifdef FLASH_ACR_ICEN
-    ENDIS_REG_FLAG(instruction_cache, FLASH->ACR, FLASH_ACR_ICEN)
-    ENDIS_REG_FLAG(data_cache, FLASH->ACR, FLASH_ACR_DCEN)
+    ENDIS_REG_FLAG(instruction_cache, ((FLASH_TypeDef *) FLASH_R_BASE)->ACR, FLASH_ACR_ICEN)
+    ENDIS_REG_FLAG(data_cache, ((FLASH_TypeDef *) FLASH_R_BASE)->ACR, FLASH_ACR_DCEN)
     #endif
 
     #if defined(STM32F4)
@@ -777,11 +777,11 @@ public:
 
     static void enable_remap_system_flash();
 
-    static inline void enable_IT(uint32_t it_vector) { FLASH->CR |= it_vector; }
-    static inline void disable_IT(uint32_t it_vector) { FLASH->CR &= ~it_vector; }
+    static inline void enable_IT(uint32_t it_vector) { ((FLASH_TypeDef *) FLASH_R_BASE)->CR |= it_vector; }
+    static inline void disable_IT(uint32_t it_vector) { ((FLASH_TypeDef *) FLASH_R_BASE)->CR &= ~it_vector; }
 
-    static inline uint8_t get_flag(uint32_t flag_mask) { return FLASH->SR & flag_mask; }
-    static inline void clear_flag(uint32_t flag_mask) { FLASH->SR = flag_mask; }
+    static inline uint8_t get_flag(uint32_t flag_mask) { return ((FLASH_TypeDef *) FLASH_R_BASE)->SR & flag_mask; }
+    static inline void clear_flag(uint32_t flag_mask) { ((FLASH_TypeDef *) FLASH_R_BASE)->SR = flag_mask; }
 
     #if defined(STM32F4)
     static uint32_t erase(FLASH_TypeErase type_erase, FLASH_VoltageRange voltage_range,
@@ -858,7 +858,7 @@ private:
 
    static void mass_erase(FLASH_VoltageRange voltage_range, uint32_t banks);
 
-   static inline void reset_PG() { FLASH->CR &= ~(FLASH_CR_PG); }
+   static inline void reset_PG() { ((FLASH_TypeDef *) FLASH_R_BASE)->CR &= ~(FLASH_CR_PG); }
 };
 
 void FLASH_end_of_operation_cb(uint32_t return_value);

@@ -439,22 +439,22 @@ private:
 
     static ESDError is_card_programming(ECardState *status);
 
-    static inline void enable_SDIO() { BIT_BAND_PER(SDIO->CLKCR, SDIO_CLKCR_CLKEN) = ENABLE; }
-    static inline void disable_SDIO() { BIT_BAND_PER(SDIO->CLKCR, SDIO_CLKCR_CLKEN) = DISABLE; }
+    static inline void enable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = ENABLE; }
+    static inline void disable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = DISABLE; }
 
-    static inline void power_state_ON() { SDIO->POWER = SDIO_POWER_PWRCTRL; }
-    static inline void power_state_OFF() { SDIO->POWER = 0; }
+    static inline void power_state_ON() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = SDIO_POWER_PWRCTRL; }
+    static inline void power_state_OFF() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = 0; }
 
-    static inline uint32_t get_flag(uint32_t flag_msk) { return (SDIO->STA & flag_msk); }
-    static inline void clear_flag(uint32_t flag_msk) { SDIO->ICR = flag_msk; }
+    static inline uint32_t get_flag(uint32_t flag_msk) { return ((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->STA & flag_msk); }
+    static inline void clear_flag(uint32_t flag_msk) { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->ICR = flag_msk; }
 
-    static inline ECMD get_cmd_response() { return static_cast<ECMD>(SDIO->RESPCMD); }
-    static inline uint32_t get_response(EResp resp) { return (&SDIO->RESP1)[static_cast<uint32_t>(resp) >> 2]; }
+    static inline ECMD get_cmd_response() { return static_cast<ECMD>((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->RESPCMD); }
+    static inline uint32_t get_response(EResp resp) { return (&(reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->RESP1)[static_cast<uint32_t>(resp) >> 2]; }
 
-    static inline uint32_t get_power_state() { return (SDIO->POWER & SDIO_POWER_PWRCTRL); }
+    static inline uint32_t get_power_state() { return ((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER & SDIO_POWER_PWRCTRL); }
 
-    static inline uint32_t read_FIFO() { return SDIO->FIFO; }
-    static inline void write_FIFO(uint32_t *val) { SDIO->FIFO = *val; }
+    static inline uint32_t read_FIFO() { return (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->FIFO; }
+    static inline void write_FIFO(uint32_t *val) { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->FIFO = *val; }
 
     static ESDError wide_bus_enable();
     static ESDError wide_bus_disable();

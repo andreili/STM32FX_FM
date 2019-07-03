@@ -33,46 +33,46 @@ void STM32_PWR::config_PVD()
 
 void STM32_PWR::enter_sleep_mode(uint8_t SLEEPEntry)
 {
-    CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+    CORTEX::SCB::SCR::set_sleep_deep(false);
     if (SLEEPEntry == PWR_SLEEPENTRY_WFI)
     {
         /* Request Wait For Interrupt */
-        __WFI();
+        CMSIS::WFI();
     }
     else
     {
         /* Request Wait For Event */
-        __SEV();
-        __WFE();
-        __WFE();
+        CMSIS::SEV();
+        CMSIS::WFE();
+        CMSIS::WFE();
     }
 }
 
 void STM32_PWR::enter_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
 {
     MODIFY_REG(PWR->CR, (PWR_CR_PDDS | PWR_CR_LPDS), Regulator);
-    SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+    CORTEX::SCB::SCR::set_sleep_deep(true);
     if(STOPEntry == PWR_STOPENTRY_WFI)
     {
         /* Request Wait For Interrupt */
-        __WFI();
+        CMSIS::WFI();
     }
     else
     {
         /* Request Wait For Event */
-        __SEV();
-        __WFE();
-        __WFE();
+        CMSIS::SEV();
+        CMSIS::WFE();
+        CMSIS::WFE();
     }
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
-    CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+    CORTEX::SCB::SCR::set_sleep_deep(false);
 }
 
 void STM32_PWR::enter_standby_mode()
 {
     SET_BIT(PWR->CR, PWR_CR_PDDS);
-    SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
-    __WFI();
+    CORTEX::SCB::SCR::set_sleep_deep(true);
+    CMSIS::WFI();
 }
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\

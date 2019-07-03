@@ -41,7 +41,7 @@ void STM32_UART::init_all()
     uart2.m_busy = false;
     #endif
     #ifdef STM32_USE_UART3
-    uart3.m_uart = USART3;
+    uart3.m_uart = USART3_;
     uart3.m_busy = false;
     #endif
     #ifdef STM32_USE_UART4
@@ -222,7 +222,10 @@ void STM32_UART::set_baud_rate(uint32_t brate)
 
 void STM32_UART::send_char(char ch)
 {
-    while (m_busy) {}
+    while (m_busy)
+    {
+        OS::sleep(1);
+    }
     m_busy = true;
     while ((m_uart->SR & USART_SR_TXE) != USART_SR_TXE);
     m_uart->DR = ch;
@@ -231,7 +234,10 @@ void STM32_UART::send_char(char ch)
 
 void STM32_UART::send_str(const char *str, TXRX_MODE mode)
 {
-    while (m_busy) {}
+    while (m_busy)
+    {
+        OS::sleep(1);
+    }
     send_buf(str, strlen(str) + 1, mode);
 }
 

@@ -19,8 +19,6 @@ USBHCore::EStatus USBH_HID::init(USBHCore* host)
     for (int interface=0 ; interface<USBH_MAX_NUM_INTERFACES ; ++interface)
     {
         USBHCore::USBHInterfaceDesc_t* pif = m_host->get_interface(interface);
-        xprintf("Iface #%d, class=%d, subclass=%d proto=%d\n\r", interface, pif->bInterfaceClass,
-                pif->bInterfaceSubClass, pif->bInterfaceProtocol);
 
         // check only for HID interfaces
         if ((pif->bInterfaceClass != get_class_code()) ||
@@ -401,8 +399,8 @@ void USBH_HID::parse_HID_report_descriptor(uint16_t size)
                     }
 
                     memcpy(report, &report_cur, sizeof(ReportDataTypeDef));
-                    if (m_on_report != nullptr)
-                        m_on_report(this, report);
+                    if (((itemVal & 0x01) == 0x00) && (m_on_report != nullptr)) // only for data (first bit not set)
+                        m_on_report(m_iface_current, report);
 
                     report = &collection->ReportData[++collection->NbrReportFmt];
                     break;

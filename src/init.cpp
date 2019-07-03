@@ -16,7 +16,7 @@ void base_init()
 {
     /* FPU settings ------------------------------------------------------------*/
     #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-    SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
+    CORTEX::FPU::CPACR::set_CP10_CP11(CORTEX::FPU::CPACR::ECP::FULL_ACCESS); /* set CP10 and CP11 Full Access */
     #endif
 
     STM32_RCC::deinit_cold();
@@ -28,9 +28,9 @@ void base_init()
 
     /* Configure the Vector Table location add offset address ------------------*/
     #ifdef VECT_TAB_SRAM
-    SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+    CORTEX::SCB::VTOR::set(SRAM_BASE | VECT_TAB_OFFSET); /* Vector Table Relocation in Internal SRAM */
     #else
-    SCB->VTOR = uint32_t(&_FLASH_START) | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+    CORTEX::SCB::VTOR::set(uint32_t(&_FLASH_START) | VECT_TAB_OFFSET); /* Vector Table Relocation in Internal FLASH */
     #endif
 }
 
@@ -55,7 +55,7 @@ void timebase_init()
     tim14_init.clk_div = STM32_TIM::EClkDiv::DIV_1;
     tim14_init.counter_mode = STM32_TIM::ECounterMode::UP;
 
-    STM32_NVIC::enable_and_set_prior_IRQ(TIM8_TRG_COM_TIM14_IRQn, 0, 0);
+    STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::TIM8_TRG_COM_TIM14, 0, 0);
     STM32_RCC::enable_clk_TIM14();
     tim14.set_cb_period_elapsed(timebase_cb);
 
@@ -157,7 +157,7 @@ void ISR::Reset()
     __initialize_data(&__textdata__, &__data_start__, &__data_end__);
     __initalize_classes(&__ctors_start__, &__ctors_end__);
     PeriphInit();
-    __enable_fault_irq();
-    __enable_irq();
+    CMSIS::enable_fault_irq();
+    CMSIS::enable_irq();
     main();
 }
