@@ -1,6 +1,13 @@
 #ifndef STM32_DEF_H
 #define STM32_DEF_H
 
+#define STM32_BIT_FIELD_GET_SET(name, offset, type, field) \
+    static inline bool get_ ## name () { return reinterpret_cast<volatile type*>(offset)->field; } \
+    static inline void set_ ## name (bool val) { reinterpret_cast<volatile type*>(offset)->field = val; }
+#define STM32_TYPE_FIELD_GET_SET(name, offset, type, field, field_type) \
+    static inline field_type get_ ## name () { return static_cast<field_type>(reinterpret_cast<volatile type*>(offset)->field); } \
+    static inline void set_ ## name (field_type val) { reinterpret_cast<volatile type*>(offset)->field = static_cast<uint32_t>(val); }
+
 #include <stdint.h>
 #if defined(STM32F100xB)
 #include "stm32f1xx.h"
@@ -33,13 +40,6 @@ extern uint32_t unused_reg;
 #define STM32_USB_HS_DP_PIN STM32_GPIO::PIN_15
 
 #define FORCE_INLINE __attribute__((always_inline))
-
-#define STM32_BIT_FILED_GET_SET(name, offset, type, field) \
-    static inline bool get_ ## name () { return reinterpret_cast<volatile type*>(offset)->field; } \
-    static inline void set_ ## name (bool val) { reinterpret_cast<volatile type*>(offset)->field = val; }
-#define STM32_TYPE_FILED_GET_SET(name, offset, type, field, field_type) \
-    static inline field_type get_ ## name () { return static_cast<field_type>(reinterpret_cast<volatile type*>(offset)->field); } \
-    static inline void set_ ## name (field_type val) { reinterpret_cast<volatile type*>(offset)->field = static_cast<uint32_t>(val); }
 
 #define ENDIS_REG_FLAG(name, reg, mask) \
     static inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = 1; unused_reg = reg & mask; } \

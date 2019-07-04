@@ -1,6 +1,9 @@
 #ifndef STM32_INC_H
 #define STM32_INC_H
 
+#include "stm32_conf.h"
+#include "stm32_def.h"
+
 #if defined(STM32F429xx)
 #include "ISRstm32f429xx.h"
 #elif defined(STM32F407xx)
@@ -8,8 +11,6 @@
 #elif defined(STM32F100xB)
 #include "ISRstm32f10x_md.h"
 #endif
-#include "stm32_conf.h"
-#include "stm32_def.h"
 
 #include "stm32_exti.hpp"
 #include "stm32_flash.h"

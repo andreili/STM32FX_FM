@@ -94,15 +94,15 @@ namespace STM32
                  volatile std::uint32_t RAW;
              };
          public:
-             STM32_TYPE_FILED_GET_SET(low_power_deepsleep, PWR_CR_BASE, CR_t, LPDS,ELowPowerReg)
-             STM32_BIT_FILED_GET_SET(power_down_deepsleep, PWR_CR_BASE, CR_t, PDDS)
-             STM32_BIT_FILED_GET_SET(clear_wakeup, PWR_CR_BASE, CR_t, CWUF)
-             STM32_BIT_FILED_GET_SET(clear_standby, PWR_CR_BASE, CR_t, CSBF)
-             STM32_BIT_FILED_GET_SET(PVD_enable, PWR_CR_BASE, CR_t, PVDE)
-             STM32_TYPE_FILED_GET_SET(PVD_level, PWR_CR_BASE, CR_t, PVD, PVDLvl)
-             STM32_BIT_FILED_GET_SET(disable_backup_domain_WP, PWR_CR_BASE, CR_t, DBP)
-             STM32_BIT_FILED_GET_SET(flash_pwoer_down_in_sleep, PWR_CR_BASE, CR_t, FPDS)
-             STM32_TYPE_FILED_GET_SET(VOS, PWR_CR_BASE, CR_t, VOS, EVoltageScale)
+             STM32_TYPE_FIELD_GET_SET(low_power_deepsleep, PWR_CR_BASE, CR_t, LPDS,ELowPowerReg)
+             STM32_BIT_FIELD_GET_SET(power_down_deepsleep, PWR_CR_BASE, CR_t, PDDS)
+             STM32_BIT_FIELD_GET_SET(clear_wakeup, PWR_CR_BASE, CR_t, CWUF)
+             STM32_BIT_FIELD_GET_SET(clear_standby, PWR_CR_BASE, CR_t, CSBF)
+             STM32_BIT_FIELD_GET_SET(PVD_enable, PWR_CR_BASE, CR_t, PVDE)
+             STM32_TYPE_FIELD_GET_SET(PVD_level, PWR_CR_BASE, CR_t, PVD, PVDLvl)
+             STM32_BIT_FIELD_GET_SET(disable_backup_domain_WP, PWR_CR_BASE, CR_t, DBP)
+             STM32_BIT_FIELD_GET_SET(flash_pwoer_down_in_sleep, PWR_CR_BASE, CR_t, FPDS)
+             STM32_TYPE_FIELD_GET_SET(VOS, PWR_CR_BASE, CR_t, VOS, EVoltageScale)
          };
          class CSR
          {
@@ -128,13 +128,13 @@ namespace STM32
                  volatile std::uint32_t RAW;
              };
          public:
-             STM32_BIT_FILED_GET_SET(wakeup_flag, PWR_CSR_BASE, CSR_t, WUF)
-             STM32_BIT_FILED_GET_SET(standby_flag, PWR_CSR_BASE, CSR_t, SBF)
-             STM32_BIT_FILED_GET_SET(PVD_output, PWR_CSR_BASE, CSR_t, PVDO)
-             STM32_BIT_FILED_GET_SET(ready_backup_regulator, PWR_CSR_BASE, CSR_t, BRR)
-             STM32_BIT_FILED_GET_SET(enable_wakeup, PWR_CSR_BASE, CSR_t, EWUP)
-             STM32_BIT_FILED_GET_SET(enable_backup_regulator, PWR_CSR_BASE, CSR_t, BRE)
-             STM32_BIT_FILED_GET_SET(ready_voltage_scaling, PWR_CSR_BASE, CSR_t, VOSRDY)
+             STM32_BIT_FIELD_GET_SET(wakeup_flag, PWR_CSR_BASE, CSR_t, WUF)
+             STM32_BIT_FIELD_GET_SET(standby_flag, PWR_CSR_BASE, CSR_t, SBF)
+             STM32_BIT_FIELD_GET_SET(PVD_output, PWR_CSR_BASE, CSR_t, PVDO)
+             STM32_BIT_FIELD_GET_SET(ready_backup_regulator, PWR_CSR_BASE, CSR_t, BRR)
+             STM32_BIT_FIELD_GET_SET(enable_wakeup, PWR_CSR_BASE, CSR_t, EWUP)
+             STM32_BIT_FIELD_GET_SET(enable_backup_regulator, PWR_CSR_BASE, CSR_t, BRE)
+             STM32_BIT_FIELD_GET_SET(ready_voltage_scaling, PWR_CSR_BASE, CSR_t, VOSRDY)
          };
 
          static constexpr STM32::EXTI::ELine    PVD_EXTI_LINE    = STM32::EXTI::ELine::LINE_16;
