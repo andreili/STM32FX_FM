@@ -6,7 +6,7 @@ void STM32_SYSTICK::init()
 {
     update_freq();
     set_clock_source(SYSTICK_CLKSOURCE_HCLK);
-    STM32_NVIC::set_priority(STM32::IRQn::SysTick, STM32_PRIORITY_SYSCLK, 0);
+    STM32::NVIC::set_priority(STM32::IRQn::SysTick, static_cast<uint32_t>(STM32_PRIORITY_SYSCLK), 0);
     m_tick = 0;
 }
 

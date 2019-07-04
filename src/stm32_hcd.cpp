@@ -313,7 +313,7 @@ void STM32_HCD::init_gpio()
                                      STM32_GPIO::EAF::AF10_OTG_FS, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         STM32_RCC::STM32_USB_FS_EN_CLK();
         STM32_RCC::enable_clk_USB_FS();
-        STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::OTG_FS, 0, 0);
+        STM32::NVIC::enable_and_set_prior_IRQ(STM32::IRQn::OTG_FS, 0, 0);
         STM32_USB_PWR_FS_PORT.set_config(STM32_USB_PWR_FS_PIN, STM32_GPIO::EMode::OUTPUT_PP,
                                          STM32_GPIO::EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     }
@@ -323,7 +323,7 @@ void STM32_HCD::init_gpio()
                                      STM32_GPIO::EAF::AF12_OTG_HS_FS, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
         STM32_RCC::STM32_USB_HS_EN_CLK();
         STM32_RCC::enable_clk_USB_HS();
-        STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::OTG_HS, 0, 0);
+        STM32::NVIC::enable_and_set_prior_IRQ(STM32::IRQn::OTG_HS, 0, 0);
         STM32_USB_PWR_HS_PORT.set_config(STM32_USB_PWR_HS_PIN, STM32_GPIO::EMode::OUTPUT_PP,
                                          STM32_GPIO::EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     }
@@ -336,13 +336,13 @@ void STM32_HCD::deInit_gpio()
     {
         STM32_RCC::disable_clk_OTGFS();
         STM32_USB_FS_PORT.unset_config(STM32_USB_FS_DM_PIN | STM32_USB_FS_DP_PIN);
-        STM32_NVIC::disable_IRQ(STM32::IRQn::OTG_FS);
+        STM32::NVIC::disable_IRQ(STM32::IRQn::OTG_FS);
     }
     else
     {
         STM32_RCC::disable_clk_OTGHS();
         STM32_USB_HS_PORT.unset_config(STM32_USB_HS_DM_PIN | STM32_USB_HS_DP_PIN);
-        STM32_NVIC::disable_IRQ(STM32::IRQn::OTG_HS);
+        STM32::NVIC::disable_IRQ(STM32::IRQn::OTG_HS);
     }
 }
 

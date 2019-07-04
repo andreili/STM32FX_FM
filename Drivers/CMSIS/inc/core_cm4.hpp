@@ -708,7 +708,7 @@ namespace CM4
         }
         static void set_priority(ARM::IRQn IRQn, std::uint32_t priority)
         {
-            priority = (priority << __NVIC_PRIO_BITS) & 0xff;
+            priority = (priority << NVIC_PRIO_BITS) & 0xff;
             if (static_cast<int32_t>(IRQn) < 0)
                 SCB::SHPx::set(IRQn, priority);
             else
@@ -723,7 +723,7 @@ namespace CM4
             }
             else
                 priority = IP::get(IRQn);
-            return (priority >> __NVIC_PRIO_BITS);
+            return (priority >> NVIC_PRIO_BITS);
         }
         static std::uint32_t encode_priority(uint32_t group, std::uint32_t preemt, std::uint32_t sub)
         {
@@ -731,8 +731,8 @@ namespace CM4
             std::uint32_t PreemptBits;
             std::uint32_t SubBits;
 
-            PreemptBits = ((7UL - GroupTmp) > (uint32_t)(__NVIC_PRIO_BITS)) ? (uint32_t)(__NVIC_PRIO_BITS) : (uint32_t)(7UL - GroupTmp);
-            SubBits     = ((GroupTmp + (uint32_t)(__NVIC_PRIO_BITS)) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((GroupTmp - 7UL) + (uint32_t)(__NVIC_PRIO_BITS));
+            PreemptBits = ((7UL - GroupTmp) > NVIC_PRIO_BITS) ? NVIC_PRIO_BITS : (uint32_t)(7UL - GroupTmp);
+            SubBits     = ((GroupTmp + NVIC_PRIO_BITS) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((GroupTmp - 7UL) + NVIC_PRIO_BITS);
 
             return (
                 ((preemt & (uint32_t)((1UL << (PreemptBits)) - 1UL)) << SubBits) |
@@ -745,8 +745,8 @@ namespace CM4
             std::uint32_t PreemptBits;
             std::uint32_t SubBits;
 
-            PreemptBits = ((7UL - GroupTmp) > (uint32_t)(__NVIC_PRIO_BITS)) ? (uint32_t)(__NVIC_PRIO_BITS) : (uint32_t)(7UL - GroupTmp);
-            SubBits     = ((GroupTmp + (uint32_t)(__NVIC_PRIO_BITS)) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((GroupTmp - 7UL) + (uint32_t)(__NVIC_PRIO_BITS));
+            PreemptBits = ((7UL - GroupTmp) > NVIC_PRIO_BITS) ? NVIC_PRIO_BITS : (uint32_t)(7UL - GroupTmp);
+            SubBits     = ((GroupTmp + NVIC_PRIO_BITS) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((GroupTmp - 7UL) + NVIC_PRIO_BITS);
 
             preemt = (priority >> SubBits) & (uint32_t)((1UL << (PreemptBits)) - 1UL);
             sub    = (priority           ) & (uint32_t)((1UL << (SubBits    )) - 1UL);
@@ -938,7 +938,7 @@ namespace CM4
             if ((ticks - 1UL) > 0x00ffffff)
                 return;
             LOAD::set(ticks - 1);
-            NVIC::set_priority(ARM::IRQn::SysTick, (1UL << __NVIC_PRIO_BITS) - 1UL);
+            NVIC::set_priority(ARM::IRQn::SysTick, (1UL << NVIC_PRIO_BITS) - 1UL);
             VAL::set(0);
             start();
         }

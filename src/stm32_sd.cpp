@@ -124,7 +124,7 @@ STM32_SD::ESDError STM32_SD::init()
 {
     init_gpio();
     ///TODO init_DMA();
-    STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::SDIO, 0, 0);
+    STM32::NVIC::enable_and_set_prior_IRQ(STM32::IRQn::SDIO, 0, 0);
 
     init_low(EClockEdge::RISING, EClockBypass::DISABLE,
              EClockPowerSave::DISABLE, EBusWide::_1B,
@@ -164,7 +164,7 @@ void STM32_SD::deinit()
 
     //TODO deinit DMA
 
-    STM32_NVIC::disable_IRQ(STM32::IRQn::SDIO);
+    STM32::NVIC::disable_IRQ(STM32::IRQn::SDIO);
 }
 
 STM32_SD::ESDError STM32_SD::wide_bus_config(EBusWide mode)

@@ -55,7 +55,7 @@ void timebase_init()
     tim14_init.clk_div = STM32_TIM::EClkDiv::DIV_1;
     tim14_init.counter_mode = STM32_TIM::ECounterMode::UP;
 
-    STM32_NVIC::enable_and_set_prior_IRQ(STM32::IRQn::TIM8_TRG_COM_TIM14, 0, 0);
+    STM32::NVIC::enable_and_set_prior_IRQ(STM32::IRQn::TIM8_TRG_COM_TIM14, 0, 0);
     STM32_RCC::enable_clk_TIM14();
     tim14.set_cb_period_elapsed(timebase_cb);
 
@@ -96,7 +96,7 @@ void SystemInit()
     PeriphInit();
 
     /* Initialize interrupt vectors for a peripheral */
-    STM32_NVIC::init_vectors();
+    STM32::NVIC::init_vectors();
     STM32_RCC::update_clock();
 
     #ifdef INSTRUCTION_CACHE_ENABLE
@@ -109,7 +109,7 @@ void SystemInit()
     STM32_FLASH::enable_prefetch_buffer();
     #endif
 
-    STM32_NVIC::init();
+    STM32::NVIC::init();
 }
 
 #define INIT_SP() \
