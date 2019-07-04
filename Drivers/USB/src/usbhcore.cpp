@@ -162,7 +162,7 @@ void USBHCore::stop()
 void USBHCore::re_enumerate()
 {
     stop();
-    STM32_SYSTICK::delay(200);
+    STM32::SYSTICK::delay(200);
     deInit_state_machine();
     start();
 #if (USBH_USE_OS == 1)
@@ -182,7 +182,7 @@ void USBHCore::process()
         {
             /* Wait for 200 ms after connection */
             m_gstate = EHostState::DEV_WAIT_FOR_ATTACHMENT;
-            STM32_SYSTICK::delay(200);
+            STM32::SYSTICK::delay(200);
             LL_reset_port();
 #if (USBH_USE_OS == 1)
             send_message();
@@ -194,7 +194,7 @@ void USBHCore::process()
     case EHostState::DEV_ATTACHED:
         USBH_UsrLog("USB Device Attached");
         /* Wait for 100 ms after Reset */
-        STM32_SYSTICK::delay(100);
+        STM32::SYSTICK::delay(100);
         m_device.speed = LL_get_speed();
         m_gstate = EHostState::ENUMERATION;
 
@@ -365,7 +365,7 @@ uint32_t USBHCore::handle_enum()
     case EUSBState::SET_ADDR:
         if (set_address(USBH_DEVICE_ADDRESS) == EStatus::OK)
         {
-            STM32_SYSTICK::delay(2);
+            STM32::SYSTICK::delay(2);
             m_device.address = USBH_DEVICE_ADDRESS;
             USBH_UsrLog("Address (#%d) assigned.", m_device.address);
             m_enum_state = EUSBState::GET_CFG_DESC;
@@ -559,7 +559,7 @@ void USBHCore::LL_driver_VBUS(uint8_t state)
         else
             STM32_USB_PWR_HS_PORT.pin_OFF(STM32_USB_PWR_HS_PIN);
     }
-    STM32_SYSTICK::delay(200);
+    STM32::SYSTICK::delay(200);
 }
 
 uint8_t USBHCore::alloc_pipe(uint8_t ep_addr)

@@ -134,9 +134,9 @@ STM32_SD::ESDError STM32_SD::init()
 
     disable_SDIO();
     power_state_ON();
-    STM32_SYSTICK::delay(1);
+    STM32::SYSTICK::delay(1);
     enable_SDIO();
-    STM32_SYSTICK::delay(2);
+    STM32::SYSTICK::delay(2);
 
     if ((errorstate = power_ON()) != ESDError::OK)
         return errorstate;

@@ -1,34 +1,37 @@
 #include "stm32_inc.h"
 
-volatile uint32_t STM32_SYSTICK::m_tick;
+namespace STM32
+{
 
-void STM32_SYSTICK::init()
+volatile uint32_t SYSTICK::m_tick;
+
+void SYSTICK::init()
 {
     update_freq();
-    set_clock_source(SYSTICK_CLKSOURCE_HCLK);
-    STM32::NVIC::set_priority(STM32::IRQn::SysTick, static_cast<uint32_t>(STM32_PRIORITY_SYSCLK), 0);
+    set_clock_source(EClockDiv::HCLK);
+    NVIC::set_priority(IRQn::SysTick, static_cast<uint32_t>(STM32_PRIORITY_SYSCLK), 0);
     m_tick = 0;
 }
 
-void STM32_SYSTICK::deinit()
+void SYSTICK::deinit()
 {
     CORTEX::SysTick::CTRL::set(0);
     CORTEX::SysTick::LOAD::set(0);
     CORTEX::SysTick::VAL::set(0);
 }
 
-void STM32_SYSTICK::update_freq()
+void SYSTICK::update_freq()
 {
     CORTEX::SysTick::config(STM32_RCC::get_HCLK_freq() / STM32_SYSTICK_FREQ_HZ - 1);
-    set_clock_source(SYSTICK_CLKSOURCE_HCLK);
+    set_clock_source(EClockDiv::HCLK);
 }
 
-void STM32_SYSTICK::set_clock_source(uint32_t src)
+void SYSTICK::set_clock_source(EClockDiv src)
 {
-    CORTEX::SysTick::CTRL::set_source_HCLK(src == SYSTICK_CLKSOURCE_HCLK);
+    CORTEX::SysTick::CTRL::set_source_HCLK(src == EClockDiv::HCLK);
 }
 
-void STM32_SYSTICK::delay(__IO uint32_t delay_ms)
+void SYSTICK::delay(__IO uint32_t delay_ms)
 {
     if (m_tick == 0)
         return;
@@ -36,14 +39,16 @@ void STM32_SYSTICK::delay(__IO uint32_t delay_ms)
     while(m_tick < tick_end) {}
 }
 
-void STM32_SYSTICK::delay_to(__IO uint32_t delay_ms)
+void SYSTICK::delay_to(__IO uint32_t delay_ms)
 {
     while(m_tick < delay_ms) {}
+}
+
 }
 
 #ifdef STM32_TIMEBASE_SYSTICK
 void ISR::SysTickTimer()
 {
-    STM32_SYSTICK::on_tick();
+    STM32::SYSTICK::on_tick();
 }
 #endif //STM32_TIMEBASE_SYSTICK

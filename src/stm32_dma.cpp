@@ -209,10 +209,10 @@ uint32_t STM32_DMA::abort()
 
     disable();
 
-    uint32_t tick = STM32_SYSTICK::get_tick() + TIMEOUT_DMA_ABORT;
+    uint32_t tick = STM32::SYSTICK::get_tick() + TIMEOUT_DMA_ABORT;
     while (!is_disabled())
     {
-        if (STM32_SYSTICK::get_tick() > tick)
+        if (STM32::SYSTICK::get_tick() > tick)
         {
             m_error_code = DMA_ERROR_TIMEOUT;
             STM32_UNLOCK(m_lock);
@@ -266,10 +266,10 @@ uint32_t STM32_DMA::pool_for_transfer(DMA_LevelComplete complete_level, uint32_t
     DMA_Base_Registers* regs = (DMA_Base_Registers*)calc_base_and_bit_shift();
     uint32_t tmpisr = regs->ISR;
 
-    uint32_t tick = STM32_SYSTICK::get_tick() + timeout;
+    uint32_t tick = STM32::SYSTICK::get_tick() + timeout;
     while (((tmpisr & mask_cpltlevel) == RESET) && ((m_error_code & DMA_ERROR_TE) == RESET))
     {
-        if ((timeout == 0) || (STM32_SYSTICK::get_tick() > tick))
+        if ((timeout == 0) || (STM32::SYSTICK::get_tick() > tick))
         {
             m_error_code = DMA_ERROR_TIMEOUT;
             STM32_UNLOCK(m_lock);

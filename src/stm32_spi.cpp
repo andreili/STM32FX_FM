@@ -250,7 +250,7 @@ uint32_t STM32_SPI::recieve(uint8_t* data, uint32_t size, TXRX_MODE mode, uint32
 uint32_t STM32_SPI::transmit_recieve(uint8_t* tx_buf, uint8_t* rx_buf, uint32_t size, TXRX_MODE mode, uint32_t timeout)
 {
     (void)(mode);
-    uint32_t tout = timeout + STM32_SYSTICK::get_tick();
+    uint32_t tout = timeout + STM32::SYSTICK::get_tick();
 
     m_rx_buf = rx_buf;
     m_rx_count = size;
@@ -306,7 +306,7 @@ uint32_t STM32_SPI::transmit_recieve(uint8_t* tx_buf, uint8_t* rx_buf, uint32_t 
                 txallowed = 1U;
             }
 
-            if (STM32_SYSTICK::get_tick() >= tout)
+            if (STM32::SYSTICK::get_tick() >= tout)
                 return STM32_RESULT_TIMEOUT;
         }
     }
@@ -345,7 +345,7 @@ uint32_t STM32_SPI::transmit_recieve(uint8_t* tx_buf, uint8_t* rx_buf, uint32_t 
                 txallowed = 1U;
             }
 
-            if (STM32_SYSTICK::get_tick() >= tout)
+            if (STM32::SYSTICK::get_tick() >= tout)
                 return STM32_RESULT_TIMEOUT;
         }
     }
@@ -381,7 +381,7 @@ uint32_t STM32_SPI::transmit_blocked(uint8_t* data, uint32_t size, uint32_t time
     if ((data == nullptr) || (size == 0))
         return STM32_RESULT_FAIL;
 
-    uint32_t tout = timeout + STM32_SYSTICK::get_tick();
+    uint32_t tout = timeout + STM32::SYSTICK::get_tick();
 
     m_tx_count = size;
     m_tx_size = size;
@@ -423,7 +423,7 @@ uint32_t STM32_SPI::transmit_blocked(uint8_t* data, uint32_t size, uint32_t time
             }
             else
             {
-                if (STM32_SYSTICK::get_tick() >= tout)
+                if (STM32::SYSTICK::get_tick() >= tout)
                     return STM32_RESULT_TIMEOUT;
             }
         }
@@ -448,7 +448,7 @@ uint32_t STM32_SPI::transmit_blocked(uint8_t* data, uint32_t size, uint32_t time
             }
             else
             {
-                if (STM32_SYSTICK::get_tick() >= tout)
+                if (STM32::SYSTICK::get_tick() >= tout)
                     return STM32_RESULT_TIMEOUT;
             }
         }
@@ -514,7 +514,7 @@ uint32_t STM32_SPI::recieve_blocked(uint8_t* data, uint32_t size, uint32_t timeo
     if ((data == nullptr) || (size == 0))
         return STM32_RESULT_FAIL;
 
-    uint32_t tout = timeout + STM32_SYSTICK::get_tick();
+    uint32_t tout = timeout + STM32::SYSTICK::get_tick();
 
     m_tx_count = 0;
     m_tx_size = 0;
@@ -546,7 +546,7 @@ uint32_t STM32_SPI::recieve_blocked(uint8_t* data, uint32_t size, uint32_t timeo
             }
             else
             {
-                if (STM32_SYSTICK::get_tick() >= tout)
+                if (STM32::SYSTICK::get_tick() >= tout)
                     return STM32_RESULT_TIMEOUT;
             }
         }
@@ -564,7 +564,7 @@ uint32_t STM32_SPI::recieve_blocked(uint8_t* data, uint32_t size, uint32_t timeo
             }
             else
             {
-                if (STM32_SYSTICK::get_tick() >= tout)
+                if (STM32::SYSTICK::get_tick() >= tout)
                     return STM32_RESULT_TIMEOUT;
             }
         }
@@ -637,7 +637,7 @@ void STM32_SPI::callback_tx_16bit()
 uint32_t STM32_SPI::close_tx_ISR()
 {
     //uint32_t count = SPI_DEFAULT_TIMEOUT * (STM32_RCC::get_HCLK_freq() / 24 / 1000);
-    //uint32_t tickstart = STM32_SYSTICK::get_tick();
+    //uint32_t tickstart = STM32::SYSTICK::get_tick();
 
     do
     {

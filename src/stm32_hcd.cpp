@@ -56,7 +56,7 @@ void STM32_HCD::reset_port()
     uint32_t val = m_regs->ports[0];
     val &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
     reset_port_st1(USB_OTG_HPRT_PRST | val);
-    STM32_SYSTICK::delay(10);
+    STM32::SYSTICK::delay(10);
     reset_port_st1((~USB_OTG_HPRT_PRST) & val);
 }
 
@@ -442,7 +442,7 @@ void STM32_HCD::set_current_mode(EOTGDeviceMode mode)
         set_mode_host();
     else if (mode == EOTGDeviceMode::DEVICE)
         set_mode_device();
-    STM32_SYSTICK::delay(500);
+    STM32::SYSTICK::delay(500);
 }
 
 STM32_HCD::EOTGSpeed STM32_HCD::get_dev_speed()
@@ -801,7 +801,7 @@ void STM32_HCD::host_init()
         mask_all_HC_int(i);
     }
     drive_VBUS(SET);
-    STM32_SYSTICK::delay(200);
+    STM32::SYSTICK::delay(200);
     disable_all_IT();
     clear_all_IT1();
     if (m_regs == reinterpret_cast<OTGRegs_t*>(USB_OTG_FS))

@@ -51,7 +51,7 @@ void STM32_FLASH::reset_data_cache()
 void STM32_FLASH::enable_remap_system_flash()
 {
 #if defined(STM32F4)
-    SYSCFG->MEMRMP = SYSCFG_MEMRMP_MEM_MODE;
+    SYSCFG::MEMRMP::set_memory_mode(SYSCFG::MEMRMP::EMemMode::SRAM_AT_0);
 #else
 #error
 #endif

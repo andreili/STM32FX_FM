@@ -76,20 +76,20 @@ extern uint32_t unused_reg;
 
 #define WAIT_TIMEOUT(condition, timeout) \
     { \
-        uint32_t tout_ex = STM32_SYSTICK::get_tick() + timeout; \
+        uint32_t tout_ex = STM32::SYSTICK::get_tick() + timeout; \
         while (condition) \
         { \
-            if ((STM32_SYSTICK::get_tick()) > tout_ex) \
+            if ((STM32::SYSTICK::get_tick()) > tout_ex) \
                 return STM32_RESULT_TIMEOUT; \
         } \
     }
 
 #define WAIT_TIMEOUT_EX(condition, timeout, ret) \
     { \
-        uint32_t tout_ex = STM32_SYSTICK::get_tick() + timeout; \
+        uint32_t tout_ex = STM32::SYSTICK::get_tick() + timeout; \
         while (condition) \
         { \
-            if ((STM32_SYSTICK::get_tick()) > tout_ex) \
+            if ((STM32::SYSTICK::get_tick()) > tout_ex) \
                 return ret; \
         } \
     }

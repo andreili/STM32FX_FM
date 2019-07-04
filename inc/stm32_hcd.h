@@ -430,8 +430,8 @@ private:
     FORCE_INLINE void clear_dev_address() { m_regs->device.DCFG &= ~USB_OTG_DCFG_DAD; }
     FORCE_INLINE void set_dev_addr_RAW(uint8_t addr) { m_regs->device.DCFG |= (addr << 4) & USB_OTG_DCFG_DAD; }
 
-    FORCE_INLINE void dev_connect() { m_regs->device.DCTL &= ~USB_OTG_DCTL_SDIS; STM32_SYSTICK::delay(3); }
-    FORCE_INLINE void dev_disconnect() { m_regs->device.DCTL |= USB_OTG_DCTL_SDIS; STM32_SYSTICK::delay(3); }
+    FORCE_INLINE void dev_connect() { m_regs->device.DCTL &= ~USB_OTG_DCTL_SDIS; STM32::SYSTICK::delay(3); }
+    FORCE_INLINE void dev_disconnect() { m_regs->device.DCTL |= USB_OTG_DCTL_SDIS; STM32::SYSTICK::delay(3); }
 
     void stop_device();
     FORCE_INLINE void clear_shared_IT() { m_regs->device.DAINT = 0xffffffff; }

@@ -24,7 +24,7 @@
 #ifdef STM32_USE_SDRAM
     #include "stm32_sdram.h"
 #endif
-#include "stm32_systick.h"
+#include "stm32_systick.hpp"
 #ifdef STM32_USE_UART
     #include "stm32_uart.h"
 #endif

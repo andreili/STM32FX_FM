@@ -39,7 +39,7 @@ void timebase_cb(STM32_TIM* tim, uint32_t ch)
 {
     UNUSED(tim);
     UNUSED(ch);
-    STM32_SYSTICK::on_tick();
+    STM32::SYSTICK::on_tick();
 }
 #endif //STM32_TIMEBASE_SYSTICK
 
@@ -48,7 +48,7 @@ void timebase_init()
     #ifdef STM32_TIMEBASE_SYSTICK
     STM32_SYSTICK::init();
     #else
-    STM32_SYSTICK::deinit();
+    STM32::SYSTICK::deinit();
     STM32_TIM::TimerBaseInit_t tim14_init;
     tim14_init.period = (1000000/STM32_TIMEBASE_FREQ_HZ) - 1;
     tim14_init.prescaler = ((2 * STM32_RCC::get_PCLK1_freq()) / 1000000) - 1; // (2*PCLK1Freq/1000000 - 1) to have a 1MHz counter clock.
