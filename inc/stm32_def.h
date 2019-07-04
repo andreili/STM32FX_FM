@@ -34,16 +34,23 @@ extern uint32_t unused_reg;
 
 #define FORCE_INLINE __attribute__((always_inline))
 
+#define STM32_BIT_FILED_GET_SET(name, offset, type, field) \
+    static inline bool get_ ## name () { return reinterpret_cast<volatile type*>(offset)->field; } \
+    static inline void set_ ## name (bool val) { reinterpret_cast<volatile type*>(offset)->field = val; }
+#define STM32_TYPE_FILED_GET_SET(name, offset, type, field, field_type) \
+    static inline field_type get_ ## name () { return static_cast<field_type>(reinterpret_cast<volatile type*>(offset)->field); } \
+    static inline void set_ ## name (field_type val) { reinterpret_cast<volatile type*>(offset)->field = static_cast<uint32_t>(val); }
+
 #define ENDIS_REG_FLAG(name, reg, mask) \
-    static inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = ENABLE; unused_reg = reg & mask; } \
-    static inline void disable_ ## name() { BIT_BAND_PER(reg, mask) = DISABLE; unused_reg = reg & mask; }
+    static inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = 1; unused_reg = reg & mask; } \
+    static inline void disable_ ## name() { BIT_BAND_PER(reg, mask) = 0; unused_reg = reg & mask; }
 
 #define ENDIS_REG_FLAG_(reg, mask) \
-    inline void enable() { BIT_BAND_PER(reg, mask) = ENABLE; } \
-    inline void disable() { BIT_BAND_PER(reg, mask) = DISABLE; }
+    inline void enable() { BIT_BAND_PER(reg, mask) = 1; } \
+    inline void disable() { BIT_BAND_PER(reg, mask) = 0; }
 #define ENDIS_REG_FLAG_NAME(name, reg, mask) \
-    inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = ENABLE; } \
-    inline void disable_ ## name() { BIT_BAND_PER(reg, mask) = DISABLE; }
+    inline void enable_ ## name() { BIT_BAND_PER(reg, mask) = 1; } \
+    inline void disable_ ## name() { BIT_BAND_PER(reg, mask) = 0; }
 #define ENDIS_REG_FLAG_NAME_SL(name, reg, mask) \
     inline void enable_ ## name() { reg |= mask; } \
     inline void disable_ ## name() { reg &= ~mask; }
@@ -56,16 +63,16 @@ extern uint32_t unused_reg;
     static inline bool check_enable_clk_ ## name() { return BIT_BAND_PER(RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## bit_name ## EN); }
 
 #define PER_RESET_SLEEP(enr, name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = ENABLE; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = DISABLE; } \
-    static inline void sleep_enable_ ## name() { BIT_BAND_PER(RCC-> enr ## LPENR, RCC_ ## enr ## LPENR_ ## name ## LPEN) = ENABLE; }
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; } \
+    static inline void sleep_enable_ ## name() { BIT_BAND_PER(RCC-> enr ## LPENR, RCC_ ## enr ## LPENR_ ## name ## LPEN) = 1; }
 
 #define PER_RESET(enr, name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = ENABLE; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = DISABLE; } 
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; }
 #define PER_RESET_EX(enr, name, bit_name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = ENABLE; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = DISABLE; } 
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 0; }
 
 #define WAIT_TIMEOUT(condition, timeout) \
     { \

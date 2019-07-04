@@ -8,33 +8,27 @@
 #define PWR_OVERDRIVE_ENABLE() BIT_BAND_PER(PWR->CR, PWR_CR_ODEN) = ENABLE
 #define PWR_OVERDRIVE_DISABLE() BIT_BAND_PER(PWR->CR, PWR_CR_ODEN) = DISABLE
 
-void STM32_PWR::deinit()
+namespace STM32
+{
+
+void PWR::deinit()
 {
     STM32_RCC::force_reset_PWR();
     STM32_RCC::release_reset_PWR();
 }
 
-void STM32_PWR::config_PVD()
+void PWR::config_PVD()
 {
-    disable_EXTI_event();
-    disable_EXTI_IT();
-    disable_EXTI_rising_edge();
-    disable_EXTI_falling_edge();
-
-    if ((STM32_PVD_MODE & PVD_MODE_IT) == PVD_MODE_IT)
-        enable_EXTI_IT();
-    if ((STM32_PVD_MODE & PVD_MODE_EVT) == PVD_MODE_EVT)
-        enable_EXTI_event();
-    if ((STM32_PVD_MODE & PVD_RISING_EDGE) == PVD_RISING_EDGE)
-        enable_EXTI_rising_edge();
-    if ((STM32_PVD_MODE & PVD_FALLING_EDGE) == PVD_FALLING_EDGE)
-        enable_EXTI_falling_edge();
+    set_PVD_interrupt_enable((STM32_PVD_MODE & EPVDMode::IT) == EPVDMode::IT);
+    set_PVD_event_enable((STM32_PVD_MODE & EPVDMode::EVT)== EPVDMode::EVT);
+    set_PVD_rising_edge_enable((STM32_PVD_MODE & EPVDMode::RISING_EDGE) == EPVDMode::RISING_EDGE);
+    set_PVD_falling_edge_enable((STM32_PVD_MODE & EPVDMode::FALLING_EDGE) == EPVDMode::FALLING_EDGE);
 }
 
-void STM32_PWR::enter_sleep_mode(uint8_t SLEEPEntry)
+void PWR::enter_sleep_mode(EEntry entry)
 {
     CORTEX::SCB::SCR::set_sleep_deep(false);
-    if (SLEEPEntry == PWR_SLEEPENTRY_WFI)
+    if (entry == EEntry::WFI)
     {
         /* Request Wait For Interrupt */
         CMSIS::WFI();
@@ -48,15 +42,14 @@ void STM32_PWR::enter_sleep_mode(uint8_t SLEEPEntry)
     }
 }
 
-void STM32_PWR::enter_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
+void PWR::enter_stop_mode(ELowPowerReg Regulator, EEntry entry)
 {
-    MODIFY_REG(PWR->CR, (PWR_CR_PDDS | PWR_CR_LPDS), Regulator);
+    CR::set_power_down_deepsleep(false);
+    CR::set_low_power_deepsleep(Regulator);
     CORTEX::SCB::SCR::set_sleep_deep(true);
-    if(STOPEntry == PWR_STOPENTRY_WFI)
-    {
+    if (entry == EEntry::WFI)
         /* Request Wait For Interrupt */
         CMSIS::WFI();
-    }
     else
     {
         /* Request Wait For Event */
@@ -68,16 +61,16 @@ void STM32_PWR::enter_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
     CORTEX::SCB::SCR::set_sleep_deep(false);
 }
 
-void STM32_PWR::enter_standby_mode()
+void PWR::enter_standby_mode()
 {
-    SET_BIT(PWR->CR, PWR_CR_PDDS);
+    CR::set_power_down_deepsleep(true);
     CORTEX::SCB::SCR::set_sleep_deep(true);
     CMSIS::WFI();
 }
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)
-uint32_t STM32_PWR::enable_overdrive()
+uint32_t PWR::enable_overdrive()
 {
     STM32_RCC::enable_clk_PWR();
 
@@ -107,7 +100,7 @@ uint32_t STM32_PWR::enable_overdrive()
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_PWR::disable_overdrive()
+uint32_t PWR::disable_overdrive()
 {
     STM32_RCC::enable_clk_PWR();
 
@@ -138,7 +131,7 @@ uint32_t STM32_PWR::disable_overdrive()
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
+uint32_t PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
 {
     uint32_t tmpreg1 = 0U;
     uint32_t tickstart = 0U;
@@ -191,34 +184,36 @@ uint32_t STM32_PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPE
 #endif
 
 #ifdef STM32F4
-uint32_t STM32_PWR::control_voltage_scaling(uint32_t voltage_scaling)
+uint32_t PWR::control_voltage_scaling(EVoltageScale voltage_scaling)
 {
     STM32_RCC::enable_clk_PWR();
-    set_voltage_scaling_config(voltage_scaling);
-    WAIT_TIMEOUT(get_flag(PWR_FLAG_VOSRDY) == RESET, PWR_VOSRDY_TIMEOUT_VALUE);
+    set_voltage_scaling_enabled(voltage_scaling);
+    WAIT_TIMEOUT(!CSR::get_ready_voltage_scaling(), PWR_VOSRDY_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_PWR::enable_backup_regulator()
+uint32_t PWR::enable_backup_regulator()
 {
-    BIT_BAND_PER(PWR->CSR, PWR_CSR_BRE) = SET;
-    WAIT_TIMEOUT(get_flag(PWR_FLAG_BRR) == RESET, PWR_BKPREG_TIMEOUT_VALUE);
+    CSR::set_enable_backup_regulator(true);
+    WAIT_TIMEOUT(!CSR::get_enable_backup_regulator(), PWR_BKPREG_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_PWR::disable_backup_regulator()
+uint32_t PWR::disable_backup_regulator()
 {
-    BIT_BAND_PER(PWR->CSR, PWR_CSR_BRE) = RESET;
-    WAIT_TIMEOUT(get_flag(PWR_FLAG_BRR) == SET, PWR_BKPREG_TIMEOUT_VALUE);
+    CSR::set_enable_backup_regulator(false);
+    WAIT_TIMEOUT(CSR::get_enable_backup_regulator(), PWR_BKPREG_TIMEOUT_VALUE);
     return STM32_RESULT_OK;
 }
 #endif
 
+}
+
 void ISR::PVD_IRQ()
 {
-    if (STM32_PWR::get_EXTI_flag() != RESET)
+    if (STM32::PWR::get_EXTI_flag())
     {
         ///TODO: PVDCallback()
-        STM32_PWR::clear_EXTI_flag();
+        STM32::PWR::clear_EXTI_flag();
     }
 }

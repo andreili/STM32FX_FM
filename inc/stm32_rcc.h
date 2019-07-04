@@ -171,7 +171,7 @@ public:
                                                                               value << POSITION_VAL(RCC_CR_HSITRIM)); }
     ENDIS_REG_FLAG(LSI, RCC->CSR, RCC_CSR_LSION)
 
-    static inline void on_HSE() { BIT_BAND_PER(RCC->CR, RCC_CR_HSEON) = ENABLE; }
+    static inline void on_HSE() { BIT_BAND_PER(RCC->CR, RCC_CR_HSEON) = 1; }
     static inline void on_HSE_BYPASS() { RCC->CR |= (RCC_CR_HSEBYP | RCC_CR_HSEON); }
 		static inline bool HSE_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSERDY); }
     static inline void off_HSE() { RCC->CR &= ~(RCC_CR_HSEBYP | RCC_CR_HSEON); }
@@ -179,7 +179,7 @@ public:
 		
 		static inline bool HSI_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSIRDY); }
 
-    static inline void on_LSE() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_LSEON) = ENABLE; }
+    static inline void on_LSE() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_LSEON) = 1; }
     static inline void on_LSE_BYPASS() { RCC->BDCR |= (RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
     static inline void off_LSE() { RCC->BDCR &= ~(RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
     static void config_LSE(uint32_t state);
@@ -201,8 +201,8 @@ public:
     static inline void set_TIM_prescaler(uint32_t val) { MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_TIMPRE_Msk, val << RCC_DCKCFGR_TIMPRE_Pos); }
 #endif
 
-    static inline void force_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = ENABLE; }
-    static inline void release_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = DISABLE; }
+    static inline void force_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = 1; }
+    static inline void release_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = 0; }
 
     ENDIS_REG_FLAG(PLL, RCC->CR, RCC_CR_PLLON)
     static inline bool PLL_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_PLLRDY); }
@@ -434,9 +434,9 @@ public:
     PER_RESET_SLEEP(AHB1, GPIOK)
 #endif
     PER_RESET_SLEEP(AHB1, ETHMAC)
-    static inline void force_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = ENABLE; }
-    static inline void release_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = DISABLE; }
-    static inline void sleep_enable_OTGHS() { BIT_BAND_PER(RCC->AHB1LPENR, RCC_AHB1LPENR_OTGHSLPEN) = ENABLE; }
+    static inline void force_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 1; }
+    static inline void release_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 0; }
+    static inline void sleep_enable_OTGHS() { BIT_BAND_PER(RCC->AHB1LPENR, RCC_AHB1LPENR_OTGHSLPEN) = 1; }
     PER_RESET_SLEEP(AHB1, CRC)
     PER_RESET_SLEEP(AHB1, DMA1)
     PER_RESET_SLEEP(AHB1, DMA2)

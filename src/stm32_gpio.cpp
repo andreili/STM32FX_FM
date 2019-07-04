@@ -338,7 +338,7 @@ uint32_t STM32_GPIO::pin_lock(uint32_t pin)
         return STM32_RESULT_FAIL;
 }
 
-void STM32_GPIO::EXTI_IRQ_Handler(uint32_t pin)
+void STM32_GPIO::EXTI_IRQ_Handler(STM32::EXTI::ELine pin)
 {
     STM32_GPIO::EXTI_clear_IT(pin);
     EXTI_cb(pin);

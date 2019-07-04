@@ -178,15 +178,15 @@ public:
     inline void pin_toggle(uint32_t pin) { m_gpio->ODR ^= pin; }
     uint32_t pin_lock(uint32_t pin);
 
-    static inline bool EXTI_get_IT(uint32_t line) { return EXTI->PR & line; }
-    static inline void EXTI_clear_IT(uint32_t line) { EXTI->PR = line; }
-    static inline void EXTI_generate_swit(uint32_t line) { EXTI->SWIER |= line; }
-    static inline void EXTI_IRQ_Handler(uint32_t pin);
+    static inline bool EXTI_get_IT(STM32::EXTI::ELine line) { return STM32::EXTI::get_flag(line); }
+    static inline void EXTI_clear_IT(STM32::EXTI::ELine line) { STM32::EXTI::clear_flag(line); }
+    static inline void EXTI_generate_swit(STM32::EXTI::ELine line) { STM32::EXTI::generate_SWIT(line); }
+    static inline void EXTI_IRQ_Handler(STM32::EXTI::ELine pin);
 private:
     GPIO_TypeDef*   m_gpio;
 };
 
-void EXTI_cb(uint32_t pin);
+void EXTI_cb(STM32::EXTI::ELine pin);
 
 extern STM32_GPIO gpioa;
 extern STM32_GPIO gpiob;

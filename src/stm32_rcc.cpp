@@ -121,7 +121,7 @@ void STM32_RCC::init()
 {
     enable_clk_PWR();
     #if defined(STM32F4)
-    STM32_PWR::set_voltage_scaling_config(PWR_REGULATOR_VOLTAGE_SCALE1);
+    STM32::PWR::set_voltage_scaling_enabled(STM32::PWR::EVoltageScale::SCALE1);
     #endif
     if (config_osc() != STM32_RESULT_OK)
         Error_Handler();
@@ -275,7 +275,7 @@ void STM32_RCC::set_prescaler_RTC(uint32_t value)
     if ((value & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL)
         MODIFY_REG(RCC->CFGR, RCC_CFGR_RTCPRE, (value & 0xFFFFCFFU));
     else
-        BIT_BAND_PER(RCC->CFGR, RCC_CFGR_RTCPRE) = DISABLE;
+        BIT_BAND_PER(RCC->CFGR, RCC_CFGR_RTCPRE) = 0;
 }
 #endif
 
@@ -590,8 +590,8 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         enable_clk_PWR();
 
         /* Enable write access to Backup domain */
-        STM32_PWR::enable_backup_access();
-        WAIT_TIMEOUT(STM32_PWR::is_backup_acces_RO(), RCC_DBP_TIMEOUT_VALUE);
+        STM32::PWR::set_backup_access(true);
+        WAIT_TIMEOUT(STM32::PWR::is_backup_acces_RO(), RCC_DBP_TIMEOUT_VALUE);
 
         /* Reset the Backup domain only if the RTC Clock source selection is modified from reset value */
         tmpreg1 = (RCC->BDCR & RCC_BDCR_RTCSEL);

@@ -439,8 +439,8 @@ private:
 
     static ESDError is_card_programming(ECardState *status);
 
-    static inline void enable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = ENABLE; }
-    static inline void disable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = DISABLE; }
+    static inline void enable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = 1; }
+    static inline void disable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = 0; }
 
     static inline void power_state_ON() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = SDIO_POWER_PWRCTRL; }
     static inline void power_state_OFF() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = 0; }

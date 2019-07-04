@@ -1,6 +1,28 @@
 #ifndef BITBANDING_H
 #define BITBANDING_H
 
+constexpr uint32_t bit_num_from_value_cpp14(uint32_t val, uint32_t comp_val, uint32_t bit_num)
+{
+    return bit_num = (val == comp_val) ? bit_num : bit_num_from_value_cpp14(val, 2 * comp_val, bit_num + 1);
+}
+//#define	BIT_BAND_PER(reg, reg_val)	*(reinterpret_cast<volatile uint32_t *>(PERIPH_BB_BASE + 32 * (reinterpret_cast<uint32_t>(&(reg)) - PERIPH_BASE)
+//+ 4 * (bit_num_from_value_cpp14(static_cast<uint32_t>(reg_val), static_cast<uint32_t>(0x01), static_cast<uint32_t>(0)))))
+inline bool BBPER_RD(uint32_t reg, uint32_t bit_mask)
+{
+    return *(reinterpret_cast<volatile uint32_t *>(PERIPH_BB_BASE + 32 * (reinterpret_cast<uint32_t>(&(reg)) - PERIPH_BASE)
+                                                   + 4 * (bit_num_from_value_cpp14(static_cast<uint32_t>(bit_mask),
+                                                                                   static_cast<uint32_t>(0x01),
+                                                                                   static_cast<uint32_t>(0)))));
+}
+
+inline void BBPER_WR(uint32_t reg, uint32_t bit_mask, bool value)
+{
+    *(reinterpret_cast<volatile uint32_t *>(PERIPH_BB_BASE + 32 * (reinterpret_cast<uint32_t>(&(reg)) - PERIPH_BASE)
+                                            + 4 * (bit_num_from_value_cpp14(static_cast<uint32_t>(bit_mask),
+                                                                            static_cast<uint32_t>(0x01),
+                                                                            static_cast<uint32_t>(0))))) = value;
+}
+
 #define MASK_TO_BIT31(A)        (A==0x80000000)? 31U : 0
 #define MASK_TO_BIT30(A)        (A==0x40000000)? 30U : MASK_TO_BIT31(A)
 #define MASK_TO_BIT29(A)        (A==0x20000000)? 29U : MASK_TO_BIT30(A)

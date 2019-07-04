@@ -204,19 +204,6 @@ typedef enum
   SET = !RESET
 } FlagStatus, ITStatus;
 
-typedef enum 
-{
-  DISABLE = 0U, 
-  ENABLE = !DISABLE
-} FunctionalState;
-#define IS_FUNCTIONAL_STATE(STATE) (((STATE) == DISABLE) || ((STATE) == ENABLE))
-
-typedef enum 
-{
-  ERROR = 0U, 
-  SUCCESS = !ERROR
-} ErrorStatus;
-
 /**
   * @}
   */
@@ -245,10 +232,6 @@ typedef enum
 /**
   * @}
   */
-
-#if defined (USE_HAL_DRIVER)
- #include "stm32f4xx_hal.h"
-#endif /* USE_HAL_DRIVER */
 
 #endif /* __STM32F4xx_H */
 /**
