@@ -72,9 +72,9 @@ public:
     {
         return static_cast<ESectorNumber>(static_cast<uint32_t>(v1) + v2);
     }
-    friend ESectorNumber operator++(ESectorNumber v1)
+    friend ESectorNumber operator++(ESectorNumber& v1)
     {
-        return static_cast<ESectorNumber>(static_cast<uint32_t>(v1) + 1);
+        return (v1 = v1 + 1);
     }
     enum class ETypeErase
     {
@@ -127,14 +127,18 @@ private:
     private:
         union ACR_t
         {
-            uint32_t LATENCY    : 3;
-            uint32_t res0       : 5;
-            bool     PRFTEN     : 1;
-            bool     ICEN       : 1;
-            bool     DCEN       : 1;
-            bool     ICRST      : 1;
-            bool     DCRST      : 1;
-            uint32_t res1       :18;
+            struct
+            {
+                uint32_t LATENCY    : 3;
+                uint32_t res0       : 5;
+                bool     PRFTEN     : 1;
+                bool     ICEN       : 1;
+                bool     DCEN       : 1;
+                bool     ICRST      : 1;
+                bool     DCRST      : 1;
+                uint32_t res1       :18;
+            };
+            uint32_t RAW;
         };
     public:
         STM32_TYPE_FIELD_GET_SET(latency, FLASH_ACR_BASE, ACR_t, LATENCY, ELatency)
@@ -152,7 +156,7 @@ private:
             KEY1 = 0x45670123,
             KEY2 = 0xCDEF89AB,
         };
-        static inline void set(EKey val) { *reinterpret_cast<EKey*>(FLASH_KEYR_BASE) = val; }
+        static inline void set(EKey val) { *reinterpret_cast<volatile EKey*>(FLASH_KEYR_BASE) = val; }
     };
     class OPTKEYR
     {
@@ -162,23 +166,27 @@ private:
             KEY1 = 0x08192A3B,
             KEY2 = 0x4C5D6E7F,
         };
-        static inline void set(EKey val) { *reinterpret_cast<EKey*>(FLASH_OPTKEYR_BASE) = val; }
+        static inline void set(EKey val) { *reinterpret_cast<volatile EKey*>(FLASH_OPTKEYR_BASE) = val; }
     };
     class SR
     {
     private:
         union SR_t
         {
-            bool     EOP        : 1;
-            bool     OPERR      : 1;
-            uint32_t res0       : 2;
-            bool     WRPERR     : 1;
-            bool     PGAERR     : 1;
-            bool     PGPERR     : 1;
-            bool     PGSERR     : 1;
-            uint32_t res1       : 8;
-            bool     BSY        : 1;
-            uint32_t res2       :16;
+            struct
+            {
+                bool     EOP        : 1;
+                bool     OPERR      : 1;
+                uint32_t res0       : 2;
+                bool     WRPERR     : 1;
+                bool     PGAERR     : 1;
+                bool     PGPERR     : 1;
+                bool     PGSERR     : 1;
+                uint32_t res1       : 8;
+                bool     BSY        : 1;
+                uint32_t res2       :16;
+            };
+            uint32_t RAW;
         };
     public:
         STM32_BIT_FIELD_GET_SET(end_of_operation, FLASH_SR_BASE, SR_t, EOP)
@@ -187,26 +195,30 @@ private:
         STM32_BIT_FIELD_GET_SET(programming_alignment_error, FLASH_SR_BASE, SR_t, PGAERR)
         STM32_BIT_FIELD_GET_SET(programming_parallelism_error, FLASH_SR_BASE, SR_t, PGPERR)
         STM32_BIT_FIELD_GET_SET(programming_sequence_error, FLASH_SR_BASE, SR_t, PGSERR)
-        static inline bool is_busy() { return reinterpret_cast<SR_t*>(FLASH_SR_BASE)->BSY; }
+        static inline bool is_busy() { return reinterpret_cast<volatile SR_t*>(FLASH_SR_BASE)->BSY; }
     };
     class CR
     {
     private:
         union CR_t
         {
-            bool     PG         : 1;
-            bool     SER        : 1;
-            bool     MER        : 1;
-            uint32_t SNB        : 4;
-            uint32_t res0       : 1;
-            uint32_t PSIZE      : 2;
-            uint32_t res1       : 6;
-            bool     STRT       : 1;
-            uint32_t res2       : 7;
-            bool     EOPIE      : 1;
-            bool     ERRIE      : 1;
-            uint32_t res3       : 5;
-            bool     LOCK       : 1;
+            struct
+            {
+                bool     PG         : 1;
+                bool     SER        : 1;
+                bool     MER        : 1;
+                uint32_t SNB        : 4;
+                uint32_t res0       : 1;
+                uint32_t PSIZE      : 2;
+                uint32_t res1       : 6;
+                bool     STRT       : 1;
+                uint32_t res2       : 7;
+                bool     EOPIE      : 1;
+                bool     ERRIE      : 1;
+                uint32_t res3       : 5;
+                bool     LOCK       : 1;
+            };
+            uint32_t RAW;
         };
     public:
         STM32_BIT_FIELD_GET_SET(programming, FLASH_CR_BASE, CR_t, PG)

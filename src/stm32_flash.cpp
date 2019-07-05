@@ -1,4 +1,4 @@
-#include "stm32_flash.h"
+#include "stm32_flash.hpp"
 
 #define FLASH_TIMEOUT_VALUE       50000U /* 50 s */
 
