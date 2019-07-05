@@ -14,27 +14,6 @@ uint32_t          FLASH::m_address;
 FLASH::EError     FLASH::m_error_code;
 uint8_t           FLASH::m_lock = STM32_UNLOCKED;
 
-#define FLASH_SIZE_DATA_REGISTER     0x1FFFF7E0U
-#define OBR_REG_INDEX                1U
-#define SR_FLAG_MASK                 ((uint32_t)(FLASH_SR_BSY | FLASH_SR_PGERR | FLASH_SR_WRPRTERR | FLASH_SR_EOP))
- #define FLASH_FLAG_OPTVERR         ((OBR_REG_INDEX << 8U | FLASH_OBR_OPTERR)) /*!< Option Byte Error        */
-
-#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) ||\
-    defined(STM32F469xx) || defined(STM32F479xx)
-#define FLASH_BANK_1     1U /*!< Bank 1   */
-#define FLASH_BANK_2     2U /*!< Bank 2   */
-#define FLASH_BANK_BOTH  ((uint32_t)FLASH_BANK_1 | FLASH_BANK_2) /*!< Bank1 and Bank2  */
-#endif /* STM32F427xx || STM32F437xx || STM32F429xx|| STM32F439xx || STM32F469xx || STM32F479xx */
-
-#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx) ||\
-    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F410Tx) || defined(STM32F410Cx) ||\
-    defined(STM32F410Rx) || defined(STM32F411xE) || defined(STM32F446xx) || defined(STM32F412Zx) ||\
-    defined(STM32F412Vx) || defined(STM32F412Rx) || defined(STM32F412Cx) || defined(STM32F413xx) ||\
-    defined(STM32F423xx)
-#define FLASH_BANK_1     1U /*!< Bank 1   */
-#endif /* STM32F40xxx || STM32F41xxx || STM32F401xx || STM32F410xx || STM32F411xE || STM32F446xx || STM32F412Zx || STM32F412Vx || STM32F412Rx || STM32F412Cx
-          STM32F413xx || STM32F423xx */
-
 #if defined(STM32F4)
 void FLASH::reset_instruction_cache()
 {
