@@ -240,7 +240,7 @@ public:
     static bool get_flag(EFlag value);
 
     static uint32_t config_osc();
-    static uint32_t config_clock(uint8_t flash_latency);
+    static uint32_t config_clock();
     
     static inline uint32_t get_HCLK_freq() { return m_system_core_clock; }
     static uint32_t get_PCLK1_freq();

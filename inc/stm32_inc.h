@@ -13,7 +13,7 @@
 #endif
 
 #include "stm32_exti.hpp"
-#include "stm32_flash.h"
+#include "stm32_flash.hpp"
 #include "stm32_rcc.h"
 #include "stm32_gpio.hpp"
 #include "stm32_nvic.hpp"

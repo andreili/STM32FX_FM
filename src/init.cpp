@@ -100,13 +100,13 @@ void SystemInit()
     STM32_RCC::update_clock();
 
     #ifdef INSTRUCTION_CACHE_ENABLE
-    STM32_FLASH::enable_instruction_cache();
+    STM32::FLASH::set_instruction_cache_enable(true);
     #endif
     #ifdef DATA_CACHE_ENABLE
-    STM32_FLASH::enable_data_cache();
+    STM32::FLASH::set_data_cache_enable(true);
     #endif
     #ifdef PREFETCH_ENABLE
-    STM32_FLASH::enable_prefetch_buffer();
+    STM32::FLASH::set_prefetch_enable(true);
     #endif
 
     STM32::NVIC::init();

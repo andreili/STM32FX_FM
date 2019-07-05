@@ -126,15 +126,15 @@ void STM32_RCC::init()
     if (config_osc() != STM32_RESULT_OK)
         Error_Handler();
     #if defined(STM32F1)
-    #if defined(FLASH_ACR_LATENCY)
-    if (config_clock(FLASH_ACR_LATENCY) != STM32_RESULT_OK)
+    #if defined(STM32_FLASH_LAT)
+    if (config_clock()) != STM32_RESULT_OK)
         Error_Handler();
-    #else // FLASH_ACR_LATENCY
-    if (config_clock(0) != STM32_RESULT_OK)
+    #else // STM32_FLASH_LAT
+    if (config_clock() != STM32_RESULT_OK)
         Error_Handler();
     #endif // FLASH_ACR_LATENCY
     #else
-    if (config_clock(FLASH_ACR_LATENCY_5WS) != STM32_RESULT_OK)
+    if (config_clock() != STM32_RESULT_OK)
         Error_Handler();
     #endif
 
@@ -365,17 +365,15 @@ uint32_t STM32_RCC::config_osc()
     return STM32_RESULT_OK;
 }
 
-uint32_t STM32_RCC::config_clock(uint8_t flash_latency)
+uint32_t STM32_RCC::config_clock()
 {
-    #if defined(FLASH_ACR_LATENCY)
-    if (flash_latency > STM32_FLASH::get_latency())
+    #if defined(STM32_FLASH_LAT)
+    if (STM32_FLASH_LAT > STM32::FLASH::get_latency())
     {
-        STM32_FLASH::set_latency(flash_latency);
-        if (STM32_FLASH::get_latency() != flash_latency)
+        STM32::FLASH::set_latency(STM32_FLASH_LAT);
+        if (STM32::FLASH::get_latency() != STM32_FLASH_LAT)
             return STM32_RESULT_FAIL;
     }
-    else
-    (void)(flash_latency);
     #endif
 
     if ((STM32_CLOCK_TYPE & EClockType::HCLK) == EClockType::HCLK)
@@ -414,11 +412,11 @@ uint32_t STM32_RCC::config_clock(uint8_t flash_latency)
         }
     }
 
-    #if defined(FLASH_ACR_LATENCY)
-    if (flash_latency < STM32_FLASH::get_latency())
+    #if defined(STM32_FLASH_LAT)
+    if (STM32_FLASH_LAT < STM32::FLASH::get_latency())
     {
-        STM32_FLASH::set_latency(flash_latency);
-        if (STM32_FLASH::get_latency() != flash_latency)
+        STM32::FLASH::set_latency(STM32_FLASH_LAT);
+        if (STM32::FLASH::get_latency() != STM32_FLASH_LAT)
             return STM32_RESULT_FAIL;
     }
     #endif
