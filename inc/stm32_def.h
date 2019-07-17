@@ -56,23 +56,23 @@ extern uint32_t unused_reg;
     inline void disable_ ## name() { reg &= ~mask; }
 
 #define CLK_ENDIS(enr, name) \
-    ENDIS_REG_FLAG(clk_ ## name, RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## name ## EN) \
-    static inline bool check_enable_clk_ ## name() { return BIT_BAND_PER(RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## name ## EN); }
+    ENDIS_REG_FLAG(clk_ ## name, RCC_->enr ## ENR, RCC_ ## enr ## ENR_ ## name ## EN) \
+    static inline bool check_enable_clk_ ## name() { return BIT_BAND_PER(RCC_->enr ## ENR, RCC_ ## enr ## ENR_ ## name ## EN); }
 #define CLK_ENDIS_EX(enr, name, bit_name) \
-    ENDIS_REG_FLAG(clk_ ## name, RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## bit_name ## EN) \
-    static inline bool check_enable_clk_ ## name() { return BIT_BAND_PER(RCC->enr ## ENR, RCC_ ## enr ## ENR_ ## bit_name ## EN); }
+    ENDIS_REG_FLAG(clk_ ## name, RCC_->enr ## ENR, RCC_ ## enr ## ENR_ ## bit_name ## EN) \
+    static inline bool check_enable_clk_ ## name() { return BIT_BAND_PER(RCC_->enr ## ENR, RCC_ ## enr ## ENR_ ## bit_name ## EN); }
 
 #define PER_RESET_SLEEP(enr, name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; } \
-    static inline void sleep_enable_ ## name() { BIT_BAND_PER(RCC-> enr ## LPENR, RCC_ ## enr ## LPENR_ ## name ## LPEN) = 1; }
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; } \
+    static inline void sleep_enable_ ## name() { BIT_BAND_PER(RCC_-> enr ## LPENR, RCC_ ## enr ## LPENR_ ## name ## LPEN) = 1; }
 
 #define PER_RESET(enr, name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; }
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## name ## RST) = 0; }
 #define PER_RESET_EX(enr, name, bit_name) \
-    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 1; } \
-    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 0; }
+    static inline void force_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 1; } \
+    static inline void release_reset_ ## name() { BIT_BAND_PER(RCC_-> enr ## RSTR, RCC_ ## enr ## RSTR_ ## bit_name ## RST) = 0; }
 
 #define WAIT_TIMEOUT(condition, timeout) \
     { \

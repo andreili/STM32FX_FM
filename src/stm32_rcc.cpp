@@ -155,26 +155,26 @@ void STM32_RCC::deinit_cold()
 {
     /* Reset the RCC clock configuration to the default reset state ------------*/
     /* Set HSION bit */
-    RCC->CR |= RCC_CR_HSION;
+    RCC_->CR |= RCC_CR_HSION;
     /* Reset CFGR register */
-    RCC->CFGR = 0;
+    RCC_->CFGR = 0;
     /* Reset HSEON, CSSON and PLLON bits */
-    RCC->CR &= ~(RCC_CR_PLLON | RCC_CR_CSSON | RCC_CR_HSEON);
+    RCC_->CR &= ~(RCC_CR_PLLON | RCC_CR_CSSON | RCC_CR_HSEON);
     /* Reset PLLCFGR register */
-    RCC->PLLCFGR = ((1 << 29) | RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLM_4);
+    RCC_->PLLCFGR = ((1 << 29) | RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLM_4);
     /* Reset HSEBYP bit */
-    RCC->CR &= ~(RCC_CR_HSEBYP);
+    RCC_->CR &= ~(RCC_CR_HSEBYP);
     /* Disable all interrupts */
-    RCC->CIR = 0;
+    RCC_->CIR = 0;
 }
 
 uint32_t STM32_RCC::deinit()
 {
     m_system_core_clock = HSI_VALUE;
     #if defined (STM32F4)
-    RCC->CR |= RCC_CR_HSION | RCC_CR_HSITRIM_4;
+    RCC_->CR |= RCC_CR_HSION | RCC_CR_HSITRIM_4;
     #elif defined(STM32F1)
-    RCC->CR |= RCC_CR_HSION;
+    RCC_->CR |= RCC_CR_HSION;
     #endif
     // wait till HSI is ready
     WAIT_TIMEOUT(!HSI_ready(), HSI_TIMEOUT_VALUE);
@@ -183,32 +183,32 @@ uint32_t STM32_RCC::deinit()
     #endif
 
     // Reset CFGR register
-    RCC->CFGR = 0;
+    RCC_->CFGR = 0;
     WAIT_TIMEOUT((get_source_SYSCLK() != RESET), HSI_TIMEOUT_VALUE);
 
     m_system_core_clock = HSI_VALUE;
 
-    RCC->CR &= ~(RCC_CR_PLLON
+    RCC_->CR &= ~(RCC_CR_PLLON
 			#if defined (STM32F4)
 			| RCC_CR_PLLI2SON);
 			#else
 			);
 			#endif
     WAIT_TIMEOUT((PLL_ready() != RESET), PLL_TIMEOUT_VALUE);
-    RCC->CFGR = 0;
+    RCC_->CFGR = 0;
 
-    RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_CSSON);
+    RCC_->CR &= ~(RCC_CR_HSEON | RCC_CR_CSSON);
     WAIT_TIMEOUT((HSE_ready() != RESET), HSE_TIMEOUT_VALUE);
 
     #if defined (STM32F4)
-    RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
+    RCC_->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
     
-    RCC->PLLI2SCFGR = RCC_PLLI2SCFGR_PLLI2SN_6 | RCC_PLLI2SCFGR_PLLI2SN_7 | RCC_PLLI2SCFGR_PLLI2SR_1;
+    RCC_->PLLI2SCFGR = RCC_PLLI2SCFGR_PLLI2SN_6 | RCC_PLLI2SCFGR_PLLI2SN_7 | RCC_PLLI2SCFGR_PLLI2SR_1;
     #endif // ST<32F4
 
-    CLEAR_BIT(RCC->CR, RCC_CR_HSEBYP);
-    SET_BIT(RCC->CSR, RCC_CSR_RMVF);
-    RCC->CIR = 0;
+    CLEAR_BIT(RCC_->CR, RCC_CR_HSEBYP);
+    SET_BIT(RCC_->CSR, RCC_CSR_RMVF);
+    RCC_->CIR = 0;
 
     m_system_core_clock = update_system_core_clock();
 
@@ -218,23 +218,23 @@ uint32_t STM32_RCC::deinit()
 void STM32_RCC::deinit_per()
 {
     //Peripheral reset enable (не трогаем reserved bits)
-    RCC->AHB1RSTR = 0x22E017FF;
-    RCC->AHB2RSTR = 0x000000F1;
-    RCC->AHB3RSTR = 0x00000001;
-    RCC->APB1RSTR = 0xF6FEC9FF;
-    RCC->APB2RSTR = 0x04777933;
+    RCC_->AHB1RSTR = 0x22E017FF;
+    RCC_->AHB2RSTR = 0x000000F1;
+    RCC_->AHB3RSTR = 0x00000001;
+    RCC_->APB1RSTR = 0xF6FEC9FF;
+    RCC_->APB2RSTR = 0x04777933;
     //Peripheral  reset disable
-    RCC->AHB1RSTR = 0;
-    RCC->AHB2RSTR = 0;
-    RCC->AHB3RSTR = 0;
-    RCC->APB1RSTR = 0;
-    RCC->APB2RSTR = 0;
+    RCC_->AHB1RSTR = 0;
+    RCC_->AHB2RSTR = 0;
+    RCC_->AHB3RSTR = 0;
+    RCC_->APB1RSTR = 0;
+    RCC_->APB2RSTR = 0;
     //Peripheral  disable clock
-    RCC->AHB1ENR = 0x00100000;
-    RCC->AHB2ENR = 0;
-    RCC->AHB3ENR = 0;
-    RCC->APB1ENR = 0;
-    RCC->APB2ENR = 0;
+    RCC_->AHB1ENR = 0x00100000;
+    RCC_->AHB2ENR = 0;
+    RCC_->AHB3ENR = 0;
+    RCC_->APB1ENR = 0;
+    RCC_->APB2ENR = 0;
 }
 
 void STM32_RCC::config_HSE(uint32_t state)
@@ -273,9 +273,9 @@ void STM32_RCC::config_LSE(uint32_t state)
 void STM32_RCC::set_prescaler_RTC(uint32_t value)
 {
     if ((value & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL)
-        MODIFY_REG(RCC->CFGR, RCC_CFGR_RTCPRE, (value & 0xFFFFCFFU));
+        MODIFY_REG(RCC_->CFGR, RCC_CFGR_RTCPRE, (value & 0xFFFFCFFU));
     else
-        BIT_BAND_PER(RCC->CFGR, RCC_CFGR_RTCPRE) = 0;
+        BIT_BAND_PER(RCC_->CFGR, RCC_CFGR_RTCPRE) = 0;
 }
 #endif
 
@@ -284,12 +284,12 @@ void STM32_RCC::set_config_RTC(uint32_t value)
 		#ifdef STM32F4
     set_prescaler_RTC(value);
 		#endif
-		RCC->BDCR |= value & RCC_BDCR_RTCSEL;
+        RCC_->BDCR |= value & RCC_BDCR_RTCSEL;
 }
 
 uint32_t STM32_RCC::get_PCLK1_freq()
 {
-    return (get_HCLK_freq() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE1) >> POSITION_VAL(RCC_CFGR_PPRE1)]);
+    return (get_HCLK_freq() >> APBAHBPrescTable[(RCC_->CFGR & RCC_CFGR_PPRE1) >> POSITION_VAL(RCC_CFGR_PPRE1)]);
 }
 
 uint32_t STM32_RCC::config_osc()
@@ -378,7 +378,7 @@ uint32_t STM32_RCC::config_clock()
 
     if ((STM32_CLOCK_TYPE & EClockType::HCLK) == EClockType::HCLK)
     {
-        MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, STM32_CLOCK_AHB_DIV);
+        MODIFY_REG(RCC_->CFGR, RCC_CFGR_HPRE, STM32_CLOCK_AHB_DIV);
     }
 
     if ((STM32_CLOCK_TYPE & EClockType::SYSCLK) == EClockType::SYSCLK)
@@ -423,12 +423,12 @@ uint32_t STM32_RCC::config_clock()
 
     if ((STM32_CLOCK_TYPE & EClockType::PCLK1) == EClockType::PCLK1)
     {
-        MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, STM32_CLOCK_APB1_DIV);
+        MODIFY_REG(RCC_->CFGR, RCC_CFGR_PPRE1, STM32_CLOCK_APB1_DIV);
     }
 
     if ((STM32_CLOCK_TYPE & EClockType::PCLK2) == EClockType::PCLK2)
     {
-        MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, STM32_CLOCK_APB2_DIV);
+        MODIFY_REG(RCC_->CFGR, RCC_CFGR_PPRE2, STM32_CLOCK_APB2_DIV);
     }
 
     update_clock();
@@ -442,16 +442,16 @@ bool STM32_RCC::get_flag(EFlag value)
     switch (static_cast<uint32_t>(value) >> 5U)
     {
     case 0x01U:
-        reg = RCC->CR;
+        reg = RCC_->CR;
         break;
     case 0x02U:
-        reg = RCC->BDCR;
+        reg = RCC_->BDCR;
         break;
     case 0x03U:
-        reg = RCC->CSR;
+        reg = RCC_->CSR;
         break;
     default:
-        reg = RCC->CIR;
+        reg = RCC_->CIR;
         break;
     }
     return (reg & (0x01U << (static_cast<uint32_t>(value) & static_cast<uint32_t>(EFlag::MASK))));
@@ -459,7 +459,7 @@ bool STM32_RCC::get_flag(EFlag value)
 
 uint32_t STM32_RCC::get_PCLK2_freq()
 {
-    return (get_HCLK_freq() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE2) >> POSITION_VAL(RCC_CFGR_PPRE2)]);
+    return (get_HCLK_freq() >> APBAHBPrescTable[(RCC_->CFGR & RCC_CFGR_PPRE2) >> POSITION_VAL(RCC_CFGR_PPRE2)]);
 }
 
 void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t RCC_MCODiv)
@@ -470,10 +470,10 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
 				#if defined(STM3F1)
 				UNUSED(RCC_MCODiv);
                 MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, 0, STM32_GPIO::ESpeed::HIGH, STM32_GPIO::EPull::NOPULL);
-        MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, RCC_MCOSource);
+        MODIFY_REG(RCC_->CFGR, RCC_CFGR_MCO, RCC_MCOSource);
 				#elif defined(STM32F4)
         MCO1_GPIO_PORT.set_config(MCO1_PIN, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
-        MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
+        MODIFY_REG(RCC_->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (RCC_MCOSource | RCC_MCODiv));
 				#endif
     }
     #ifdef RCC_CFGR_MCO2
@@ -481,7 +481,7 @@ void STM32_RCC::config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t R
     {
         __MCO2_CLK_ENABLE();
         MCO2_GPIO_PORT.set_config(MCO2_PIN, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF0_MCO, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
-        MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (RCC_MCOSource | RCC_MCODiv));
+        MODIFY_REG(RCC_->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (RCC_MCOSource | RCC_MCODiv));
     }
     #endif
 }
@@ -518,7 +518,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         if ((sources->selector & RCC_PERIPHCLK_SAI_PLLI2S) == RCC_PERIPHCLK_SAI_PLLI2S)
         {
             /* Read PLLI2SR value from PLLI2SCFGR register (this value is not need for SAI configuration) */
-            tmpreg1 = ((RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SR) >> POSITION_VAL(RCC_PLLI2SCFGR_PLLI2SR));
+            tmpreg1 = ((RCC_->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SR) >> POSITION_VAL(RCC_PLLI2SCFGR_PLLI2SR));
             /* Configure the PLLI2S division factors */
             /* PLLI2S_VCO Input  = PLL_SOURCE/PLLM */
             /* PLLI2S_VCO Output = PLLI2S_VCO Input * PLLI2SN */
@@ -553,7 +553,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         if ((sources->selector & RCC_PERIPHCLK_SAI_PLLSAI) == RCC_PERIPHCLK_SAI_PLLSAI)
         {
             /* Read PLLSAIR value from PLLSAICFGR register (this value is not need for SAI configuration) */
-            tmpreg1 = ((RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIR) >> POSITION_VAL(RCC_PLLSAICFGR_PLLSAIR));
+            tmpreg1 = ((RCC_->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIR) >> POSITION_VAL(RCC_PLLSAICFGR_PLLSAIR));
             /* PLLSAI_VCO Input  = PLL_SOURCE/PLLM */
             /* PLLSAI_VCO Output = PLLSAI_VCO Input * PLLSAIN */
             /* SAI_CLK(first level) = PLLSAI_VCO Output/PLLSAIQ */
@@ -566,7 +566,7 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         if (((sources->selector) & RCC_PERIPHCLK_LTDC) == (RCC_PERIPHCLK_LTDC))
         {
             /* Read PLLSAIR value from PLLSAICFGR register (this value is not need for SAI configuration) */
-            tmpreg1 = ((RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIQ) >> POSITION_VAL(RCC_PLLSAICFGR_PLLSAIQ));
+            tmpreg1 = ((RCC_->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIQ) >> POSITION_VAL(RCC_PLLSAICFGR_PLLSAIQ));
             /* PLLSAI_VCO Input  = PLL_SOURCE/PLLM */
             /* PLLSAI_VCO Output = PLLSAI_VCO Input * PLLSAIN */
             /* LTDC_CLK(first level) = PLLSAI_VCO Output/PLLSAIR */
@@ -592,20 +592,20 @@ uint32_t STM32_RCC::periph_CLK_config(RCC_Periph_Clock_Source *sources)
         WAIT_TIMEOUT(STM32::PWR::is_backup_acces_RO(), RCC_DBP_TIMEOUT_VALUE);
 
         /* Reset the Backup domain only if the RTC Clock source selection is modified from reset value */
-        tmpreg1 = (RCC->BDCR & RCC_BDCR_RTCSEL);
+        tmpreg1 = (RCC_->BDCR & RCC_BDCR_RTCSEL);
         if ((tmpreg1 != 0x00000000U) &&
             (tmpreg1 != (sources->RTCClockSelection & RCC_BDCR_RTCSEL)))
         {
             /* Store the content of BDCR register before the reset of Backup Domain */
-            tmpreg1 = (RCC->BDCR & ~(RCC_BDCR_RTCSEL));
+            tmpreg1 = (RCC_->BDCR & ~(RCC_BDCR_RTCSEL));
             /* RTC Clock selection can be changed only if the Backup Domain is reset */
             force_reset_backup();
             release_reset_backup();
             /* Restore the Content of BDCR register */
-            RCC->BDCR = tmpreg1;
+            RCC_->BDCR = tmpreg1;
 
             /* Wait for LSE reactivation if LSE was enable prior to Backup Domain reset */
-            if ((RCC->BDCR & RCC_BDCR_LSEON) == RCC_BDCR_LSEON)
+            if ((RCC_->BDCR & RCC_BDCR_LSEON) == RCC_BDCR_LSEON)
             {
                 /* Wait till LSE is ready */
                 WAIT_TIMEOUT(get_flag(EFlag::LSERDY) == RESET, LSE_TIMEOUT_VALUE);
@@ -638,7 +638,7 @@ uint32_t STM32_RCC::update_system_core_clock()
     uint32_t sysclockfreq = 0U;
 
     /* Get SYSCLK source -------------------------------------------------------*/
-    tmp = RCC->CFGR & RCC_CFGR_SWS;
+    tmp = RCC_->CFGR & RCC_CFGR_SWS;
 
     switch (tmp)
     {
@@ -651,22 +651,22 @@ uint32_t STM32_RCC::update_system_core_clock()
     case RCC_CFGR_SWS_PLL:  /* PLL used as system clock source */
         #if defined(STM32F1)
         pllsource = get_source_PLL_OSC() >> 22;
-        pllm = aPLLMULFactorTable[(RCC->CFGR & RCC_CFGR_PLLMULL >> RCC_CFGR_PLLMULL_Pos)];
+        pllm = aPLLMULFactorTable[(RCC_->CFGR & RCC_CFGR_PLLMULL >> RCC_CFGR_PLLMULL_Pos)];
         if (get_source_PLL_OSC() != RCC_PLLSOURCE_HSI_DIV2)
         {
             #if defined(RCC_CFGR2_PREDIV1)
-            prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR2 & RCC_CFGR2_PREDIV1) >> RCC_CFGR2_PREDIV1_Pos];
+            prediv = aPredivFactorTable[(uint32_t)(RCC_->CFGR2 & RCC_CFGR2_PREDIV1) >> RCC_CFGR2_PREDIV1_Pos];
             #else
-            prediv = aPredivFactorTable[(uint32_t)(RCC->CFGR & RCC_CFGR_PLLXTPRE) >> RCC_CFGR_PLLXTPRE_Pos];
+            prediv = aPredivFactorTable[(uint32_t)(RCC_->CFGR & RCC_CFGR_PLLXTPRE) >> RCC_CFGR_PLLXTPRE_Pos];
             #endif /*RCC_CFGR2_PREDIV1*/
 
             #if defined(RCC_CFGR2_PREDIV1SRC)
-            if(HAL_IS_BIT_SET(RCC->CFGR2, RCC_CFGR2_PREDIV1SRC))
+            if(HAL_IS_BIT_SET(RCC_->CFGR2, RCC_CFGR2_PREDIV1SRC))
             {
                     /* PLL2 selected as Prediv1 source */
                     /* PLLCLK = PLL2CLK / PREDIV1 * PLLMUL with PLL2CLK = HSE/PREDIV2 * PLL2MUL */
-                    prediv2 = ((RCC->CFGR2 & RCC_CFGR2_PREDIV2) >> RCC_CFGR2_PREDIV2_Pos) + 1;
-                    pll2mul = ((RCC->CFGR2 & RCC_CFGR2_PLL2MUL) >> RCC_CFGR2_PLL2MUL_Pos) + 2;
+                    prediv2 = ((RCC_->CFGR2 & RCC_CFGR2_PREDIV2) >> RCC_CFGR2_PREDIV2_Pos) + 1;
+                    pll2mul = ((RCC_->CFGR2 & RCC_CFGR2_PLL2MUL) >> RCC_CFGR2_PLL2MUL_Pos) + 2;
                     pllclk = (uint32_t)(((uint64_t)HSE_VALUE * (uint64_t)pll2mul * (uint64_t)pllmul) / ((uint64_t)prediv2 * (uint64_t)prediv));
             }
             else
@@ -691,18 +691,18 @@ uint32_t STM32_RCC::update_system_core_clock()
         }
         #elif defined(STM32F4)
         pllsource = get_source_PLL_OSC() >> 22;
-        pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
+        pllm = RCC_->PLLCFGR & RCC_PLLCFGR_PLLM;
         if (pllsource != 0)
         {
             /* HSE used as PLL clock source */
-            pllvco = (HSE_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
+            pllvco = (HSE_VALUE / pllm) * ((RCC_->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
         }
         else
         {
             /* HSI used as PLL clock source */
-            pllvco = (HSI_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
+            pllvco = (HSI_VALUE / pllm) * ((RCC_->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
         }
-        pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >>16) + 1 ) *2;
+        pllp = (((RCC_->PLLCFGR & RCC_PLLCFGR_PLLP) >>16) + 1 ) *2;
         sysclockfreq = pllvco/pllp;
 				#endif
         break;
@@ -712,7 +712,7 @@ uint32_t STM32_RCC::update_system_core_clock()
     }
     /* Compute HCLK frequency --------------------------------------------------*/
     /* Get HCLK prescaler */
-    tmp = AHBPrescTable[((RCC->CFGR & RCC_CFGR_HPRE) >> 4)];
+    tmp = AHBPrescTable[((RCC_->CFGR & RCC_CFGR_HPRE) >> 4)];
     /* HCLK frequency */
     sysclockfreq >>= tmp;
 
@@ -729,5 +729,5 @@ __attribute__((weak)) void ISR::RCC_IRQ()
 
 void STM32_RCC::update_clock()
 {
-    m_system_core_clock = update_system_core_clock() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_HPRE)>> RCC_CFGR_HPRE_Pos];
+    m_system_core_clock = update_system_core_clock() >> APBAHBPrescTable[(RCC_->CFGR & RCC_CFGR_HPRE)>> RCC_CFGR_HPRE_Pos];
 }

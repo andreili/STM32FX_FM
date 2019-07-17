@@ -81,7 +81,7 @@ void STM32_UART::init(uint32_t brate)
         #elif defined(STM32F4)
         gpioa.set_config(STM32_GPIO::PIN_9|STM32_GPIO::PIN_10, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB2ENR, RCC_APB2ENR_USART1EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART2
@@ -94,7 +94,7 @@ void STM32_UART::init(uint32_t brate)
         #elif defined(STM32F4)
         gpioa.set_config(STM32_GPIO::PIN_2|STM32_GPIO::PIN_3, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART1, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
         #endif
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART2EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_USART2EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART3
@@ -102,17 +102,17 @@ void STM32_UART::init(uint32_t brate)
         STM32_RCC::enable_clk_USART3();
         STM32_RCC::enable_clk_GPIOB();
         gpiob.set_config(STM32_GPIO::PIN_10|STM32_GPIO::PIN_11, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF7_USART3, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = 1;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_USART3EN) = 1;
         break;
     #endif
     #ifdef STM32_USE_UART4
     case UART4_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART4EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART5
     case UART5_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART5EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART6
@@ -120,17 +120,17 @@ void STM32_UART::init(uint32_t brate)
         STM32_RCC::enable_clk_USART6();
         STM32_RCC::enable_clk_GPIOC();
         gpioc.set_config(STM32_GPIO::PIN_6|STM32_GPIO::PIN_7, STM32_GPIO::EMode::AF_PP, STM32_GPIO::EAF::AF8_USART6, STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::PULLUP);
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB2ENR, RCC_APB2ENR_USART6EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART7
     case UART7_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART7EN) = ENABLE;
         break;
     #endif
     #ifdef STM32_USE_UART8
     case UART8_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART8EN) = ENABLE;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART8EN) = ENABLE;
         break;
     #endif
     }
@@ -155,37 +155,37 @@ void STM32_UART::deinit()
     switch (reinterpret_cast<uint32_t>(m_uart))
     {
     case USART1_BASE:
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART1EN) = 0;
+        BIT_BAND_PER(RCC_->APB2ENR, RCC_APB2ENR_USART1EN) = 0;
         break;
     case USART2_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART2EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_USART2EN) = 0;
         break;
     case USART3_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_USART3EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_USART3EN) = 0;
         break;
         #ifdef UART4_BASE
     case UART4_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART4EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART4EN) = 0;
         break;
         #endif
         #ifdef UART5_BASE
     case UART5_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART5EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART5EN) = 0;
         break;
         #endif
         #ifdef UART6_BASE
     case USART6_BASE:
-        BIT_BAND_PER(RCC->APB2ENR, RCC_APB2ENR_USART6EN) = 0;
+        BIT_BAND_PER(RCC_->APB2ENR, RCC_APB2ENR_USART6EN) = 0;
         break;
         #endif
 #ifdef UART7_BASE
     case UART7_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART7EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART7EN) = 0;
         break;
 #endif
 #ifdef UART8_BASE
     case UART8_BASE:
-        BIT_BAND_PER(RCC->APB1ENR, RCC_APB1ENR_UART8EN) = 0;
+        BIT_BAND_PER(RCC_->APB1ENR, RCC_APB1ENR_UART8EN) = 0;
         break;
 #endif
     }

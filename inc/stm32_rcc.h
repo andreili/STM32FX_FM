@@ -166,76 +166,76 @@ public:
     static uint32_t deinit();
     static void deinit_per();
 
-    ENDIS_REG_FLAG(HSI, RCC->CR, RCC_CR_HSION)
-    static inline void set_calibration_value_HSI(uint32_t value) { MODIFY_REG(RCC->CR, RCC_CR_HSITRIM,
+    ENDIS_REG_FLAG(HSI, RCC_->CR, RCC_CR_HSION)
+    static inline void set_calibration_value_HSI(uint32_t value) { MODIFY_REG(RCC_->CR, RCC_CR_HSITRIM,
                                                                               value << POSITION_VAL(RCC_CR_HSITRIM)); }
-    ENDIS_REG_FLAG(LSI, RCC->CSR, RCC_CSR_LSION)
+    ENDIS_REG_FLAG(LSI, RCC_->CSR, RCC_CSR_LSION)
 
-    static inline void on_HSE() { BIT_BAND_PER(RCC->CR, RCC_CR_HSEON) = 1; }
-    static inline void on_HSE_BYPASS() { RCC->CR |= (RCC_CR_HSEBYP | RCC_CR_HSEON); }
-		static inline bool HSE_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSERDY); }
-    static inline void off_HSE() { RCC->CR &= ~(RCC_CR_HSEBYP | RCC_CR_HSEON); }
+    static inline void on_HSE() { BIT_BAND_PER(RCC_->CR, RCC_CR_HSEON) = 1; }
+    static inline void on_HSE_BYPASS() { RCC_->CR |= (RCC_CR_HSEBYP | RCC_CR_HSEON); }
+        static inline bool HSE_ready() { return BIT_BAND_PER(RCC_->CR, RCC_CR_HSERDY); }
+    static inline void off_HSE() { RCC_->CR &= ~(RCC_CR_HSEBYP | RCC_CR_HSEON); }
     static void config_HSE(uint32_t state);
 		
-		static inline bool HSI_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_HSIRDY); }
+        static inline bool HSI_ready() { return BIT_BAND_PER(RCC_->CR, RCC_CR_HSIRDY); }
 
-    static inline void on_LSE() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_LSEON) = 1; }
-    static inline void on_LSE_BYPASS() { RCC->BDCR |= (RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
-    static inline void off_LSE() { RCC->BDCR &= ~(RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
+    static inline void on_LSE() { BIT_BAND_PER(RCC_->BDCR, RCC_BDCR_LSEON) = 1; }
+    static inline void on_LSE_BYPASS() { RCC_->BDCR |= (RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
+    static inline void off_LSE() { RCC_->BDCR &= ~(RCC_BDCR_LSEBYP | RCC_BDCR_LSEON); }
     static void config_LSE(uint32_t state);
 
-    ENDIS_REG_FLAG(RTC, RCC->BDCR, RCC_BDCR_RTCEN)
-    static inline bool get_enabled_RTC() { return ((RCC->BDCR & RCC_BDCR_RTCEN) == RCC_BDCR_RTCEN); }
+    ENDIS_REG_FLAG(RTC, RCC_->BDCR, RCC_BDCR_RTCEN)
+    static inline bool get_enabled_RTC() { return ((RCC_->BDCR & RCC_BDCR_RTCEN) == RCC_BDCR_RTCEN); }
     #ifdef STM32F4
     static void set_prescaler_RTC(uint32_t value);
-    static inline uint32_t get_prescaler_RTC() { return RCC->CFGR & (RCC_CFGR_RTCPRE | RCC_BDCR_RTCSEL); }
+    static inline uint32_t get_prescaler_RTC() { return RCC_->CFGR & (RCC_CFGR_RTCPRE | RCC_BDCR_RTCSEL); }
     #endif
     static void set_config_RTC(uint32_t value);
-    static inline uint32_t get_RTC_source() { return RCC->BDCR & RCC_BDCR_RTCSEL; }
+    static inline uint32_t get_RTC_source() { return RCC_->BDCR & RCC_BDCR_RTCSEL; }
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F410Tx) || defined(STM32F410Cx) ||\
     defined(STM32F410Rx) || defined(STM32F411xE) || defined(STM32F446xx) || defined(STM32F469xx) ||\
     defined(STM32F479xx) || defined(STM32F412Zx) || defined(STM32F412Vx) || defined(STM32F412Rx) ||\
     defined(STM32F412Cx) || defined(STM32F413xx) || defined(STM32F423xx)
-    static inline void set_TIM_prescaler(uint32_t val) { MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_TIMPRE_Msk, val << RCC_DCKCFGR_TIMPRE_Pos); }
+    static inline void set_TIM_prescaler(uint32_t val) { MODIFY_REG(RCC_->DCKCFGR, RCC_DCKCFGR_TIMPRE_Msk, val << RCC_DCKCFGR_TIMPRE_Pos); }
 #endif
 
-    static inline void force_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = 1; }
-    static inline void release_reset_backup() { BIT_BAND_PER(RCC->BDCR, RCC_BDCR_BDRST) = 0; }
+    static inline void force_reset_backup() { BIT_BAND_PER(RCC_->BDCR, RCC_BDCR_BDRST) = 1; }
+    static inline void release_reset_backup() { BIT_BAND_PER(RCC_->BDCR, RCC_BDCR_BDRST) = 0; }
 
-    ENDIS_REG_FLAG(PLL, RCC->CR, RCC_CR_PLLON)
-    static inline bool PLL_ready() { return BIT_BAND_PER(RCC->CR, RCC_CR_PLLRDY); }
+    ENDIS_REG_FLAG(PLL, RCC_->CR, RCC_CR_PLLON)
+    static inline bool PLL_ready() { return BIT_BAND_PER(RCC_->CR, RCC_CR_PLLRDY); }
     #if defined(STM32F1)
-    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC->CFGR, value); }
-    static inline uint32_t get_source_PLL_OSC() { return RCC->CFGR & RCC_CFGR_PLLSRC; }
-    static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC->CFGR, RCC_CFGR_PLLMULL, value); }
+    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC_->CFGR, value); }
+    static inline uint32_t get_source_PLL_OSC() { return RCC_->CFGR & RCC_CFGR_PLLSRC; }
+    static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC_->CFGR, RCC_CFGR_PLLMULL, value); }
     #elif defined(STM32F4)
-    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC->PLLCFGR, value); }
-    static inline uint32_t get_source_PLL_OSC() { return RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC; }
-    static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM, value); }
+    static inline void set_config_PLL_source(uint32_t value) { WRITE_REG(RCC_->PLLCFGR, value); }
+    static inline uint32_t get_source_PLL_OSC() { return RCC_->PLLCFGR & RCC_PLLCFGR_PLLSRC; }
+    static inline void set_config_PLL_PLLM(uint32_t value) { MODIFY_REG(RCC_->PLLCFGR, RCC_PLLCFGR_PLLM, value); }
     #endif
 
-    static inline void set_config_SYSCLK(uint32_t value) { MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, value); }
-    static inline uint32_t get_source_SYSCLK() { return (RCC->CFGR & RCC_CFGR_SWS); }
+    static inline void set_config_SYSCLK(uint32_t value) { MODIFY_REG(RCC_->CFGR, RCC_CFGR_SW, value); }
+    static inline uint32_t get_source_SYSCLK() { return (RCC_->CFGR & RCC_CFGR_SWS); }
 
     #if defined(STM32F1)
     static inline void set_config_MCO1(uint32_t source, uint32_t div)
-        { MODIFY_REG(RCC->CFGR, RCC_CFGR_MCO, (source | div)); }
+        { MODIFY_REG(RCC_->CFGR, RCC_CFGR_MCO, (source | div)); }
     #else // STM32F1
     static inline void set_config_MCO1(uint32_t source, uint32_t div)
-        { MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (source | div)); }
+        { MODIFY_REG(RCC_->CFGR, (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE), (source | div)); }
 
     static inline void set_config_MCO2(uint32_t source, uint32_t div)
-        { MODIFY_REG(RCC->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (source | (div << 3))); }
+        { MODIFY_REG(RCC_->CFGR, (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE), (source | (div << 3))); }
     #endif // STM32F1
 
     static inline void enable_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 1)) |= static_cast<uint8_t>(value); }
     static inline void disable_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 1)) &= ~static_cast<uint8_t>(value); }
     static inline void clear_IT(EIT value) { *(reinterpret_cast<__IO uint8_t*>(RCC_BASE + RCC_CIR_OFFSET + 2)) = static_cast<uint8_t>(value); }
-    static inline bool get_IT(EIT value) { return (RCC->CIR & static_cast<uint32_t>(value)) == static_cast<uint8_t>(value); }
+    static inline bool get_IT(EIT value) { return (RCC_->CIR & static_cast<uint32_t>(value)) == static_cast<uint8_t>(value); }
 
-    static inline void clear_reset_flags() { RCC->CSR |= RCC_CSR_RMVF; }
+    static inline void clear_reset_flags() { RCC_->CSR |= RCC_CSR_RMVF; }
 
     static bool get_flag(EFlag value);
 
@@ -248,7 +248,7 @@ public:
 
     static void config_MCO(uint32_t RCC_MCOx, uint32_t RCC_MCOSource, uint32_t RCC_MCODiv);
 
-    ENDIS_REG_FLAG(CSS, RCC->CR, RCC_CR_CSSON)
+    ENDIS_REG_FLAG(CSS, RCC_->CR, RCC_CR_CSSON)
 
 #if defined(STM32F1)
     CLK_ENDIS(AHB, DMA1)
@@ -313,11 +313,11 @@ public:
     static inline void enable_clk_eth() { enable_clk_ETHMAC(); enable_clk_ETHMACTX(); enable_clk_ETHMACRX(); }
     static inline void disable_clk_eth() { disable_clk_ETHMAC(); disable_clk_ETHMACTX(); disable_clk_ETHMACRX(); }
 
-    static inline void enable_clk_USB_FS() { RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN; enable_clk_SYSCFG(); }
-    static inline void disable_clk_USB_FS() { RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN; }
+    static inline void enable_clk_USB_FS() { RCC_->AHB2ENR |= RCC_AHB2ENR_OTGFSEN; enable_clk_SYSCFG(); }
+    static inline void disable_clk_USB_FS() { RCC_->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN; }
 
-    static inline void enable_clk_USB_HS() { RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN; enable_clk_SYSCFG(); }
-    static inline void disable_clk_USB_HS() { RCC->AHB1ENR &= ~RCC_AHB1ENR_OTGHSEN; }
+    static inline void enable_clk_USB_HS() { RCC_->AHB1ENR |= RCC_AHB1ENR_OTGHSEN; enable_clk_SYSCFG(); }
+    static inline void disable_clk_USB_HS() { RCC_->AHB1ENR &= ~RCC_AHB1ENR_OTGHSEN; }
 #endif // STM32F4
 
 #ifdef RCC_AHB3ENR_FMCEN
@@ -393,8 +393,8 @@ public:
 #endif // STM32F1
 
 #if defined(STM32F1)
-    static inline void force_reset_APB1() { RCC->APB1RSTR = 0xFFFFFFFFU; }
-    static inline void release_reset_APB1() { RCC->APB1RSTR = 0x00U; }
+    static inline void force_reset_APB1() { RCC_->APB1RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB1() { RCC_->APB1RSTR = 0x00U; }
     PER_RESET(APB1, TIM2)
     PER_RESET(APB1, TIM3)
     PER_RESET(APB1, WWDG)
@@ -403,8 +403,8 @@ public:
     PER_RESET(APB1, BKP)
     PER_RESET(APB1, PWR)
 
-    static inline void force_reset_APB2() { RCC->APB2RSTR = 0xFFFFFFFFU; }
-    static inline void release_reset_APB2() { RCC->APB2RSTR = 0x00U; }
+    static inline void force_reset_APB2() { RCC_->APB2RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB2() { RCC_->APB2RSTR = 0x00U; }
     PER_RESET(APB2, AFIO)
     PER_RESET_EX(APB2, GPIOA, IOPA)
     PER_RESET_EX(APB2, GPIOB, IOPB)
@@ -416,8 +416,8 @@ public:
     PER_RESET(APB2, USART1)
 	
 #else
-    static inline void force_reset_AHB1() { RCC->AHB1RSTR = 0xFFFFFFFFU; }
-    static inline void release_reset_AHB1() { RCC->AHB1RSTR = 0x00U; }
+    static inline void force_reset_AHB1() { RCC_->AHB1RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_AHB1() { RCC_->AHB1RSTR = 0x00U; }
     PER_RESET_SLEEP(AHB1, GPIOA)
     PER_RESET_SLEEP(AHB1, GPIOB)
     PER_RESET_SLEEP(AHB1, GPIOC)
@@ -434,9 +434,9 @@ public:
     PER_RESET_SLEEP(AHB1, GPIOK)
 #endif
     PER_RESET_SLEEP(AHB1, ETHMAC)
-    static inline void force_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 1; }
-    static inline void release_reset_OTGHS() { BIT_BAND_PER(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 0; }
-    static inline void sleep_enable_OTGHS() { BIT_BAND_PER(RCC->AHB1LPENR, RCC_AHB1LPENR_OTGHSLPEN) = 1; }
+    static inline void force_reset_OTGHS() { BIT_BAND_PER(RCC_->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 1; }
+    static inline void release_reset_OTGHS() { BIT_BAND_PER(RCC_->AHB1RSTR, RCC_AHB1RSTR_OTGHRST) = 0; }
+    static inline void sleep_enable_OTGHS() { BIT_BAND_PER(RCC_->AHB1LPENR, RCC_AHB1LPENR_OTGHSLPEN) = 1; }
     PER_RESET_SLEEP(AHB1, CRC)
     PER_RESET_SLEEP(AHB1, DMA1)
     PER_RESET_SLEEP(AHB1, DMA2)
@@ -452,8 +452,8 @@ public:
     PER_RESET_SLEEP(AHB3, FMC)
 #endif
 
-    static inline void force_reset_APB1() { RCC->APB1RSTR = 0xFFFFFFFFU; }
-    static inline void release_reset_APB1() { RCC->APB1RSTR = 0x00U; }
+    static inline void force_reset_APB1() { RCC_->APB1RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB1() { RCC_->APB1RSTR = 0x00U; }
     PER_RESET_SLEEP(APB1, TIM2)
     PER_RESET_SLEEP(APB1, TIM3)
     PER_RESET_SLEEP(APB1, TIM4)
@@ -484,8 +484,8 @@ public:
     PER_RESET_SLEEP(APB1, I2C3)
     PER_RESET_SLEEP(APB1, PWR)
 
-    static inline void force_reset_APB2() { RCC->APB2RSTR = 0xFFFFFFFFU; }
-    static inline void release_reset_APB2() { RCC->APB2RSTR = 0x00U; }
+    static inline void force_reset_APB2() { RCC_->APB2RSTR = 0xFFFFFFFFU; }
+    static inline void release_reset_APB2() { RCC_->APB2RSTR = 0x00U; }
     PER_RESET_SLEEP(APB2, TIM1)
     PER_RESET_SLEEP(APB2, TIM8)
     PER_RESET_SLEEP(APB2, TIM9)
@@ -525,33 +525,33 @@ public:
     #endif
 
 #if defined(STM32F429xx)
-    ENDIS_REG_FLAG_NAME(PLLSAI_IT, RCC->CIR, RCC_CIR_PLLSAIRDYIE)
+    ENDIS_REG_FLAG_NAME(PLLSAI_IT, RCC_->CIR, RCC_CIR_PLLSAIRDYIE)
     static inline void clear_PLLSAI_IT() { clear_IT(RCC_CIR_PLLSAIRDYF); }
     static bool get_PLLSAI_IT() { return get_IT(RCC_CIR_PLLSAIRDYIE); }
-    static bool get_PLLSAI_flag() { return ((RCC->CR & RCC_CR_PLLSAIRDY) == RCC_CR_PLLSAIRDY); }
+    static bool get_PLLSAI_flag() { return ((RCC_->CR & RCC_CR_PLLSAIRDY) == RCC_CR_PLLSAIRDY); }
 
     static inline void PLLI2S_SAI_config(uint32_t sn, uint32_t sq, uint32_t sr)
-        { RCC->PLLI2SCFGR = (sn << RCC_PLLI2SCFGR_PLLI2SN_Pos) |
+        { RCC_->PLLI2SCFGR = (sn << RCC_PLLI2SCFGR_PLLI2SN_Pos) |
                 (sq << RCC_PLLI2SCFGR_PLLI2SQ_Pos) |
                 (sr << RCC_PLLI2SCFGR_PLLI2SR_Pos); }
     static inline void PLLI2S_SAI_configQ(uint32_t sq)
-        { MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_PLLI2SDIVQ, sq); }
+        { MODIFY_REG(RCC_->DCKCFGR, RCC_DCKCFGR_PLLI2SDIVQ, sq); }
 
     static inline void PLLSAI_configQ(uint32_t sq)
-        { MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_PLLSAIDIVQ, ((sq - 1) << 8)); }
+        { MODIFY_REG(RCC_->DCKCFGR, RCC_DCKCFGR_PLLSAIDIVQ, ((sq - 1) << 8)); }
     static inline void PLLSAI_configR(uint32_t sr)
-        { MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_PLLSAIDIVR, sr); }
+        { MODIFY_REG(RCC_->DCKCFGR, RCC_DCKCFGR_PLLSAIDIVR, sr); }
 
-    ENDIS_REG_FLAG(PLLSAI, RCC->CR, RCC_CR_PLLSAION)
+    ENDIS_REG_FLAG(PLLSAI, RCC_->CR, RCC_CR_PLLSAION)
 #endif
 #ifdef STM32F4
-    ENDIS_REG_FLAG(PLLI2S, RCC->CR, RCC_CR_PLLI2SON)
+    ENDIS_REG_FLAG(PLLI2S, RCC_->CR, RCC_CR_PLLI2SON)
     static inline void PLLSAI_config(uint32_t sn, uint32_t sr)
-        { RCC->PLLI2SCFGR = (sn << RCC_PLLI2SCFGR_PLLI2SN_Pos) |
+        { RCC_->PLLI2SCFGR = (sn << RCC_PLLI2SCFGR_PLLI2SN_Pos) |
                 (sr << RCC_PLLI2SCFGR_PLLI2SR_Pos); }
 
-    static inline void config_I2S(uint32_t val) { BIT_BAND_PER(RCC->CFGR, RCC_CFGR_I2SSRC) = val; }
-    static inline uint32_t get_I2S_source() { return RCC->CFGR & RCC_CFGR_I2SSRC; }
+    static inline void config_I2S(uint32_t val) { BIT_BAND_PER(RCC_->CFGR, RCC_CFGR_I2SSRC) = val; }
+    static inline uint32_t get_I2S_source() { return RCC_->CFGR & RCC_CFGR_I2SSRC; }
 #endif // STM32F4
 
     static void update_clock();

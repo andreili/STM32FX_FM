@@ -147,6 +147,7 @@
   #include "stm32f415xx.h"
 #elif defined(STM32F407xx)
   #include "stm32f407xx.hpp"
+  #include "stm32f407xx_.hpp"
 #elif defined(STM32F417xx)
   #include "stm32f417xx.h"
 #elif defined(STM32F427xx)
