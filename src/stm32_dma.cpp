@@ -326,7 +326,7 @@ void STM32_DMA::IRQ_handler()
 {
     DMA_Base_Registers* regs = (DMA_Base_Registers*)calc_base_and_bit_shift();
     uint32_t tmpisr = regs->ISR;
-    uint32_t timeout = STM32_RCC::get_HCLK_freq();
+    uint32_t timeout = STM32::RCC::get_HCLK_freq();
 
     /* Transfer Error Interrupt management */
     if ((tmpisr & (DMA_FLAG_TEIF0_4 << m_stream_index)) != RESET)

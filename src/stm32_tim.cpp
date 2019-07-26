@@ -467,13 +467,13 @@ uint32_t STM32_TIM::get_clock()
     case TIM12_BASE:
     case TIM13_BASE:
     case TIM14_BASE:
-        return STM32_RCC::get_PCLK1_freq() * 2;
+        return STM32::RCC::get_PCLK1_freq() * 2;
     case TIM1_BASE:
     case TIM8_BASE:
     case TIM9_BASE:
     case TIM10_BASE:
     case TIM11_BASE:
-        return STM32_RCC::get_PCLK2_freq() * 2;
+        return STM32::RCC::get_PCLK2_freq() * 2;
     }
     return 0;
 }

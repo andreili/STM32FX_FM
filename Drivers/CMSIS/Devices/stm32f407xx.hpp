@@ -5458,13 +5458,47 @@ namespace STM32_REGS
             {
                 struct
                 {
-                    uint32_t reserved0      : 32;
+                    uint32_t WUF            : 1;
+                    uint32_t SBF            : 1;
+                    uint32_t PVDO           : 1;
+                    uint32_t BRR            : 1;
+                    uint32_t reserved4      : 4;
+                    uint32_t EWUP           : 1;
+                    uint32_t BRE            : 1;
+                    uint32_t reserved10     : 4;
+                    uint32_t VOSRDY         : 1;
+                    uint32_t reserved15     : 17;
                 };
                 uint32_t RAW;
             };
         public:
+            enum class EMasks: uint32_t
+            {
+                WUF                    = (0x1U << 0),
+                SBF                    = (0x1U << 1),
+                PVDO                   = (0x1U << 2),
+                BRR                    = (0x1U << 3),
+                EWUP                   = (0x1U << 8),
+                BRE                    = (0x1U << 9),
+                VOSRDY                 = (0x1U << 14),
+            };
             static inline uint32_t get() { return reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR; }
             static inline void set(uint32_t value) { reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR = value; }
+            template <EMasks ... flags>
+            static inline void set_flags()
+            {
+                reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR |= SetBits<(std::uint32_t)flags...>();
+            }
+            template <EMasks ... flags>
+            static inline void clear_flags()
+            {
+                reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR &= ~(SetBits<(std::uint32_t)flags...>());
+            }
+            template <EMasks ... flags>
+            static inline bool get_flags()
+            {
+                return ((reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+            }
         };
     };
     /* RCC DEFINITION */
@@ -6716,13 +6750,51 @@ namespace STM32_REGS
             {
                 struct
                 {
-                    uint32_t reserved0      : 32;
+                    uint32_t LSION          : 1;
+                    uint32_t LSIRDY         : 1;
+                    uint32_t reserved2      : 22;
+                    uint32_t RMVF           : 1;
+                    uint32_t BORRSTF        : 1;
+                    uint32_t PINRSTF        : 1;
+                    uint32_t PORRSTF        : 1;
+                    uint32_t SFTRSTF        : 1;
+                    uint32_t IWDGRSTF       : 1;
+                    uint32_t WWDGRSTF       : 1;
+                    uint32_t LPWRRSTF       : 1;
                 };
                 uint32_t RAW;
             };
         public:
+            enum class EMasks: uint32_t
+            {
+                LSION                  = (0x1U << 0),
+                LSIRDY                 = (0x1U << 1),
+                RMVF                   = (0x1U << 24),
+                BORRSTF                = (0x1U << 25),
+                PINRSTF                = (0x1U << 26),
+                PORRSTF                = (0x1U << 27),
+                SFTRSTF                = (0x1U << 28),
+                IWDGRSTF               = (0x1U << 29),
+                WWDGRSTF               = (0x1U << 30),
+                LPWRRSTF               = (0x1U << 31),
+            };
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR = value; }
+            template <EMasks ... flags>
+            static inline void set_flags()
+            {
+                reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR |= SetBits<(std::uint32_t)flags...>();
+            }
+            template <EMasks ... flags>
+            static inline void clear_flags()
+            {
+                reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR &= ~(SetBits<(std::uint32_t)flags...>());
+            }
+            template <EMasks ... flags>
+            static inline bool get_flags()
+            {
+                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+            }
         };
         class SSCGR
         {

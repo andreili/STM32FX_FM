@@ -19,7 +19,7 @@ void base_init()
     CORTEX::FPU::CPACR::set_CP10_CP11(CORTEX::FPU::CPACR::ECP::FULL_ACCESS); /* set CP10 and CP11 Full Access */
     #endif
 
-    STM32_RCC::deinit_cold();
+    STM32::RCC::deinit_cold();
 
     #if defined (DATA_IN_ExtSDRAM)
     if (STM32_SDRAM::init() != STM32_RESULT_OK)
@@ -51,12 +51,12 @@ void timebase_init()
     STM32::SYSTICK::deinit();
     STM32_TIM::TimerBaseInit_t tim14_init;
     tim14_init.period = (1000000/STM32_TIMEBASE_FREQ_HZ) - 1;
-    tim14_init.prescaler = ((2 * STM32_RCC::get_PCLK1_freq()) / 1000000) - 1; // (2*PCLK1Freq/1000000 - 1) to have a 1MHz counter clock.
+    tim14_init.prescaler = ((2 * STM32::RCC::get_PCLK1_freq()) / 1000000) - 1; // (2*PCLK1Freq/1000000 - 1) to have a 1MHz counter clock.
     tim14_init.clk_div = STM32_TIM::EClkDiv::DIV_1;
     tim14_init.counter_mode = STM32_TIM::ECounterMode::UP;
 
     STM32::NVIC::enable_and_set_prior_IRQ(STM32::IRQn::TIM8_TRG_COM_TIM14, 0, 0);
-    STM32_RCC::enable_clk_TIM14();
+    STM32::RCC::enable_clk_TIM14();
     tim14.set_cb_period_elapsed(timebase_cb);
 
     tim14.init(&tim14_init);
@@ -66,7 +66,7 @@ void timebase_init()
 
 void PeriphInit()
 {
-    STM32_RCC::update_clock();
+    STM32::RCC::update_clock();
 
     /* Other IO and peripheral initializations */
     STM32_GPIO::init_all();
@@ -92,12 +92,12 @@ void SystemInit()
 {
     base_init();
     // system initialization
-    STM32_RCC::init();
+    STM32::RCC::init();
     PeriphInit();
 
     /* Initialize interrupt vectors for a peripheral */
     STM32::NVIC::init_vectors();
-    STM32_RCC::update_clock();
+    STM32::RCC::update_clock();
 
     #ifdef INSTRUCTION_CACHE_ENABLE
     STM32::FLASH::set_instruction_cache_enable(true);

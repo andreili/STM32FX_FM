@@ -54,7 +54,7 @@ uint8_t SDDriver::ioctl(uint8_t, FAT_FS::ECTRL, void*)
 
 void SDDriver::init_gpio()
 {
-    STM32_RCC::STM32_FATFS_CARD_EN_CLK();
+    STM32::RCC::STM32_FATFS_CARD_EN_CLK();
     STM32_FATFS_CARD_DETECT_PORT.set_config(STM32_FATFS_CARD_DETECT_PIN,
                                             STM32_GPIO::EMode::INPUT, STM32_GPIO::EAF::NONE,
                                             STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::PULLUP);

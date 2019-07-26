@@ -153,7 +153,7 @@ uint32_t STM32_RTC::init()
         }
 
 				#if defined(STM32F1)
-				CLEAR_BIT(RTC->CRL, (RTC_FLAG_OW | RTC_FLAG_ALRAF | RTC_FLAG_SEC));
+                CLEAR_BIT(RTC_->CRL, (RTC_FLAG_OW | RTC_FLAG_ALRAF | RTC_FLAG_SEC));
 				/* Set the signal which will be routed to RTC Tamper pin*/
 				MODIFY_REG(BKP->RTCCR, (BKP_RTCCR_CCO | BKP_RTCCR_ASOE | BKP_RTCCR_ASOS), 0);	// TODO
 				
@@ -161,19 +161,19 @@ uint32_t STM32_RTC::init()
 				
 				#elif defined(STM32F4)
         /* Clear RTC_CR FMT, OSEL and POL Bits */
-        RTC->CR &= ~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL);
+        RTC_->CR &= ~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL);
         /* Set RTC_CR register */
-        RTC->CR |= (STM32_RTC_FORMAT |
+        RTC_->CR |= (STM32_RTC_FORMAT |
                     STM32_RTC_OUTPUT |
                     STM32_RTC_OUTPUT_POL);
 
         config_prediv(STM32_RTC_SYNC_PREDIV, STM32_RTC_ASYNC_PREDIV);
 
         /* Exit Initialization mode */
-        RTC->ISR &= ~RTC_ISR_INIT;
+        RTC_->ISR &= ~RTC_ISR_INIT;
 
-        RTC->TAFCR &= ~RTC_TAFCR_ALARMOUTTYPE;
-        RTC->TAFCR |= STM32_RTC_OUTPUT_TYPE;
+        RTC_->TAFCR &= ~RTC_TAFCR_ALARMOUTTYPE;
+        RTC_->TAFCR |= STM32_RTC_OUTPUT_TYPE;
 				#endif
 
         /* Enable the write protection for RTC registers */
@@ -198,27 +198,27 @@ uint32_t STM32_RTC::deinit()
     else
     {
 				#if defined(STM32F1)
-				CLEAR_REG(RTC->CNTL);
-				CLEAR_REG(RTC->CNTH);
-				WRITE_REG(RTC->PRLL, 0x00008000U);
-				CLEAR_REG(RTC->PRLH);
+                CLEAR_REG(RTC_->CNTL);
+                CLEAR_REG(RTC_->CNTH);
+                WRITE_REG(RTC_->PRLL, 0x00008000U);
+                CLEAR_REG(RTC_->PRLH);
 				/* Reset All CRH/CRL bits */
-				CLEAR_REG(RTC->CRH);
-				CLEAR_REG(RTC->CRL);
+                CLEAR_REG(RTC_->CRH);
+                CLEAR_REG(RTC_->CRL);
 			
 				exit_init_mode();
 				wait_for_synchro();
 				
 				#elif defined(STM32F4)
         /* Reset TR, DR and CR registers */
-        RTC->TR = (uint32_t)0x00000000U;
-        RTC->DR = (uint32_t)0x00002101U;
+        RTC_->TR = (uint32_t)0x00000000U;
+        RTC_->DR = (uint32_t)0x00002101U;
         /* Reset All CR bits except CR[2:0] */
-        RTC->CR &= (uint32_t)0x00000007U;
+        RTC_->CR &= (uint32_t)0x00000007U;
 
         /* Wait till WUTWF flag is set and if Time out is reached exit */
         uint32_t tout_ex = STM32_SYSTICK::get_tick() + RTC_TIMEOUT_VALUE;
-        while ((RTC->ISR & RTC_ISR_WUTWF) == RESET)
+        while ((RTC_->ISR & RTC_ISR_WUTWF) == RESET)
         {
             if (STM32_SYSTICK::get_tick() > tout_ex)
             {
@@ -229,25 +229,25 @@ uint32_t STM32_RTC::deinit()
         }
 
         /* Reset all RTC CR register bits */
-        RTC->CR &= (uint32_t)0x00000000U;
-        RTC->WUTR = (uint32_t)0x0000FFFFU;
-        RTC->PRER = (uint32_t)0x007F00FFU;
-        RTC->CALIBR = (uint32_t)0x00000000U;
-        RTC->ALRMAR = (uint32_t)0x00000000U;
-        RTC->ALRMBR = (uint32_t)0x00000000U;
-        RTC->SHIFTR = (uint32_t)0x00000000U;
-        RTC->CALR = (uint32_t)0x00000000U;
-        RTC->ALRMASSR = (uint32_t)0x00000000U;
-        RTC->ALRMBSSR = (uint32_t)0x00000000U;
+        RTC_->CR &= (uint32_t)0x00000000U;
+        RTC_->WUTR = (uint32_t)0x0000FFFFU;
+        RTC_->PRER = (uint32_t)0x007F00FFU;
+        RTC_->CALIBR = (uint32_t)0x00000000U;
+        RTC_->ALRMAR = (uint32_t)0x00000000U;
+        RTC_->ALRMBR = (uint32_t)0x00000000U;
+        RTC_->SHIFTR = (uint32_t)0x00000000U;
+        RTC_->CALR = (uint32_t)0x00000000U;
+        RTC_->ALRMASSR = (uint32_t)0x00000000U;
+        RTC_->ALRMBSSR = (uint32_t)0x00000000U;
 
         /* Reset ISR register and exit initialization mode */
-        RTC->ISR = (uint32_t)0x00000000U;
+        RTC_->ISR = (uint32_t)0x00000000U;
 
         /* Reset Tamper and alternate functions configuration register */
-        RTC->TAFCR = 0x00000000U;
+        RTC_->TAFCR = 0x00000000U;
 
         /* If  RTC_CR_BYPSHAD bit = 0, wait for synchro else this check is not needed */
-        if ((RTC->CR & RTC_CR_BYPSHAD) == RESET)
+        if ((RTC_->CR & RTC_CR_BYPSHAD) == RESET)
         {
             if (wait_for_synchro() != STM32_RESULT_OK)
             {
@@ -275,7 +275,7 @@ uint32_t STM32_RTC::set_time(STM32_RTC_Time *time, ERTCFormat format)
     if(format == ERTCFormat::BIN)
     {
 				#ifdef STM32F4
-        if ((RTC->CR & RTC_CR_FMT) == RESET)
+        if ((RTC_->CR & RTC_CR_FMT) == RESET)
             time->TimeFormat = 0x00U;
 				#endif
 
@@ -293,7 +293,7 @@ uint32_t STM32_RTC::set_time(STM32_RTC_Time *time, ERTCFormat format)
     else
     {
 				#ifdef STM32F4
-        if ((RTC->CR & RTC_CR_FMT) != RESET)
+        if ((RTC_->CR & RTC_CR_FMT) != RESET)
             tmpreg = RTC_Bcd2ToByte(time->Hours);
         else
             time->TimeFormat = 0x00U;
@@ -324,19 +324,19 @@ uint32_t STM32_RTC::set_time(STM32_RTC_Time *time, ERTCFormat format)
     else
     {
         /* Set the RTC_TR register */
-        RTC->TR = (tmpreg & RTC_TR_RESERVED_MASK);
+        RTC_->TR = (tmpreg & RTC_TR_RESERVED_MASK);
 
         /* Clear the bits to be configured */
-        RTC->CR &= ~RTC_CR_BCK;
+        RTC_->CR &= ~RTC_CR_BCK;
 
         /* Configure the RTC_CR register */
-        RTC->CR |= (time->DayLightSaving | time->StoreOperation);
+        RTC_->CR |= (time->DayLightSaving | time->StoreOperation);
 
         /* Exit Initialization mode */
-        RTC->ISR &= ~RTC_ISR_INIT;
+        RTC_->ISR &= ~RTC_ISR_INIT;
 
         /* If  CR_BYPSHAD bit = 0, wait for synchro else this check is not needed */
-        if ((RTC->CR & RTC_CR_BYPSHAD) == RESET)
+        if ((RTC_->CR & RTC_CR_BYPSHAD) == RESET)
         {
             if (wait_for_synchro() != STM32_RESULT_OK)
             {
@@ -358,13 +358,13 @@ uint32_t STM32_RTC::get_time(STM32_RTC_Time *time, ERTCFormat format)
     uint32_t tmpreg = 0U;
 
     /* Get subseconds structure field from the corresponding register */
-    time->SubSeconds = (RTC->SSR);
+    time->SubSeconds = (RTC_->SSR);
 
     /* Get SecondFraction structure field from the corresponding register field*/
-    time->SecondFraction = (RTC->PRER & RTC_PRER_PREDIV_S);
+    time->SecondFraction = (RTC_->PRER & RTC_PRER_PREDIV_S);
 
     /* Get the TR register */
-    tmpreg = (RTC->TR & RTC_TR_RESERVED_MASK);
+    tmpreg = (RTC_->TR & RTC_TR_RESERVED_MASK);
 
     /* Fill the structure fields with the read parameters */
     time->Hours = (tmpreg & (RTC_TR_HT | RTC_TR_HU)) >> 16U;
@@ -422,13 +422,13 @@ uint32_t STM32_RTC::set_date(STM32_RTC_Date *date, ERTCFormat format)
     else
     {
         /* Set the RTC_DR register */
-        RTC->DR = (datetmpreg & RTC_DR_RESERVED_MASK);
+        RTC_->DR = (datetmpreg & RTC_DR_RESERVED_MASK);
 
         /* Exit Initialization mode */
-        RTC->ISR &= ~RTC_ISR_INIT;
+        RTC_->ISR &= ~RTC_ISR_INIT;
 
         /* If  CR_BYPSHAD bit = 0, wait for synchro else this check is not needed */
-        if ((RTC->CR & RTC_CR_BYPSHAD) == RESET)
+        if ((RTC_->CR & RTC_CR_BYPSHAD) == RESET)
         {
             if (wait_for_synchro() != STM32_RESULT_OK)
             {
@@ -450,7 +450,7 @@ uint32_t STM32_RTC::get_date(STM32_RTC_Date *date, ERTCFormat format)
     uint32_t datetmpreg = 0U;
 
     /* Get the DR register */
-    datetmpreg = (RTC->DR & RTC_DR_RESERVED_MASK);
+    datetmpreg = (RTC_->DR & RTC_DR_RESERVED_MASK);
 
     /* Fill the structure fields with the read parameters */
     date->Year = (datetmpreg & (RTC_DR_YT | RTC_DR_YU)) >> 16U;
@@ -472,13 +472,13 @@ uint32_t STM32_RTC::get_date(STM32_RTC_Date *date, ERTCFormat format)
 uint32_t STM32_RTC::enter_init_mode()
 {
     /* Check if the Initialization mode is set */
-    if ((RTC->ISR & RTC_ISR_INITF) == RESET)
+    if ((RTC_->ISR & RTC_ISR_INITF) == RESET)
     {
         /* Set the Initialization mode */
-        RTC->ISR = RTC_INIT_MASK;
+        RTC_->ISR = RTC_INIT_MASK;
 
         /* Wait till RTC is in INIT state and if Time out is reached exit */
-        WAIT_TIMEOUT((RTC->ISR & RTC_ISR_INITF) == RESET, RTC_TIMEOUT_VALUE);
+        WAIT_TIMEOUT((RTC_->ISR & RTC_ISR_INITF) == RESET, RTC_TIMEOUT_VALUE);
     }
 
     return STM32_RESULT_OK;
@@ -488,17 +488,17 @@ uint32_t STM32_RTC::enter_init_mode()
 void STM32_RTC::exit_init_mode()
 {
 		write_protect_enable();
-		WAIT_TIMEOUT((RTC->CRL & RTC_CRL_RTOFF) == RESET, RTC_TIMEOUT_VALUE);
+        WAIT_TIMEOUT((RTC_->CRL & RTC_CRL_RTOFF) == RESET, RTC_TIMEOUT_VALUE);
 }
 #endif
 
 uint32_t STM32_RTC::wait_for_synchro()
 {
     /* Clear RSF flag */
-    RTC->ISR &= RTC_RSF_MASK;
+    RTC_->ISR &= RTC_RSF_MASK;
 
     /* Wait the registers to be synchronised */
-    WAIT_TIMEOUT((RTC->ISR & RTC_ISR_RSF) == RESET, RTC_TIMEOUT_VALUE);
+    WAIT_TIMEOUT((RTC_->ISR & RTC_ISR_RSF) == RESET, RTC_TIMEOUT_VALUE);
 
     return STM32_RESULT_OK;
 }

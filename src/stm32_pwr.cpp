@@ -10,8 +10,14 @@ constexpr std::uint32_t PWR_VOSRDY_TIMEOUT_VALUE     = 1000U;
 
 void PWR::deinit()
 {
-    STM32_RCC::force_reset_PWR();
-    STM32_RCC::release_reset_PWR();
+#if defined(STM32F1)
+    #error TODO
+    STM32::RCC::APB1_reset_force<STM32_REGS::RCC::APB1RSTR::EMasks::PWRRST>();
+    STM32::RCC::APB1_reset_release<STM32_REGS::RCC::APB1RSTR::EMasks::PWRRST>();
+#else
+    STM32::RCC::APB1_reset_force<STM32_REGS::RCC::APB1RSTR::EMasks::PWRRST>();
+    STM32::RCC::APB1_reset_release<STM32_REGS::RCC::APB1RSTR::EMasks::PWRRST>();
+#endif
 }
 
 void PWR::config_PVD()
@@ -69,7 +75,7 @@ void PWR::enter_standby_mode()
     defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx)
 uint32_t PWR::enable_overdrive()
 {
-    STM32_RCC::enable_clk_PWR();
+    STM32::RCC::enable_clk_PWR();
 
     /* Enable the Over-drive to extend the clock frequency to 180 Mhz */
     PWR_OVERDRIVE_ENABLE();
@@ -99,7 +105,7 @@ uint32_t PWR::enable_overdrive()
 
 uint32_t PWR::disable_overdrive()
 {
-    STM32_RCC::enable_clk_PWR();
+    STM32::RCC::enable_clk_PWR();
 
     /* Disable the Over-drive switch */
     disable_overdrive_switching();
@@ -133,7 +139,7 @@ uint32_t PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
     uint32_t tmpreg1 = 0U;
     uint32_t tickstart = 0U;
 
-    STM32_RCC::enable_clk_PWR();
+    STM32::RCC::enable_clk_PWR();
     /* Enable the Under-drive Mode ---------------------------------------------*/
     /* Clear Under-drive flag */
     clear_odrudr_flag();
@@ -183,7 +189,7 @@ uint32_t PWR::enter_underdrive_stop_mode(uint32_t Regulator, uint8_t STOPEntry)
 #ifdef STM32F4
 uint32_t PWR::control_voltage_scaling(EVoltageScale voltage_scaling)
 {
-    STM32_RCC::enable_clk_PWR();
+    STM32::RCC::enable_clk_PWR();
     set_voltage_scaling_enabled(voltage_scaling);
     WAIT_TIMEOUT(!CSR::get_ready_voltage_scaling(), PWR_VOSRDY_TIMEOUT_VALUE);
     return STM32_RESULT_OK;

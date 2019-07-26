@@ -22,7 +22,7 @@ void SYSTICK::deinit()
 
 void SYSTICK::update_freq()
 {
-    CORTEX::SysTick::config(STM32_RCC::get_HCLK_freq() / STM32_SYSTICK_FREQ_HZ - 1);
+    CORTEX::SysTick::config(STM32::RCC::get_HCLK_freq() / STM32_SYSTICK_FREQ_HZ - 1);
     set_clock_source(EClockDiv::HCLK);
 }
 

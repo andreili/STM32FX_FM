@@ -95,22 +95,22 @@ public:
     static uint32_t get_date(STM32_RTC_Date *date, ERTCFormat format);
 private:
 		#if defined(STM32F1)
-    static inline void write_protect_disable() { SET_BIT(RTC->CRL, RTC_CRL_CNF); }
-    static inline void write_protect_enable() { CLEAR_BIT(RTC->CRL, RTC_CRL_CNF); }
+    static inline void write_protect_disable() { SET_BIT(RTC_->CRL, RTC_CRL_CNF); }
+    static inline void write_protect_enable() { CLEAR_BIT(RTC_->CRL, RTC_CRL_CNF); }
 		#elif defined(STM32F4)
-    static inline void write_protect_disable() { RTC->WPR = 0xCAU; RTC->WPR = 0x53U; }
-    static inline void write_protect_enable() { RTC->WPR = 0xFFU; }
+    static inline void write_protect_disable() { RTC_->WPR = 0xCAU; RTC_->WPR = 0x53U; }
+    static inline void write_protect_enable() { RTC_->WPR = 0xFFU; }
 		#endif
 
     static uint32_t enter_init_mode();
 		#if defined(STM32F1)
     static void exit_init_mode();
 		#elif defined(STM32F4)
-    static inline void exit_init_mode() { RTC->ISR &= ~RTC_ISR_INIT; }
+    static inline void exit_init_mode() { RTC_->ISR &= ~RTC_ISR_INIT; }
 		#endif
 
 		#if defined(STM32F4)
-    static inline void config_prediv(uint32_t sync, uint32_t async) { RTC->PRER = sync | (async << 16U); }
+    static inline void config_prediv(uint32_t sync, uint32_t async) { RTC_->PRER = sync | (async << 16U); }
 		#endif
 
     static uint32_t wait_for_synchro();
