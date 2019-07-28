@@ -273,7 +273,7 @@ bool parse_includes(std::string& str)
 bool parse_regs(std::string& str, REG_t& reg)
 {
     static std::regex expr("}\\s*([A-Z\\d_]+)_([A-Za-z\\d]*)(_*)TypeDef;");
-    static std::regex expr_f("\\s+(\\S+\\s?\\S+)\\s+([A-Za-z\\d]+)([\\[\\]\\dxA-Z]*);");
+    static std::regex expr_f("\\s+(\\S+\\s?\\S+\\s?[const]?\\S+)\\s+([A-Za-z\\d]+)([\\[\\]\\dxA-Z]*);");
     static std::smatch smatch;
     if (std::regex_search(str, smatch, expr))
     {
@@ -786,14 +786,14 @@ void wfite_field_accs(REG_FIELD_t& field, std::string base, std::string name, bo
     std::smatch smatch;
 
     std::string io_mode = "";
-    if (field.type.find("__IO") != std::string::npos)
+    if (field.type.find("const ") != std::string::npos)
+        io_mode = "__IO const ";
+    else if (field.type.find("__IO") != std::string::npos)
         io_mode = "__IO ";
     else if (field.type.find("__I") != std::string::npos)
         io_mode = "__I ";
     else if (field.type.find("__O") != std::string::npos)
         io_mode = "__O ";
-    else if (field.type.find("const ") != std::string::npos)
-        io_mode = "const ";
 
     bool is_RO = std::regex_search(field.type, smatch, ex_const);
     out_file << "            static inline uint32_t get(" << index_hdr << ") { return reinterpret_cast<" <<
