@@ -761,7 +761,7 @@ void write_field_flags_operators(bool is_RO, std:: string type_name, std::string
     out_file << "            template <EMasks ... flags>" << std::endl;
     out_file << "            static inline bool get_flags()" << std::endl;
     out_file << "            {" << std::endl;
-    out_file << "                return ((reinterpret_cast<" + type_name + "_t*>(" << base << ")->" + fname + " & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());" << std::endl;
+    out_file << "                return (reinterpret_cast<" + type_name + "_t*>(" << base << ")->" + fname + " & SetBits<(std::uint32_t)flags...>());" << std::endl;
     out_file << "            }" << std::endl;
 }
 
