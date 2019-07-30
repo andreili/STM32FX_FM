@@ -7,16 +7,16 @@
 
 uint8_t SDDriver::init(uint8_t)
 {
-    STM32_SD::ESDError sd_state = STM32_SD::ESDError::OK;
+    STM32::SD::ESDError sd_state = STM32::SD::ESDError::OK;
     m_state = STA_NOINIT;
     if (!is_card_present())
         return RES_ERROR;
-    sd_state = STM32_SD::init();
+    sd_state = STM32::SD::init();
     #ifdef STM32_FATFS_BUS_4BITS
-    if (sd_state == STM32_SD::ESDError::OK)
+    if (sd_state == STM32::SD::ESDError::OK)
     {
-        if (STM32_SD::wide_bus_config(STM32_SDIO_BUS) != STM32_SD::ESDError::OK)
-            sd_state = STM32_SD::ESDError::ERROR;
+        if (STM32::SD::wide_bus_config(STM32_SDIO_BUS) != STM32::SD::ESDError::OK)
+            sd_state = STM32::SD::ESDError::ERROR;
     }
     #endif
     return static_cast<uint8_t>(sd_state);
@@ -30,7 +30,7 @@ uint8_t SDDriver::status(uint8_t)
 DSTATUS SDDriver::read(uint8_t lun, uint8_t* buf, uint32_t sector, uint16_t count)
 {
     UNUSED(lun);
-    if (STM32_SD::read_blocks(buf, sector * BLOCK_SIZE, BLOCK_SIZE, count) != STM32_SD::ESDError::OK)
+    if (STM32::SD::read_blocks(buf, sector * BLOCK_SIZE, BLOCK_SIZE, count) != STM32::SD::ESDError::OK)
         return RES_ERROR;
     return RES_OK;
 }
@@ -39,7 +39,7 @@ DSTATUS SDDriver::read(uint8_t lun, uint8_t* buf, uint32_t sector, uint16_t coun
 DSTATUS SDDriver::write(uint8_t lun, uint8_t* buf, uint32_t sector, uint16_t count)
 {
     UNUSED(lun);
-    if (STM32_SD::write_blocks(buf, sector * BLOCK_SIZE, BLOCK_SIZE, count) != STM32_SD::ESDError::OK)
+    if (STM32::SD::write_blocks(buf, sector * BLOCK_SIZE, BLOCK_SIZE, count) != STM32::SD::ESDError::OK)
         return RES_ERROR;
     return RES_OK;
 }

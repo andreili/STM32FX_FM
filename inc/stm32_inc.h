@@ -29,7 +29,7 @@
     #include "stm32_uart.h"
 #endif
 #ifdef STM32_USE_SD
-    #include "stm32_sd.h"
+    #include "stm32_sd.hpp"
     #ifdef STM32_FATFS_USE
         #include STM32_FATFS_SD_DRIVER_INC
     #endif //STM32_FATFS_USE

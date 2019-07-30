@@ -324,6 +324,12 @@ namespace STM32_REGS
                 STRT                   = (0x1U << 4),
                 OVR                    = (0x1U << 5),
             };
+            #define ADC_SR_AWD             (0x1U << 0)
+            #define ADC_SR_EOC             (0x1U << 1)
+            #define ADC_SR_JEOC            (0x1U << 2)
+            #define ADC_SR_JSTRT           (0x1U << 3)
+            #define ADC_SR_STRT            (0x1U << 4)
+            #define ADC_SR_OVR             (0x1U << 5)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -339,7 +345,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class CR1
@@ -386,6 +392,20 @@ namespace STM32_REGS
                 RES                    = (0x3U << 24),
                 OVRIE                  = (0x1U << 26),
             };
+            #define ADC_CR1_AWDCH          (0x1FU << 0)
+            #define ADC_CR1_EOCIE          (0x1U << 5)
+            #define ADC_CR1_AWDIE          (0x1U << 6)
+            #define ADC_CR1_JEOCIE         (0x1U << 7)
+            #define ADC_CR1_SCAN           (0x1U << 8)
+            #define ADC_CR1_AWDSGL         (0x1U << 9)
+            #define ADC_CR1_JAUTO          (0x1U << 10)
+            #define ADC_CR1_DISCEN         (0x1U << 11)
+            #define ADC_CR1_JDISCEN        (0x1U << 12)
+            #define ADC_CR1_DISCNUM        (0x7U << 13)
+            #define ADC_CR1_JAWDEN         (0x1U << 22)
+            #define ADC_CR1_AWDEN          (0x1U << 23)
+            #define ADC_CR1_RES            (0x3U << 24)
+            #define ADC_CR1_OVRIE          (0x1U << 26)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1 = value; }
             template <EMasks ... flags>
@@ -401,7 +421,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1 & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1 & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_AWDCH() { return reinterpret_cast<__IO CR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1)->AWDCH; }
             static inline void set_AWDCH(uint32_t value) { reinterpret_cast<__IO CR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR1)->AWDCH = value; }
@@ -452,6 +472,18 @@ namespace STM32_REGS
                 EXTEN                  = (0x3U << 28),
                 SWSTART                = (0x1U << 30),
             };
+            #define ADC_CR2_ADON           (0x1U << 0)
+            #define ADC_CR2_CONT           (0x1U << 1)
+            #define ADC_CR2_DMA            (0x1U << 8)
+            #define ADC_CR2_DDS            (0x1U << 9)
+            #define ADC_CR2_EOCS           (0x1U << 10)
+            #define ADC_CR2_ALIGN          (0x1U << 11)
+            #define ADC_CR2_JEXTSEL        (0xFU << 16)
+            #define ADC_CR2_JEXTEN         (0x3U << 20)
+            #define ADC_CR2_JSWSTART       (0x1U << 22)
+            #define ADC_CR2_EXTSEL         (0xFU << 24)
+            #define ADC_CR2_EXTEN          (0x3U << 28)
+            #define ADC_CR2_SWSTART        (0x1U << 30)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2 = value; }
             template <EMasks ... flags>
@@ -467,7 +499,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2 & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2 & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_JEXTSEL() { return reinterpret_cast<__IO CR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2)->JEXTSEL; }
             static inline void set_JEXTSEL(uint32_t value) { reinterpret_cast<__IO CR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->CR2)->JEXTSEL = value; }
@@ -511,6 +543,15 @@ namespace STM32_REGS
                 SMP17                  = (0x7U << 21),
                 SMP18                  = (0x7U << 24),
             };
+            #define ADC_SMPR1_SMP10        (0x7U << 0)
+            #define ADC_SMPR1_SMP11        (0x7U << 3)
+            #define ADC_SMPR1_SMP12        (0x7U << 6)
+            #define ADC_SMPR1_SMP13        (0x7U << 9)
+            #define ADC_SMPR1_SMP14        (0x7U << 12)
+            #define ADC_SMPR1_SMP15        (0x7U << 15)
+            #define ADC_SMPR1_SMP16        (0x7U << 18)
+            #define ADC_SMPR1_SMP17        (0x7U << 21)
+            #define ADC_SMPR1_SMP18        (0x7U << 24)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR1; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR1 = value; }
             static inline uint32_t get_SMP10() { return reinterpret_cast<__IO SMPR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR1)->SMP10; }
@@ -567,6 +608,16 @@ namespace STM32_REGS
                 SMP8                   = (0x7U << 24),
                 SMP9                   = (0x7U << 27),
             };
+            #define ADC_SMPR2_SMP0         (0x7U << 0)
+            #define ADC_SMPR2_SMP1         (0x7U << 3)
+            #define ADC_SMPR2_SMP2         (0x7U << 6)
+            #define ADC_SMPR2_SMP3         (0x7U << 9)
+            #define ADC_SMPR2_SMP4         (0x7U << 12)
+            #define ADC_SMPR2_SMP5         (0x7U << 15)
+            #define ADC_SMPR2_SMP6         (0x7U << 18)
+            #define ADC_SMPR2_SMP7         (0x7U << 21)
+            #define ADC_SMPR2_SMP8         (0x7U << 24)
+            #define ADC_SMPR2_SMP9         (0x7U << 27)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR2; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR2 = value; }
             static inline uint32_t get_SMP0() { return reinterpret_cast<__IO SMPR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SMPR2)->SMP0; }
@@ -607,6 +658,7 @@ namespace STM32_REGS
             {
                 JOFFSET1               = (0xFFFU << 0),
             };
+            #define ADC_JOFR1_JOFFSET1     (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR1; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR1 = value; }
             static inline uint32_t get_JOFFSET1() { return reinterpret_cast<__IO JOFR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR1)->JOFFSET1; }
@@ -629,6 +681,7 @@ namespace STM32_REGS
             {
                 JOFFSET2               = (0xFFFU << 0),
             };
+            #define ADC_JOFR2_JOFFSET2     (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR2; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR2 = value; }
             static inline uint32_t get_JOFFSET2() { return reinterpret_cast<__IO JOFR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR2)->JOFFSET2; }
@@ -651,6 +704,7 @@ namespace STM32_REGS
             {
                 JOFFSET3               = (0xFFFU << 0),
             };
+            #define ADC_JOFR3_JOFFSET3     (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR3; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR3 = value; }
             static inline uint32_t get_JOFFSET3() { return reinterpret_cast<__IO JOFR3_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR3)->JOFFSET3; }
@@ -673,6 +727,7 @@ namespace STM32_REGS
             {
                 JOFFSET4               = (0xFFFU << 0),
             };
+            #define ADC_JOFR4_JOFFSET4     (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR4; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR4 = value; }
             static inline uint32_t get_JOFFSET4() { return reinterpret_cast<__IO JOFR4_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JOFR4)->JOFFSET4; }
@@ -695,6 +750,7 @@ namespace STM32_REGS
             {
                 HT                     = (0xFFFU << 0),
             };
+            #define ADC_HTR_HT             (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->HTR; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->HTR = value; }
             static inline uint32_t get_HT() { return reinterpret_cast<__IO HTR_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->HTR)->HT; }
@@ -717,6 +773,7 @@ namespace STM32_REGS
             {
                 LT                     = (0xFFFU << 0),
             };
+            #define ADC_LTR_LT             (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->LTR; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->LTR = value; }
             static inline uint32_t get_LT() { return reinterpret_cast<__IO LTR_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->LTR)->LT; }
@@ -747,6 +804,11 @@ namespace STM32_REGS
                 SQ16                   = (0x1FU << 15),
                 L                      = (0xFU << 20),
             };
+            #define ADC_SQR1_SQ13          (0x1FU << 0)
+            #define ADC_SQR1_SQ14          (0x1FU << 5)
+            #define ADC_SQR1_SQ15          (0x1FU << 10)
+            #define ADC_SQR1_SQ16          (0x1FU << 15)
+            #define ADC_SQR1_L             (0xFU << 20)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR1; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR1 = value; }
             static inline uint32_t get_SQ13() { return reinterpret_cast<__IO SQR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR1)->SQ13; }
@@ -787,6 +849,12 @@ namespace STM32_REGS
                 SQ11                   = (0x1FU << 20),
                 SQ12                   = (0x1FU << 25),
             };
+            #define ADC_SQR2_SQ7           (0x1FU << 0)
+            #define ADC_SQR2_SQ8           (0x1FU << 5)
+            #define ADC_SQR2_SQ9           (0x1FU << 10)
+            #define ADC_SQR2_SQ10          (0x1FU << 15)
+            #define ADC_SQR2_SQ11          (0x1FU << 20)
+            #define ADC_SQR2_SQ12          (0x1FU << 25)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR2; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR2 = value; }
             static inline uint32_t get_SQ7() { return reinterpret_cast<__IO SQR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR2)->SQ7; }
@@ -829,6 +897,12 @@ namespace STM32_REGS
                 SQ5                    = (0x1FU << 20),
                 SQ6                    = (0x1FU << 25),
             };
+            #define ADC_SQR3_SQ1           (0x1FU << 0)
+            #define ADC_SQR3_SQ2           (0x1FU << 5)
+            #define ADC_SQR3_SQ3           (0x1FU << 10)
+            #define ADC_SQR3_SQ4           (0x1FU << 15)
+            #define ADC_SQR3_SQ5           (0x1FU << 20)
+            #define ADC_SQR3_SQ6           (0x1FU << 25)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR3; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR3 = value; }
             static inline uint32_t get_SQ1() { return reinterpret_cast<__IO SQR3_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->SQR3)->SQ1; }
@@ -869,6 +943,11 @@ namespace STM32_REGS
                 JSQ4                   = (0x1FU << 15),
                 JL                     = (0x3U << 20),
             };
+            #define ADC_JSQR_JSQ1          (0x1FU << 0)
+            #define ADC_JSQR_JSQ2          (0x1FU << 5)
+            #define ADC_JSQR_JSQ3          (0x1FU << 10)
+            #define ADC_JSQR_JSQ4          (0x1FU << 15)
+            #define ADC_JSQR_JL            (0x3U << 20)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JSQR; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JSQR = value; }
             static inline uint32_t get_JSQ1() { return reinterpret_cast<__IO JSQR_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JSQR)->JSQ1; }
@@ -899,6 +978,7 @@ namespace STM32_REGS
             {
                 JDATA                  = (0xFFFFU << 0),
             };
+            #define ADC_JDR1_JDATA         (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR1; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR1 = value; }
             static inline uint32_t get_JDATA() { return reinterpret_cast<__IO JDR1_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR1)->JDATA; }
@@ -921,6 +1001,7 @@ namespace STM32_REGS
             {
                 JDATA                  = (0xFFFFU << 0),
             };
+            #define ADC_JDR2_JDATA         (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR2; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR2 = value; }
             static inline uint32_t get_JDATA() { return reinterpret_cast<__IO JDR2_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR2)->JDATA; }
@@ -943,6 +1024,7 @@ namespace STM32_REGS
             {
                 JDATA                  = (0xFFFFU << 0),
             };
+            #define ADC_JDR3_JDATA         (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR3; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR3 = value; }
             static inline uint32_t get_JDATA() { return reinterpret_cast<__IO JDR3_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR3)->JDATA; }
@@ -965,6 +1047,7 @@ namespace STM32_REGS
             {
                 JDATA                  = (0xFFFFU << 0),
             };
+            #define ADC_JDR4_JDATA         (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR4; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR4 = value; }
             static inline uint32_t get_JDATA() { return reinterpret_cast<__IO JDR4_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->JDR4)->JDATA; }
@@ -988,6 +1071,8 @@ namespace STM32_REGS
                 DATA                   = (0xFFFFU << 0),
                 ADC2DATA               = (0xFFFFU << 16),
             };
+            #define ADC_DR_DATA            (0xFFFFU << 0)
+            #define ADC_DR_ADC2DATA        (0xFFFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->DR; }
             static inline void set(uint32_t value) { reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->DR = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO DR_t*>(&reinterpret_cast<ADC_t*>(STM32::ADC_BASE)->DR)->DATA; }
@@ -1050,6 +1135,7 @@ namespace STM32_REGS
             {
                 DR                     = (0xFFFFFFFFU << 0),
             };
+            #define CRC_DR_DR              (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->DR; }
             static inline void set(uint32_t value) { reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->DR = value; }
             static inline uint32_t get_DR() { return reinterpret_cast<__IO DR_t*>(&reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->DR)->DR; }
@@ -1062,6 +1148,7 @@ namespace STM32_REGS
             {
                 IDR                    = (0xFFU << 0),
             };
+            #define CRC_IDR_IDR            (0xFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->IDR; }
             static inline void set(uint32_t value) { reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->IDR = value; }
         };
@@ -1082,6 +1169,7 @@ namespace STM32_REGS
             {
                 RESET                  = (0x1U << 0),
             };
+            #define CRC_CR_RESET           (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -1097,7 +1185,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<CRC_t*>(STM32::CRC_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -1171,6 +1259,22 @@ namespace STM32_REGS
                 DMAEN2                 = (0x1U << 28),
                 DMAUDRIE2              = (0x1U << 29),
             };
+            #define DAC_CR_EN1             (0x1U << 0)
+            #define DAC_CR_BOFF1           (0x1U << 1)
+            #define DAC_CR_TEN1            (0x1U << 2)
+            #define DAC_CR_TSEL1           (0x7U << 3)
+            #define DAC_CR_WAVE1           (0x3U << 6)
+            #define DAC_CR_MAMP1           (0xFU << 8)
+            #define DAC_CR_DMAEN1          (0x1U << 12)
+            #define DAC_CR_DMAUDRIE1       (0x1U << 13)
+            #define DAC_CR_EN2             (0x1U << 16)
+            #define DAC_CR_BOFF2           (0x1U << 17)
+            #define DAC_CR_TEN2            (0x1U << 18)
+            #define DAC_CR_TSEL2           (0x7U << 19)
+            #define DAC_CR_WAVE2           (0x3U << 22)
+            #define DAC_CR_MAMP2           (0xFU << 24)
+            #define DAC_CR_DMAEN2          (0x1U << 28)
+            #define DAC_CR_DMAUDRIE2       (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -1186,7 +1290,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TSEL1() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR)->TSEL1; }
             static inline void set_TSEL1(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->CR)->TSEL1 = value; }
@@ -1220,6 +1324,8 @@ namespace STM32_REGS
                 SWTRIG1                = (0x1U << 0),
                 SWTRIG2                = (0x1U << 1),
             };
+            #define DAC_SWTRIGR_SWTRIG1    (0x1U << 0)
+            #define DAC_SWTRIGR_SWTRIG2    (0x1U << 1)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SWTRIGR; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SWTRIGR = value; }
             template <EMasks ... flags>
@@ -1235,7 +1341,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SWTRIGR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SWTRIGR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class DHR12R1
@@ -1255,6 +1361,7 @@ namespace STM32_REGS
             {
                 DACC1DHR               = (0xFFFU << 0),
             };
+            #define DAC_DHR12R1_DACC1DHR   (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R1; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R1 = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR12R1_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R1)->DACC1DHR; }
@@ -1278,6 +1385,7 @@ namespace STM32_REGS
             {
                 DACC1DHR               = (0xFFFU << 4),
             };
+            #define DAC_DHR12L1_DACC1DHR   (0xFFFU << 4)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L1; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L1 = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR12L1_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L1)->DACC1DHR; }
@@ -1300,6 +1408,7 @@ namespace STM32_REGS
             {
                 DACC1DHR               = (0xFFU << 0),
             };
+            #define DAC_DHR8R1_DACC1DHR    (0xFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R1; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R1 = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR8R1_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R1)->DACC1DHR; }
@@ -1322,6 +1431,7 @@ namespace STM32_REGS
             {
                 DACC2DHR               = (0xFFFU << 0),
             };
+            #define DAC_DHR12R2_DACC2DHR   (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R2; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R2 = value; }
             static inline uint32_t get_DACC2DHR() { return reinterpret_cast<__IO DHR12R2_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12R2)->DACC2DHR; }
@@ -1345,6 +1455,7 @@ namespace STM32_REGS
             {
                 DACC2DHR               = (0xFFFU << 4),
             };
+            #define DAC_DHR12L2_DACC2DHR   (0xFFFU << 4)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L2; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L2 = value; }
             static inline uint32_t get_DACC2DHR() { return reinterpret_cast<__IO DHR12L2_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12L2)->DACC2DHR; }
@@ -1367,6 +1478,7 @@ namespace STM32_REGS
             {
                 DACC2DHR               = (0xFFU << 0),
             };
+            #define DAC_DHR8R2_DACC2DHR    (0xFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R2; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R2 = value; }
             static inline uint32_t get_DACC2DHR() { return reinterpret_cast<__IO DHR8R2_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8R2)->DACC2DHR; }
@@ -1392,6 +1504,8 @@ namespace STM32_REGS
                 DACC1DHR               = (0xFFFU << 0),
                 DACC2DHR               = (0xFFFU << 16),
             };
+            #define DAC_DHR12RD_DACC1DHR   (0xFFFU << 0)
+            #define DAC_DHR12RD_DACC2DHR   (0xFFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12RD; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12RD = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR12RD_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12RD)->DACC1DHR; }
@@ -1419,6 +1533,8 @@ namespace STM32_REGS
                 DACC1DHR               = (0xFFFU << 4),
                 DACC2DHR               = (0xFFFU << 20),
             };
+            #define DAC_DHR12LD_DACC1DHR   (0xFFFU << 4)
+            #define DAC_DHR12LD_DACC2DHR   (0xFFFU << 20)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12LD; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12LD = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR12LD_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR12LD)->DACC1DHR; }
@@ -1445,6 +1561,8 @@ namespace STM32_REGS
                 DACC1DHR               = (0xFFU << 0),
                 DACC2DHR               = (0xFFU << 8),
             };
+            #define DAC_DHR8RD_DACC1DHR    (0xFFU << 0)
+            #define DAC_DHR8RD_DACC2DHR    (0xFFU << 8)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8RD; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8RD = value; }
             static inline uint32_t get_DACC1DHR() { return reinterpret_cast<__IO DHR8RD_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DHR8RD)->DACC1DHR; }
@@ -1469,6 +1587,7 @@ namespace STM32_REGS
             {
                 DACC1DOR               = (0xFFFU << 0),
             };
+            #define DAC_DOR1_DACC1DOR      (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR1; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR1 = value; }
             static inline uint32_t get_DACC1DOR() { return reinterpret_cast<__IO DOR1_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR1)->DACC1DOR; }
@@ -1491,6 +1610,7 @@ namespace STM32_REGS
             {
                 DACC2DOR               = (0xFFFU << 0),
             };
+            #define DAC_DOR2_DACC2DOR      (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR2; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR2 = value; }
             static inline uint32_t get_DACC2DOR() { return reinterpret_cast<__IO DOR2_t*>(&reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->DOR2)->DACC2DOR; }
@@ -1517,6 +1637,8 @@ namespace STM32_REGS
                 DMAUDR1                = (0x1U << 13),
                 DMAUDR2                = (0x1U << 29),
             };
+            #define DAC_SR_DMAUDR1         (0x1U << 13)
+            #define DAC_SR_DMAUDR2         (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -1532,7 +1654,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DAC_t*>(STM32::DAC_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -1567,6 +1689,8 @@ namespace STM32_REGS
                 DEV_ID                 = (0xFFFU << 0),
                 REV_ID                 = (0xFFFFU << 16),
             };
+            #define DBGMCU_IDCODE_DEV_ID   (0xFFFU << 0)
+            #define DBGMCU_IDCODE_REV_ID   (0xFFFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->IDCODE; }
             static inline void set(uint32_t value) { reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->IDCODE = value; }
             static inline uint32_t get_DEV_ID() { return reinterpret_cast<__IO IDCODE_t*>(&reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->IDCODE)->DEV_ID; }
@@ -1600,6 +1724,11 @@ namespace STM32_REGS
                 TRACE_IOEN             = (0x1U << 5),
                 TRACE_MODE             = (0x3U << 6),
             };
+            #define DBGMCU_CR_DBG_SLEEP    (0x1U << 0)
+            #define DBGMCU_CR_DBG_STOP     (0x1U << 1)
+            #define DBGMCU_CR_DBG_STANDBY  (0x1U << 2)
+            #define DBGMCU_CR_TRACE_IOEN   (0x1U << 5)
+            #define DBGMCU_CR_TRACE_MODE   (0x3U << 6)
             static inline uint32_t get() { return reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -1615,7 +1744,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TRACE_MODE() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR)->TRACE_MODE; }
             static inline void set_TRACE_MODE(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->CR)->TRACE_MODE = value; }
@@ -1672,6 +1801,23 @@ namespace STM32_REGS
                 FZ_DBG_CAN1_STOP       = (0x1U << 25),
                 FZ_DBG_CAN2_STOP       = (0x1U << 26),
             };
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM2_STOP (0x1U << 0)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM3_STOP (0x1U << 1)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM4_STOP (0x1U << 2)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM5_STOP (0x1U << 3)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM6_STOP (0x1U << 4)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM7_STOP (0x1U << 5)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM12_STOP (0x1U << 6)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM13_STOP (0x1U << 7)
+            #define DBGMCU_APB1FZ_FZ_DBG_TIM14_STOP (0x1U << 8)
+            #define DBGMCU_APB1FZ_FZ_DBG_RTC_STOP (0x1U << 10)
+            #define DBGMCU_APB1FZ_FZ_DBG_WWDG_STOP (0x1U << 11)
+            #define DBGMCU_APB1FZ_FZ_DBG_IWDG_STOP (0x1U << 12)
+            #define DBGMCU_APB1FZ_FZ_DBG_I2C1_SMBUS_TIMEOUT (0x1U << 21)
+            #define DBGMCU_APB1FZ_FZ_DBG_I2C2_SMBUS_TIMEOUT (0x1U << 22)
+            #define DBGMCU_APB1FZ_FZ_DBG_I2C3_SMBUS_TIMEOUT (0x1U << 23)
+            #define DBGMCU_APB1FZ_FZ_DBG_CAN1_STOP (0x1U << 25)
+            #define DBGMCU_APB1FZ_FZ_DBG_CAN2_STOP (0x1U << 26)
             static inline uint32_t get() { return reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB1FZ; }
             static inline void set(uint32_t value) { reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB1FZ = value; }
             template <EMasks ... flags>
@@ -1687,7 +1833,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB1FZ & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB1FZ & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB2FZ
@@ -1716,6 +1862,11 @@ namespace STM32_REGS
                 FZ_DBG_TIM10_STOP      = (0x1U << 17),
                 FZ_DBG_TIM11_STOP      = (0x1U << 18),
             };
+            #define DBGMCU_APB2FZ_FZ_DBG_TIM1_STOP (0x1U << 0)
+            #define DBGMCU_APB2FZ_FZ_DBG_TIM8_STOP (0x1U << 1)
+            #define DBGMCU_APB2FZ_FZ_DBG_TIM9_STOP (0x1U << 16)
+            #define DBGMCU_APB2FZ_FZ_DBG_TIM10_STOP (0x1U << 17)
+            #define DBGMCU_APB2FZ_FZ_DBG_TIM11_STOP (0x1U << 18)
             static inline uint32_t get() { return reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB2FZ; }
             static inline void set(uint32_t value) { reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB2FZ = value; }
             template <EMasks ... flags>
@@ -1731,7 +1882,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB2FZ & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DBGMCU_t*>(STM32::DBGMCU_BASE)->APB2FZ & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -1791,6 +1942,16 @@ namespace STM32_REGS
                 CRE                    = (0x1U << 12),
                 ENABLE                 = (0x1U << 14),
             };
+            #define DCMI_CR_CAPTURE        (0x1U << 0)
+            #define DCMI_CR_CM             (0x1U << 1)
+            #define DCMI_CR_CROP           (0x1U << 2)
+            #define DCMI_CR_JPEG           (0x1U << 3)
+            #define DCMI_CR_ESS            (0x1U << 4)
+            #define DCMI_CR_PCKPOL         (0x1U << 5)
+            #define DCMI_CR_HSPOL          (0x1U << 6)
+            #define DCMI_CR_VSPOL          (0x1U << 7)
+            #define DCMI_CR_CRE            (0x1U << 12)
+            #define DCMI_CR_ENABLE         (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -1806,7 +1967,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class SR
@@ -1830,6 +1991,9 @@ namespace STM32_REGS
                 VSYNC                  = (0x1U << 1),
                 FNE                    = (0x1U << 2),
             };
+            #define DCMI_SR_HSYNC          (0x1U << 0)
+            #define DCMI_SR_VSYNC          (0x1U << 1)
+            #define DCMI_SR_FNE            (0x1U << 2)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -1845,7 +2009,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class RISR
@@ -1873,6 +2037,11 @@ namespace STM32_REGS
                 VSYNC_RIS              = (0x1U << 3),
                 LINE_RIS               = (0x1U << 4),
             };
+            #define DCMI_RISR_FRAME_RIS    (0x1U << 0)
+            #define DCMI_RISR_OVR_RIS      (0x1U << 1)
+            #define DCMI_RISR_ERR_RIS      (0x1U << 2)
+            #define DCMI_RISR_VSYNC_RIS    (0x1U << 3)
+            #define DCMI_RISR_LINE_RIS     (0x1U << 4)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->RISR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->RISR = value; }
             template <EMasks ... flags>
@@ -1888,7 +2057,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->RISR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->RISR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class IER
@@ -1916,6 +2085,11 @@ namespace STM32_REGS
                 VSYNC_IE               = (0x1U << 3),
                 LINE_IE                = (0x1U << 4),
             };
+            #define DCMI_IER_FRAME_IE      (0x1U << 0)
+            #define DCMI_IER_OVR_IE        (0x1U << 1)
+            #define DCMI_IER_ERR_IE        (0x1U << 2)
+            #define DCMI_IER_VSYNC_IE      (0x1U << 3)
+            #define DCMI_IER_LINE_IE       (0x1U << 4)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->IER; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->IER = value; }
             template <EMasks ... flags>
@@ -1931,7 +2105,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->IER & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->IER & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MISR
@@ -1959,6 +2133,11 @@ namespace STM32_REGS
                 VSYNC_MIS              = (0x1U << 3),
                 LINE_MIS               = (0x1U << 4),
             };
+            #define DCMI_MISR_FRAME_MIS    (0x1U << 0)
+            #define DCMI_MISR_OVR_MIS      (0x1U << 1)
+            #define DCMI_MISR_ERR_MIS      (0x1U << 2)
+            #define DCMI_MISR_VSYNC_MIS    (0x1U << 3)
+            #define DCMI_MISR_LINE_MIS     (0x1U << 4)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->MISR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->MISR = value; }
             template <EMasks ... flags>
@@ -1974,7 +2153,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->MISR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->MISR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class ICR
@@ -2002,6 +2181,11 @@ namespace STM32_REGS
                 VSYNC_ISC              = (0x1U << 3),
                 LINE_ISC               = (0x1U << 4),
             };
+            #define DCMI_ICR_FRAME_ISC     (0x1U << 0)
+            #define DCMI_ICR_OVR_ISC       (0x1U << 1)
+            #define DCMI_ICR_ERR_ISC       (0x1U << 2)
+            #define DCMI_ICR_VSYNC_ISC     (0x1U << 3)
+            #define DCMI_ICR_LINE_ISC      (0x1U << 4)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ICR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ICR = value; }
             template <EMasks ... flags>
@@ -2017,7 +2201,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ICR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ICR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class ESCR
@@ -2042,6 +2226,10 @@ namespace STM32_REGS
                 LEC                    = (0xFFU << 16),
                 FEC                    = (0xFFU << 24),
             };
+            #define DCMI_ESCR_FSC          (0xFFU << 0)
+            #define DCMI_ESCR_LSC          (0xFFU << 8)
+            #define DCMI_ESCR_LEC          (0xFFU << 16)
+            #define DCMI_ESCR_FEC          (0xFFU << 24)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESCR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESCR = value; }
             static inline uint32_t get_FSC() { return reinterpret_cast<__IO ESCR_t*>(&reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESCR)->FSC; }
@@ -2075,6 +2263,10 @@ namespace STM32_REGS
                 LEU                    = (0xFFU << 16),
                 FEU                    = (0xFFU << 24),
             };
+            #define DCMI_ESUR_FSU          (0xFFU << 0)
+            #define DCMI_ESUR_LSU          (0xFFU << 8)
+            #define DCMI_ESUR_LEU          (0xFFU << 16)
+            #define DCMI_ESUR_FEU          (0xFFU << 24)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESUR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESUR = value; }
             static inline uint32_t get_FSU() { return reinterpret_cast<__IO ESUR_t*>(&reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->ESUR)->FSU; }
@@ -2106,6 +2298,8 @@ namespace STM32_REGS
                 HOFFCNT                = (0x3FFFU << 0),
                 VST                    = (0x1FFFU << 16),
             };
+            #define DCMI_CWSTRTR_HOFFCNT   (0x3FFFU << 0)
+            #define DCMI_CWSTRTR_VST       (0x1FFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSTRTR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSTRTR = value; }
             static inline uint32_t get_HOFFCNT() { return reinterpret_cast<__IO CWSTRTR_t*>(&reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSTRTR)->HOFFCNT; }
@@ -2133,6 +2327,8 @@ namespace STM32_REGS
                 CAPCNT                 = (0x3FFFU << 0),
                 VLINE                  = (0x3FFFU << 16),
             };
+            #define DCMI_CWSIZER_CAPCNT    (0x3FFFU << 0)
+            #define DCMI_CWSIZER_VLINE     (0x3FFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSIZER; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSIZER = value; }
             static inline uint32_t get_CAPCNT() { return reinterpret_cast<__IO CWSIZER_t*>(&reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->CWSIZER)->CAPCNT; }
@@ -2162,6 +2358,10 @@ namespace STM32_REGS
                 BYTE2                  = (0xFFU << 16),
                 BYTE3                  = (0xFFU << 24),
             };
+            #define DCMI_DR_BYTE0          (0xFFU << 0)
+            #define DCMI_DR_BYTE1          (0xFFU << 8)
+            #define DCMI_DR_BYTE2          (0xFFU << 16)
+            #define DCMI_DR_BYTE3          (0xFFU << 24)
             static inline uint32_t get() { return reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->DR; }
             static inline void set(uint32_t value) { reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->DR = value; }
             static inline uint32_t get_BYTE0() { return reinterpret_cast<__IO DR_t*>(&reinterpret_cast<DCMI_t*>(STM32::DCMI_BASE)->DR)->BYTE0; }
@@ -2304,6 +2504,21 @@ namespace STM32_REGS
                 TE                     = (0x1U << 3),
                 RE                     = (0x1U << 2),
             };
+            #define ETH_MACCR_WD           (0x1U << 23)
+            #define ETH_MACCR_JD           (0x1U << 22)
+            #define ETH_MACCR_IFG          (0x7U << 17)
+            #define ETH_MACCR_CSD          (0x1U << 16)
+            #define ETH_MACCR_FES          (0x1U << 14)
+            #define ETH_MACCR_ROD          (0x1U << 13)
+            #define ETH_MACCR_LM           (0x1U << 12)
+            #define ETH_MACCR_DM           (0x1U << 11)
+            #define ETH_MACCR_IPCO         (0x1U << 10)
+            #define ETH_MACCR_RD           (0x1U << 9)
+            #define ETH_MACCR_APCS         (0x1U << 7)
+            #define ETH_MACCR_BL           (0x3U << 5)
+            #define ETH_MACCR_DC           (0x1U << 4)
+            #define ETH_MACCR_TE           (0x1U << 3)
+            #define ETH_MACCR_RE           (0x1U << 2)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR = value; }
             template <EMasks ... flags>
@@ -2319,7 +2534,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_IFG() { return reinterpret_cast<__IO MACCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR)->IFG; }
             static inline void set_IFG(uint32_t value) { reinterpret_cast<__IO MACCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACCR)->IFG = value; }
@@ -2369,6 +2584,20 @@ namespace STM32_REGS
                 HU                     = (0x1U << 1),
                 PM                     = (0x1U << 0),
             };
+            #define ETH_MACFFR_RA          (0x1U << 31)
+            #define ETH_MACFFR_HPF         (0x1U << 10)
+            #define ETH_MACFFR_SAF         (0x1U << 9)
+            #define ETH_MACFFR_SAIF        (0x1U << 8)
+            #define ETH_MACFFR_PCF         (0x3U << 6)
+            #define ETH_MACFFR_PCF_BlockAll (0x1U << 6)
+            #define ETH_MACFFR_PCF_ForwardAll (0x1U << 7)
+            #define ETH_MACFFR_PCF_ForwardPassedAddrFilter (0x3U << 6)
+            #define ETH_MACFFR_BFD         (0x1U << 5)
+            #define ETH_MACFFR_PAM         (0x1U << 4)
+            #define ETH_MACFFR_DAIF        (0x1U << 3)
+            #define ETH_MACFFR_HM          (0x1U << 2)
+            #define ETH_MACFFR_HU          (0x1U << 1)
+            #define ETH_MACFFR_PM          (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR = value; }
             template <EMasks ... flags>
@@ -2384,7 +2613,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_PCF() { return reinterpret_cast<__IO MACFFR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR)->PCF; }
             static inline void set_PCF(uint32_t value) { reinterpret_cast<__IO MACFFR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFFR)->PCF = value; }
@@ -2407,6 +2636,7 @@ namespace STM32_REGS
             {
                 HTH                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACHTHR_HTH        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTHR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTHR = value; }
             static inline uint32_t get_HTH() { return reinterpret_cast<__IO MACHTHR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTHR)->HTH; }
@@ -2428,6 +2658,7 @@ namespace STM32_REGS
             {
                 HTL                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACHTLR_HTL        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTLR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTLR = value; }
             static inline uint32_t get_HTL() { return reinterpret_cast<__IO MACHTLR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACHTLR)->HTL; }
@@ -2467,6 +2698,15 @@ namespace STM32_REGS
                 MW                     = (0x1U << 1),
                 MB                     = (0x1U << 0),
             };
+            #define ETH_MACMIIAR_PA        (0x1FU << 11)
+            #define ETH_MACMIIAR_MR        (0x1FU << 6)
+            #define ETH_MACMIIAR_CR        (0x7U << 2)
+            #define ETH_MACMIIAR_CR_Div62  (0x1U << 2)
+            #define ETH_MACMIIAR_CR_Div16  (0x1U << 3)
+            #define ETH_MACMIIAR_CR_Div26  (0x3U << 2)
+            #define ETH_MACMIIAR_CR_Div102 (0x1U << 4)
+            #define ETH_MACMIIAR_MW        (0x1U << 1)
+            #define ETH_MACMIIAR_MB        (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR = value; }
             template <EMasks ... flags>
@@ -2482,7 +2722,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_PA() { return reinterpret_cast<__IO MACMIIAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR)->PA; }
             static inline void set_PA(uint32_t value) { reinterpret_cast<__IO MACMIIAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIAR)->PA = value; }
@@ -2510,6 +2750,7 @@ namespace STM32_REGS
             {
                 MD                     = (0xFFFFU << 0),
             };
+            #define ETH_MACMIIDR_MD        (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIDR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIDR = value; }
             static inline uint32_t get_MD() { return reinterpret_cast<__IO MACMIIDR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACMIIDR)->MD; }
@@ -2550,6 +2791,16 @@ namespace STM32_REGS
                 TFCE                   = (0x1U << 1),
                 FCBBPA                 = (0x1U << 0),
             };
+            #define ETH_MACFCR_PT          (0xFFFFU << 16)
+            #define ETH_MACFCR_ZQPD        (0x1U << 7)
+            #define ETH_MACFCR_PLT         (0x3U << 4)
+            #define ETH_MACFCR_PLT_Minus28 (0x1U << 4)
+            #define ETH_MACFCR_PLT_Minus144 (0x1U << 5)
+            #define ETH_MACFCR_PLT_Minus256 (0x3U << 4)
+            #define ETH_MACFCR_UPFD        (0x1U << 3)
+            #define ETH_MACFCR_RFCE        (0x1U << 2)
+            #define ETH_MACFCR_TFCE        (0x1U << 1)
+            #define ETH_MACFCR_FCBBPA      (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR = value; }
             template <EMasks ... flags>
@@ -2565,7 +2816,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_PT() { return reinterpret_cast<__IO MACFCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR)->PT; }
             static inline void set_PT(uint32_t value) { reinterpret_cast<__IO MACFCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACFCR)->PT = value; }
@@ -2593,6 +2844,8 @@ namespace STM32_REGS
                 VLANTC                 = (0x1U << 16),
                 VLANTI                 = (0xFFFFU << 0),
             };
+            #define ETH_MACVLANTR_VLANTC   (0x1U << 16)
+            #define ETH_MACVLANTR_VLANTI   (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR = value; }
             template <EMasks ... flags>
@@ -2608,7 +2861,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_VLANTI() { return reinterpret_cast<__IO MACVLANTR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR)->VLANTI; }
             static inline void set_VLANTI(uint32_t value) { reinterpret_cast<__IO MACVLANTR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACVLANTR)->VLANTI = value; }
@@ -2629,6 +2882,7 @@ namespace STM32_REGS
             {
                 D                      = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACRWUFFR_D        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACRWUFFR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACRWUFFR = value; }
             static inline uint32_t get_D() { return reinterpret_cast<__IO MACRWUFFR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACRWUFFR)->D; }
@@ -2663,6 +2917,13 @@ namespace STM32_REGS
                 MPE                    = (0x1U << 1),
                 PD                     = (0x1U << 0),
             };
+            #define ETH_MACPMTCSR_WFFRPR   (0x1U << 31)
+            #define ETH_MACPMTCSR_GU       (0x1U << 9)
+            #define ETH_MACPMTCSR_WFR      (0x1U << 6)
+            #define ETH_MACPMTCSR_MPR      (0x1U << 5)
+            #define ETH_MACPMTCSR_WFE      (0x1U << 2)
+            #define ETH_MACPMTCSR_MPE      (0x1U << 1)
+            #define ETH_MACPMTCSR_PD       (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACPMTCSR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACPMTCSR = value; }
             template <EMasks ... flags>
@@ -2678,7 +2939,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACPMTCSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACPMTCSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MACDBGR
@@ -2744,6 +3005,30 @@ namespace STM32_REGS
                 MSFRWCS                = (0x3U << 1),
                 MMRPEA                 = (0x1U << 0),
             };
+            #define ETH_MACDBGR_TFF        (0x1U << 25)
+            #define ETH_MACDBGR_TFNE       (0x1U << 24)
+            #define ETH_MACDBGR_TFWA       (0x1U << 22)
+            #define ETH_MACDBGR_TFRS       (0x3U << 20)
+            #define ETH_MACDBGR_TFRS_WRITING (0x3U << 20)
+            #define ETH_MACDBGR_TFRS_WAITING (0x1U << 21)
+            #define ETH_MACDBGR_TFRS_READ  (0x1U << 20)
+            #define ETH_MACDBGR_MTP        (0x1U << 19)
+            #define ETH_MACDBGR_MTFCS      (0x3U << 17)
+            #define ETH_MACDBGR_MTFCS_TRANSFERRING (0x3U << 17)
+            #define ETH_MACDBGR_MTFCS_GENERATINGPCF (0x1U << 18)
+            #define ETH_MACDBGR_MTFCS_WAITING (0x1U << 17)
+            #define ETH_MACDBGR_MMTEA      (0x1U << 16)
+            #define ETH_MACDBGR_RFFL       (0x3U << 8)
+            #define ETH_MACDBGR_RFFL_FULL  (0x3U << 8)
+            #define ETH_MACDBGR_RFFL_ABOVEFCT (0x1U << 9)
+            #define ETH_MACDBGR_RFFL_BELOWFCT (0x1U << 8)
+            #define ETH_MACDBGR_RFRCS      (0x3U << 5)
+            #define ETH_MACDBGR_RFRCS_FLUSHING (0x3U << 5)
+            #define ETH_MACDBGR_RFRCS_STATUSREADING (0x1U << 6)
+            #define ETH_MACDBGR_RFRCS_DATAREADING (0x1U << 5)
+            #define ETH_MACDBGR_RFWRA      (0x1U << 4)
+            #define ETH_MACDBGR_MSFRWCS    (0x3U << 1)
+            #define ETH_MACDBGR_MMRPEA     (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR = value; }
             template <EMasks ... flags>
@@ -2759,7 +3044,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TFRS() { return reinterpret_cast<__IO MACDBGR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR)->TFRS; }
             static inline void set_TFRS(uint32_t value) { reinterpret_cast<__IO MACDBGR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACDBGR)->TFRS = value; }
@@ -2806,6 +3091,11 @@ namespace STM32_REGS
                 MMCS                   = (0x1U << 4),
                 PMTS                   = (0x1U << 3),
             };
+            #define ETH_MACSR_TSTS         (0x1U << 9)
+            #define ETH_MACSR_MMCTS        (0x1U << 6)
+            #define ETH_MACSR_MMMCRS       (0x1U << 5)
+            #define ETH_MACSR_MMCS         (0x1U << 4)
+            #define ETH_MACSR_PMTS         (0x1U << 3)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACSR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACSR = value; }
             template <EMasks ... flags>
@@ -2821,7 +3111,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MACIMR
@@ -2844,6 +3134,8 @@ namespace STM32_REGS
                 TSTIM                  = (0x1U << 9),
                 PMTIM                  = (0x1U << 3),
             };
+            #define ETH_MACIMR_TSTIM       (0x1U << 9)
+            #define ETH_MACIMR_PMTIM       (0x1U << 3)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACIMR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACIMR = value; }
             template <EMasks ... flags>
@@ -2859,7 +3151,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACIMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACIMR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MACA0HR
@@ -2879,6 +3171,7 @@ namespace STM32_REGS
             {
                 MACA0H                 = (0xFFFFU << 0),
             };
+            #define ETH_MACA0HR_MACA0H     (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0HR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0HR = value; }
             static inline uint32_t get_MACA0H() { return reinterpret_cast<__IO MACA0HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0HR)->MACA0H; }
@@ -2900,6 +3193,7 @@ namespace STM32_REGS
             {
                 MACA0L                 = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACA0LR_MACA0L     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0LR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0LR = value; }
             static inline uint32_t get_MACA0L() { return reinterpret_cast<__IO MACA0LR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA0LR)->MACA0L; }
@@ -2928,6 +3222,10 @@ namespace STM32_REGS
                 MBC                    = (0x3FU << 24),
                 MACA1H                 = (0xFFFFU << 0),
             };
+            #define ETH_MACA1HR_AE         (0x1U << 31)
+            #define ETH_MACA1HR_SA         (0x1U << 30)
+            #define ETH_MACA1HR_MBC        (0x3FU << 24)
+            #define ETH_MACA1HR_MACA1H     (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR = value; }
             template <EMasks ... flags>
@@ -2943,7 +3241,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_MBC() { return reinterpret_cast<__IO MACA1HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR)->MBC; }
             static inline void set_MBC(uint32_t value) { reinterpret_cast<__IO MACA1HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1HR)->MBC = value; }
@@ -2966,6 +3264,7 @@ namespace STM32_REGS
             {
                 MACA1L                 = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACA1LR_MACA1L     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1LR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1LR = value; }
             static inline uint32_t get_MACA1L() { return reinterpret_cast<__IO MACA1LR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA1LR)->MACA1L; }
@@ -2994,6 +3293,10 @@ namespace STM32_REGS
                 MBC                    = (0x3FU << 24),
                 MACA2H                 = (0xFFFFU << 0),
             };
+            #define ETH_MACA2HR_AE         (0x1U << 31)
+            #define ETH_MACA2HR_SA         (0x1U << 30)
+            #define ETH_MACA2HR_MBC        (0x3FU << 24)
+            #define ETH_MACA2HR_MACA2H     (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR = value; }
             template <EMasks ... flags>
@@ -3009,7 +3312,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_MBC() { return reinterpret_cast<__IO MACA2HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR)->MBC; }
             static inline void set_MBC(uint32_t value) { reinterpret_cast<__IO MACA2HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2HR)->MBC = value; }
@@ -3032,6 +3335,7 @@ namespace STM32_REGS
             {
                 MACA2L                 = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACA2LR_MACA2L     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2LR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2LR = value; }
             static inline uint32_t get_MACA2L() { return reinterpret_cast<__IO MACA2LR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA2LR)->MACA2L; }
@@ -3060,6 +3364,10 @@ namespace STM32_REGS
                 MBC                    = (0x3FU << 24),
                 MACA3H                 = (0xFFFFU << 0),
             };
+            #define ETH_MACA3HR_AE         (0x1U << 31)
+            #define ETH_MACA3HR_SA         (0x1U << 30)
+            #define ETH_MACA3HR_MBC        (0x3FU << 24)
+            #define ETH_MACA3HR_MACA3H     (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR = value; }
             template <EMasks ... flags>
@@ -3075,7 +3383,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_MBC() { return reinterpret_cast<__IO MACA3HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR)->MBC; }
             static inline void set_MBC(uint32_t value) { reinterpret_cast<__IO MACA3HR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3HR)->MBC = value; }
@@ -3098,6 +3406,7 @@ namespace STM32_REGS
             {
                 MACA3L                 = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MACA3LR_MACA3L     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3LR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3LR = value; }
             static inline uint32_t get_MACA3L() { return reinterpret_cast<__IO MACA3LR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MACA3LR)->MACA3L; }
@@ -3131,6 +3440,12 @@ namespace STM32_REGS
                 CSR                    = (0x1U << 1),
                 CR                     = (0x1U << 0),
             };
+            #define ETH_MMCCR_MCFHP        (0x1U << 5)
+            #define ETH_MMCCR_MCP          (0x1U << 4)
+            #define ETH_MMCCR_MCF          (0x1U << 3)
+            #define ETH_MMCCR_ROR          (0x1U << 2)
+            #define ETH_MMCCR_CSR          (0x1U << 1)
+            #define ETH_MMCCR_CR           (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCCR = value; }
             template <EMasks ... flags>
@@ -3146,7 +3461,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCCR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MMCRIR
@@ -3171,6 +3486,9 @@ namespace STM32_REGS
                 RFAES                  = (0x1U << 6),
                 RFCES                  = (0x1U << 5),
             };
+            #define ETH_MMCRIR_RGUFS       (0x1U << 17)
+            #define ETH_MMCRIR_RFAES       (0x1U << 6)
+            #define ETH_MMCRIR_RFCES       (0x1U << 5)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIR = value; }
             template <EMasks ... flags>
@@ -3186,7 +3504,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MMCTIR
@@ -3211,6 +3529,9 @@ namespace STM32_REGS
                 TGFMSCS                = (0x1U << 15),
                 TGFSCS                 = (0x1U << 14),
             };
+            #define ETH_MMCTIR_TGFS        (0x1U << 21)
+            #define ETH_MMCTIR_TGFMSCS     (0x1U << 15)
+            #define ETH_MMCTIR_TGFSCS      (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIR = value; }
             template <EMasks ... flags>
@@ -3226,7 +3547,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MMCRIMR
@@ -3251,6 +3572,9 @@ namespace STM32_REGS
                 RFAEM                  = (0x1U << 6),
                 RFCEM                  = (0x1U << 5),
             };
+            #define ETH_MMCRIMR_RGUFM      (0x1U << 17)
+            #define ETH_MMCRIMR_RFAEM      (0x1U << 6)
+            #define ETH_MMCRIMR_RFCEM      (0x1U << 5)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIMR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIMR = value; }
             template <EMasks ... flags>
@@ -3266,7 +3590,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRIMR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MMCTIMR
@@ -3291,6 +3615,9 @@ namespace STM32_REGS
                 TGFMSCM                = (0x1U << 15),
                 TGFSCM                 = (0x1U << 14),
             };
+            #define ETH_MMCTIMR_TGFM       (0x1U << 21)
+            #define ETH_MMCTIMR_TGFMSCM    (0x1U << 15)
+            #define ETH_MMCTIMR_TGFSCM     (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIMR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIMR = value; }
             template <EMasks ... flags>
@@ -3306,7 +3633,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTIMR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MMCTGFSCCR
@@ -3325,6 +3652,7 @@ namespace STM32_REGS
             {
                 TGFSCC                 = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCTGFSCCR_TGFSCC  (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFSCCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFSCCR = value; }
             static inline uint32_t get_TGFSCC() { return reinterpret_cast<__IO MMCTGFSCCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFSCCR)->TGFSCC; }
@@ -3346,6 +3674,7 @@ namespace STM32_REGS
             {
                 TGFMSCC                = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCTGFMSCCR_TGFMSCC (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFMSCCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFMSCCR = value; }
             static inline uint32_t get_TGFMSCC() { return reinterpret_cast<__IO MMCTGFMSCCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFMSCCR)->TGFMSCC; }
@@ -3367,6 +3696,7 @@ namespace STM32_REGS
             {
                 TGFC                   = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCTGFCR_TGFC      (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFCR = value; }
             static inline uint32_t get_TGFC() { return reinterpret_cast<__IO MMCTGFCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCTGFCR)->TGFC; }
@@ -3388,6 +3718,7 @@ namespace STM32_REGS
             {
                 RFCEC                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCRFCECR_RFCEC    (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFCECR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFCECR = value; }
             static inline uint32_t get_RFCEC() { return reinterpret_cast<__IO MMCRFCECR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFCECR)->RFCEC; }
@@ -3409,6 +3740,7 @@ namespace STM32_REGS
             {
                 RFAEC                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCRFAECR_RFAEC    (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFAECR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFAECR = value; }
             static inline uint32_t get_RFAEC() { return reinterpret_cast<__IO MMCRFAECR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRFAECR)->RFAEC; }
@@ -3430,6 +3762,7 @@ namespace STM32_REGS
             {
                 RGUFC                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_MMCRGUFCR_RGUFC    (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRGUFCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRGUFCR = value; }
             static inline uint32_t get_RGUFC() { return reinterpret_cast<__IO MMCRGUFCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->MMCRGUFCR)->RGUFC; }
@@ -3465,6 +3798,13 @@ namespace STM32_REGS
                 TSFCU                  = (0x1U << 1),
                 TSE                    = (0x1U << 0),
             };
+            #define ETH_PTPTSCR_TSCNT      (0x3U << 16)
+            #define ETH_PTPTSCR_TSARU      (0x1U << 5)
+            #define ETH_PTPTSCR_TSITE      (0x1U << 4)
+            #define ETH_PTPTSCR_TSSTU      (0x1U << 3)
+            #define ETH_PTPTSCR_TSSTI      (0x1U << 2)
+            #define ETH_PTPTSCR_TSFCU      (0x1U << 1)
+            #define ETH_PTPTSCR_TSE        (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR = value; }
             template <EMasks ... flags>
@@ -3480,7 +3820,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TSCNT() { return reinterpret_cast<__IO PTPTSCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR)->TSCNT; }
             static inline void set_TSCNT(uint32_t value) { reinterpret_cast<__IO PTPTSCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSCR)->TSCNT = value; }
@@ -3502,6 +3842,7 @@ namespace STM32_REGS
             {
                 STSSI                  = (0xFFU << 0),
             };
+            #define ETH_PTPSSIR_STSSI      (0xFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPSSIR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPSSIR = value; }
             static inline uint32_t get_STSSI() { return reinterpret_cast<__IO PTPSSIR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPSSIR)->STSSI; }
@@ -3523,6 +3864,7 @@ namespace STM32_REGS
             {
                 STS                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_PTPTSHR_STS        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHR = value; }
             static inline uint32_t get_STS() { return reinterpret_cast<__IO PTPTSHR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHR)->STS; }
@@ -3547,6 +3889,8 @@ namespace STM32_REGS
                 STPNS                  = (0x1U << 31),
                 STSS                   = (0x7FFFFFFFU << 0),
             };
+            #define ETH_PTPTSLR_STPNS      (0x1U << 31)
+            #define ETH_PTPTSLR_STSS       (0x7FFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR = value; }
             template <EMasks ... flags>
@@ -3562,7 +3906,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_STSS() { return reinterpret_cast<__IO PTPTSLR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR)->STSS; }
             static inline void set_STSS(uint32_t value) { reinterpret_cast<__IO PTPTSLR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLR)->STSS = value; }
@@ -3583,6 +3927,7 @@ namespace STM32_REGS
             {
                 TSUS                   = (0xFFFFFFFFU << 0),
             };
+            #define ETH_PTPTSHUR_TSUS      (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHUR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHUR = value; }
             static inline uint32_t get_TSUS() { return reinterpret_cast<__IO PTPTSHUR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSHUR)->TSUS; }
@@ -3607,6 +3952,8 @@ namespace STM32_REGS
                 TSUPNS                 = (0x1U << 31),
                 TSUSS                  = (0x7FFFFFFFU << 0),
             };
+            #define ETH_PTPTSLUR_TSUPNS    (0x1U << 31)
+            #define ETH_PTPTSLUR_TSUSS     (0x7FFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR = value; }
             template <EMasks ... flags>
@@ -3622,7 +3969,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TSUSS() { return reinterpret_cast<__IO PTPTSLUR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR)->TSUSS; }
             static inline void set_TSUSS(uint32_t value) { reinterpret_cast<__IO PTPTSLUR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSLUR)->TSUSS = value; }
@@ -3643,6 +3990,7 @@ namespace STM32_REGS
             {
                 TSA                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_PTPTSAR_TSA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSAR = value; }
             static inline uint32_t get_TSA() { return reinterpret_cast<__IO PTPTSAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSAR)->TSA; }
@@ -3664,6 +4012,7 @@ namespace STM32_REGS
             {
                 TTSH                   = (0xFFFFFFFFU << 0),
             };
+            #define ETH_PTPTTHR_TTSH       (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTHR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTHR = value; }
             static inline uint32_t get_TTSH() { return reinterpret_cast<__IO PTPTTHR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTHR)->TTSH; }
@@ -3685,6 +4034,7 @@ namespace STM32_REGS
             {
                 TTSL                   = (0xFFFFFFFFU << 0),
             };
+            #define ETH_PTPTTLR_TTSL       (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTLR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTLR = value; }
             static inline uint32_t get_TTSL() { return reinterpret_cast<__IO PTPTTLR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTTLR)->TTSL; }
@@ -3726,6 +4076,16 @@ namespace STM32_REGS
                 TSTTR                  = (0x1U << 5),
                 TSSO                   = (0x1U << 4),
             };
+            #define ETH_PTPTSSR_TSSMRME    (0x1U << 15)
+            #define ETH_PTPTSSR_TSSEME     (0x1U << 14)
+            #define ETH_PTPTSSR_TSSIPV4FE  (0x1U << 13)
+            #define ETH_PTPTSSR_TSSIPV6FE  (0x1U << 12)
+            #define ETH_PTPTSSR_TSSPTPOEFE (0x1U << 11)
+            #define ETH_PTPTSSR_TSPTPPSV2E (0x1U << 10)
+            #define ETH_PTPTSSR_TSSSR      (0x1U << 9)
+            #define ETH_PTPTSSR_TSSARFE    (0x1U << 8)
+            #define ETH_PTPTSSR_TSTTR      (0x1U << 5)
+            #define ETH_PTPTSSR_TSSO       (0x1U << 4)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSSR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSSR = value; }
             template <EMasks ... flags>
@@ -3741,7 +4101,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->PTPTSSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class DMABMR
@@ -3781,6 +4141,17 @@ namespace STM32_REGS
                 DA                     = (0x1U << 1),
                 SR                     = (0x1U << 0),
             };
+            #define ETH_DMABMR_AAB         (0x1U << 25)
+            #define ETH_DMABMR_FPM         (0x1U << 24)
+            #define ETH_DMABMR_USP         (0x1U << 23)
+            #define ETH_DMABMR_RDP         (0x3FU << 17)
+            #define ETH_DMABMR_FB          (0x1U << 16)
+            #define ETH_DMABMR_RTPR        (0x3U << 14)
+            #define ETH_DMABMR_PBL         (0x3FU << 8)
+            #define ETH_DMABMR_EDE         (0x1U << 7)
+            #define ETH_DMABMR_DSL         (0x1FU << 2)
+            #define ETH_DMABMR_DA          (0x1U << 1)
+            #define ETH_DMABMR_SR          (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR = value; }
             template <EMasks ... flags>
@@ -3796,7 +4167,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_RDP() { return reinterpret_cast<__IO DMABMR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR)->RDP; }
             static inline void set_RDP(uint32_t value) { reinterpret_cast<__IO DMABMR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMABMR)->RDP = value; }
@@ -3823,6 +4194,7 @@ namespace STM32_REGS
             {
                 TPD                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMATPDR_TPD        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATPDR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATPDR = value; }
             static inline uint32_t get_TPD() { return reinterpret_cast<__IO DMATPDR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATPDR)->TPD; }
@@ -3844,6 +4216,7 @@ namespace STM32_REGS
             {
                 RPD                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMARPDR_RPD        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARPDR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARPDR = value; }
             static inline uint32_t get_RPD() { return reinterpret_cast<__IO DMARPDR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARPDR)->RPD; }
@@ -3865,6 +4238,7 @@ namespace STM32_REGS
             {
                 SRL                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMARDLAR_SRL       (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARDLAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARDLAR = value; }
             static inline uint32_t get_SRL() { return reinterpret_cast<__IO DMARDLAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMARDLAR)->SRL; }
@@ -3886,6 +4260,7 @@ namespace STM32_REGS
             {
                 STL                    = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMATDLAR_STL       (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATDLAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATDLAR = value; }
             static inline uint32_t get_STL() { return reinterpret_cast<__IO DMATDLAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMATDLAR)->STL; }
@@ -3974,6 +4349,40 @@ namespace STM32_REGS
                 TPSS                   = (0x1U << 1),
                 TS                     = (0x1U << 0),
             };
+            #define ETH_DMASR_TSTS         (0x1U << 29)
+            #define ETH_DMASR_PMTS         (0x1U << 28)
+            #define ETH_DMASR_MMCS         (0x1U << 27)
+            #define ETH_DMASR_EBS          (0x7U << 23)
+            #define ETH_DMASR_EBS_DescAccess (0x1U << 25)
+            #define ETH_DMASR_EBS_ReadTransf (0x1U << 24)
+            #define ETH_DMASR_EBS_DataTransfTx (0x1U << 23)
+            #define ETH_DMASR_TPS          (0x7U << 20)
+            #define ETH_DMASR_TPS_Fetching (0x1U << 20)
+            #define ETH_DMASR_TPS_Waiting  (0x1U << 21)
+            #define ETH_DMASR_TPS_Reading  (0x3U << 20)
+            #define ETH_DMASR_TPS_Suspended (0x3U << 21)
+            #define ETH_DMASR_TPS_Closing  (0x7U << 20)
+            #define ETH_DMASR_RPS          (0x7U << 17)
+            #define ETH_DMASR_RPS_Fetching (0x1U << 17)
+            #define ETH_DMASR_RPS_Waiting  (0x3U << 17)
+            #define ETH_DMASR_RPS_Suspended (0x1U << 19)
+            #define ETH_DMASR_RPS_Closing  (0x5U << 17)
+            #define ETH_DMASR_RPS_Queuing  (0x7U << 17)
+            #define ETH_DMASR_NIS          (0x1U << 16)
+            #define ETH_DMASR_AIS          (0x1U << 15)
+            #define ETH_DMASR_ERS          (0x1U << 14)
+            #define ETH_DMASR_FBES         (0x1U << 13)
+            #define ETH_DMASR_ETS          (0x1U << 10)
+            #define ETH_DMASR_RWTS         (0x1U << 9)
+            #define ETH_DMASR_RPSS         (0x1U << 8)
+            #define ETH_DMASR_RBUS         (0x1U << 7)
+            #define ETH_DMASR_RS           (0x1U << 6)
+            #define ETH_DMASR_TUS          (0x1U << 5)
+            #define ETH_DMASR_ROS          (0x1U << 4)
+            #define ETH_DMASR_TJTS         (0x1U << 3)
+            #define ETH_DMASR_TBUS         (0x1U << 2)
+            #define ETH_DMASR_TPSS         (0x1U << 1)
+            #define ETH_DMASR_TS           (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR = value; }
             template <EMasks ... flags>
@@ -3989,7 +4398,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_EBS() { return reinterpret_cast<__IO DMASR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR)->EBS; }
             static inline void set_EBS(uint32_t value) { reinterpret_cast<__IO DMASR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMASR)->EBS = value; }
@@ -4047,6 +4456,18 @@ namespace STM32_REGS
                 OSF                    = (0x1U << 2),
                 SR                     = (0x1U << 1),
             };
+            #define ETH_DMAOMR_DTCEFD      (0x1U << 26)
+            #define ETH_DMAOMR_RSF         (0x1U << 25)
+            #define ETH_DMAOMR_DFRF        (0x1U << 24)
+            #define ETH_DMAOMR_TSF         (0x1U << 21)
+            #define ETH_DMAOMR_FTF         (0x1U << 20)
+            #define ETH_DMAOMR_TTC         (0x7U << 14)
+            #define ETH_DMAOMR_ST          (0x1U << 13)
+            #define ETH_DMAOMR_FEF         (0x1U << 7)
+            #define ETH_DMAOMR_FUGF        (0x1U << 6)
+            #define ETH_DMAOMR_RTC         (0x3U << 3)
+            #define ETH_DMAOMR_OSF         (0x1U << 2)
+            #define ETH_DMAOMR_SR          (0x1U << 1)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR = value; }
             template <EMasks ... flags>
@@ -4062,7 +4483,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TTC() { return reinterpret_cast<__IO DMAOMR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR)->TTC; }
             static inline void set_TTC(uint32_t value) { reinterpret_cast<__IO DMAOMR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAOMR)->TTC = value; }
@@ -4115,6 +4536,21 @@ namespace STM32_REGS
                 TPSIE                  = (0x1U << 1),
                 TIE                    = (0x1U << 0),
             };
+            #define ETH_DMAIER_NISE        (0x1U << 16)
+            #define ETH_DMAIER_AISE        (0x1U << 15)
+            #define ETH_DMAIER_ERIE        (0x1U << 14)
+            #define ETH_DMAIER_FBEIE       (0x1U << 13)
+            #define ETH_DMAIER_ETIE        (0x1U << 10)
+            #define ETH_DMAIER_RWTIE       (0x1U << 9)
+            #define ETH_DMAIER_RPSIE       (0x1U << 8)
+            #define ETH_DMAIER_RBUIE       (0x1U << 7)
+            #define ETH_DMAIER_RIE         (0x1U << 6)
+            #define ETH_DMAIER_TUIE        (0x1U << 5)
+            #define ETH_DMAIER_ROIE        (0x1U << 4)
+            #define ETH_DMAIER_TJTIE       (0x1U << 3)
+            #define ETH_DMAIER_TBUIE       (0x1U << 2)
+            #define ETH_DMAIER_TPSIE       (0x1U << 1)
+            #define ETH_DMAIER_TIE         (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAIER; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAIER = value; }
             template <EMasks ... flags>
@@ -4130,7 +4566,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAIER & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAIER & SetBits<(std::uint32_t)flags...>());
             }
         };
         class DMAMFBOCR
@@ -4156,6 +4592,10 @@ namespace STM32_REGS
                 OMFC                   = (0x1U << 16),
                 MFC                    = (0xFFFFU << 0),
             };
+            #define ETH_DMAMFBOCR_OFOC     (0x1U << 28)
+            #define ETH_DMAMFBOCR_MFA      (0x7FFU << 17)
+            #define ETH_DMAMFBOCR_OMFC     (0x1U << 16)
+            #define ETH_DMAMFBOCR_MFC      (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR = value; }
             template <EMasks ... flags>
@@ -4171,7 +4611,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_MFA() { return reinterpret_cast<__IO DMAMFBOCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR)->MFA; }
             static inline void set_MFA(uint32_t value) { reinterpret_cast<__IO DMAMFBOCR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMAMFBOCR)->MFA = value; }
@@ -4209,6 +4649,7 @@ namespace STM32_REGS
             {
                 HTDAP                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMACHTDR_HTDAP     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTDR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTDR = value; }
             static inline uint32_t get_HTDAP() { return reinterpret_cast<__IO DMACHTDR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTDR)->HTDAP; }
@@ -4230,6 +4671,7 @@ namespace STM32_REGS
             {
                 HRDAP                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMACHRDR_HRDAP     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRDR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRDR = value; }
             static inline uint32_t get_HRDAP() { return reinterpret_cast<__IO DMACHRDR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRDR)->HRDAP; }
@@ -4251,6 +4693,7 @@ namespace STM32_REGS
             {
                 HTBAP                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMACHTBAR_HTBAP    (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTBAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTBAR = value; }
             static inline uint32_t get_HTBAP() { return reinterpret_cast<__IO DMACHTBAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHTBAR)->HTBAP; }
@@ -4272,6 +4715,7 @@ namespace STM32_REGS
             {
                 HRBAP                  = (0xFFFFFFFFU << 0),
             };
+            #define ETH_DMACHRBAR_HRBAP    (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRBAR; }
             static inline void set(uint32_t value) { reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRBAR = value; }
             static inline uint32_t get_HRBAP() { return reinterpret_cast<__IO DMACHRBAR_t*>(&reinterpret_cast<ETH_t*>(STM32::ETH_BASE)->DMACHRBAR)->HRBAP; }
@@ -4354,6 +4798,30 @@ namespace STM32_REGS
                 MR22                   = (0x1U << 22),
                 IM                     = (0x7FFFFFU << 0),
             };
+            #define EXTI_IMR_MR0           (0x1U << 0)
+            #define EXTI_IMR_MR1           (0x1U << 1)
+            #define EXTI_IMR_MR2           (0x1U << 2)
+            #define EXTI_IMR_MR3           (0x1U << 3)
+            #define EXTI_IMR_MR4           (0x1U << 4)
+            #define EXTI_IMR_MR5           (0x1U << 5)
+            #define EXTI_IMR_MR6           (0x1U << 6)
+            #define EXTI_IMR_MR7           (0x1U << 7)
+            #define EXTI_IMR_MR8           (0x1U << 8)
+            #define EXTI_IMR_MR9           (0x1U << 9)
+            #define EXTI_IMR_MR10          (0x1U << 10)
+            #define EXTI_IMR_MR11          (0x1U << 11)
+            #define EXTI_IMR_MR12          (0x1U << 12)
+            #define EXTI_IMR_MR13          (0x1U << 13)
+            #define EXTI_IMR_MR14          (0x1U << 14)
+            #define EXTI_IMR_MR15          (0x1U << 15)
+            #define EXTI_IMR_MR16          (0x1U << 16)
+            #define EXTI_IMR_MR17          (0x1U << 17)
+            #define EXTI_IMR_MR18          (0x1U << 18)
+            #define EXTI_IMR_MR19          (0x1U << 19)
+            #define EXTI_IMR_MR20          (0x1U << 20)
+            #define EXTI_IMR_MR21          (0x1U << 21)
+            #define EXTI_IMR_MR22          (0x1U << 22)
+            #define EXTI_IMR_IM            (0x7FFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR = value; }
             template <EMasks ... flags>
@@ -4369,7 +4837,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_IM() { return reinterpret_cast<__IO IMR_t*>(&reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR)->IM; }
             static inline void set_IM(uint32_t value) { reinterpret_cast<__IO IMR_t*>(&reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->IMR)->IM = value; }
@@ -4435,6 +4903,29 @@ namespace STM32_REGS
                 MR21                   = (0x1U << 21),
                 MR22                   = (0x1U << 22),
             };
+            #define EXTI_EMR_MR0           (0x1U << 0)
+            #define EXTI_EMR_MR1           (0x1U << 1)
+            #define EXTI_EMR_MR2           (0x1U << 2)
+            #define EXTI_EMR_MR3           (0x1U << 3)
+            #define EXTI_EMR_MR4           (0x1U << 4)
+            #define EXTI_EMR_MR5           (0x1U << 5)
+            #define EXTI_EMR_MR6           (0x1U << 6)
+            #define EXTI_EMR_MR7           (0x1U << 7)
+            #define EXTI_EMR_MR8           (0x1U << 8)
+            #define EXTI_EMR_MR9           (0x1U << 9)
+            #define EXTI_EMR_MR10          (0x1U << 10)
+            #define EXTI_EMR_MR11          (0x1U << 11)
+            #define EXTI_EMR_MR12          (0x1U << 12)
+            #define EXTI_EMR_MR13          (0x1U << 13)
+            #define EXTI_EMR_MR14          (0x1U << 14)
+            #define EXTI_EMR_MR15          (0x1U << 15)
+            #define EXTI_EMR_MR16          (0x1U << 16)
+            #define EXTI_EMR_MR17          (0x1U << 17)
+            #define EXTI_EMR_MR18          (0x1U << 18)
+            #define EXTI_EMR_MR19          (0x1U << 19)
+            #define EXTI_EMR_MR20          (0x1U << 20)
+            #define EXTI_EMR_MR21          (0x1U << 21)
+            #define EXTI_EMR_MR22          (0x1U << 22)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->EMR; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->EMR = value; }
             template <EMasks ... flags>
@@ -4450,7 +4941,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->EMR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->EMR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class RTSR
@@ -4514,6 +5005,29 @@ namespace STM32_REGS
                 TR21                   = (0x1U << 21),
                 TR22                   = (0x1U << 22),
             };
+            #define EXTI_RTSR_TR0          (0x1U << 0)
+            #define EXTI_RTSR_TR1          (0x1U << 1)
+            #define EXTI_RTSR_TR2          (0x1U << 2)
+            #define EXTI_RTSR_TR3          (0x1U << 3)
+            #define EXTI_RTSR_TR4          (0x1U << 4)
+            #define EXTI_RTSR_TR5          (0x1U << 5)
+            #define EXTI_RTSR_TR6          (0x1U << 6)
+            #define EXTI_RTSR_TR7          (0x1U << 7)
+            #define EXTI_RTSR_TR8          (0x1U << 8)
+            #define EXTI_RTSR_TR9          (0x1U << 9)
+            #define EXTI_RTSR_TR10         (0x1U << 10)
+            #define EXTI_RTSR_TR11         (0x1U << 11)
+            #define EXTI_RTSR_TR12         (0x1U << 12)
+            #define EXTI_RTSR_TR13         (0x1U << 13)
+            #define EXTI_RTSR_TR14         (0x1U << 14)
+            #define EXTI_RTSR_TR15         (0x1U << 15)
+            #define EXTI_RTSR_TR16         (0x1U << 16)
+            #define EXTI_RTSR_TR17         (0x1U << 17)
+            #define EXTI_RTSR_TR18         (0x1U << 18)
+            #define EXTI_RTSR_TR19         (0x1U << 19)
+            #define EXTI_RTSR_TR20         (0x1U << 20)
+            #define EXTI_RTSR_TR21         (0x1U << 21)
+            #define EXTI_RTSR_TR22         (0x1U << 22)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->RTSR; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->RTSR = value; }
             template <EMasks ... flags>
@@ -4529,7 +5043,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->RTSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->RTSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class FTSR
@@ -4593,6 +5107,29 @@ namespace STM32_REGS
                 TR21                   = (0x1U << 21),
                 TR22                   = (0x1U << 22),
             };
+            #define EXTI_FTSR_TR0          (0x1U << 0)
+            #define EXTI_FTSR_TR1          (0x1U << 1)
+            #define EXTI_FTSR_TR2          (0x1U << 2)
+            #define EXTI_FTSR_TR3          (0x1U << 3)
+            #define EXTI_FTSR_TR4          (0x1U << 4)
+            #define EXTI_FTSR_TR5          (0x1U << 5)
+            #define EXTI_FTSR_TR6          (0x1U << 6)
+            #define EXTI_FTSR_TR7          (0x1U << 7)
+            #define EXTI_FTSR_TR8          (0x1U << 8)
+            #define EXTI_FTSR_TR9          (0x1U << 9)
+            #define EXTI_FTSR_TR10         (0x1U << 10)
+            #define EXTI_FTSR_TR11         (0x1U << 11)
+            #define EXTI_FTSR_TR12         (0x1U << 12)
+            #define EXTI_FTSR_TR13         (0x1U << 13)
+            #define EXTI_FTSR_TR14         (0x1U << 14)
+            #define EXTI_FTSR_TR15         (0x1U << 15)
+            #define EXTI_FTSR_TR16         (0x1U << 16)
+            #define EXTI_FTSR_TR17         (0x1U << 17)
+            #define EXTI_FTSR_TR18         (0x1U << 18)
+            #define EXTI_FTSR_TR19         (0x1U << 19)
+            #define EXTI_FTSR_TR20         (0x1U << 20)
+            #define EXTI_FTSR_TR21         (0x1U << 21)
+            #define EXTI_FTSR_TR22         (0x1U << 22)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->FTSR; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->FTSR = value; }
             template <EMasks ... flags>
@@ -4608,7 +5145,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->FTSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->FTSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class SWIER
@@ -4672,6 +5209,29 @@ namespace STM32_REGS
                 SWIER21                = (0x1U << 21),
                 SWIER22                = (0x1U << 22),
             };
+            #define EXTI_SWIER_SWIER0      (0x1U << 0)
+            #define EXTI_SWIER_SWIER1      (0x1U << 1)
+            #define EXTI_SWIER_SWIER2      (0x1U << 2)
+            #define EXTI_SWIER_SWIER3      (0x1U << 3)
+            #define EXTI_SWIER_SWIER4      (0x1U << 4)
+            #define EXTI_SWIER_SWIER5      (0x1U << 5)
+            #define EXTI_SWIER_SWIER6      (0x1U << 6)
+            #define EXTI_SWIER_SWIER7      (0x1U << 7)
+            #define EXTI_SWIER_SWIER8      (0x1U << 8)
+            #define EXTI_SWIER_SWIER9      (0x1U << 9)
+            #define EXTI_SWIER_SWIER10     (0x1U << 10)
+            #define EXTI_SWIER_SWIER11     (0x1U << 11)
+            #define EXTI_SWIER_SWIER12     (0x1U << 12)
+            #define EXTI_SWIER_SWIER13     (0x1U << 13)
+            #define EXTI_SWIER_SWIER14     (0x1U << 14)
+            #define EXTI_SWIER_SWIER15     (0x1U << 15)
+            #define EXTI_SWIER_SWIER16     (0x1U << 16)
+            #define EXTI_SWIER_SWIER17     (0x1U << 17)
+            #define EXTI_SWIER_SWIER18     (0x1U << 18)
+            #define EXTI_SWIER_SWIER19     (0x1U << 19)
+            #define EXTI_SWIER_SWIER20     (0x1U << 20)
+            #define EXTI_SWIER_SWIER21     (0x1U << 21)
+            #define EXTI_SWIER_SWIER22     (0x1U << 22)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->SWIER; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->SWIER = value; }
             template <EMasks ... flags>
@@ -4687,7 +5247,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->SWIER & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->SWIER & SetBits<(std::uint32_t)flags...>());
             }
         };
         class PR
@@ -4751,6 +5311,29 @@ namespace STM32_REGS
                 PR21                   = (0x1U << 21),
                 PR22                   = (0x1U << 22),
             };
+            #define EXTI_PR_PR0            (0x1U << 0)
+            #define EXTI_PR_PR1            (0x1U << 1)
+            #define EXTI_PR_PR2            (0x1U << 2)
+            #define EXTI_PR_PR3            (0x1U << 3)
+            #define EXTI_PR_PR4            (0x1U << 4)
+            #define EXTI_PR_PR5            (0x1U << 5)
+            #define EXTI_PR_PR6            (0x1U << 6)
+            #define EXTI_PR_PR7            (0x1U << 7)
+            #define EXTI_PR_PR8            (0x1U << 8)
+            #define EXTI_PR_PR9            (0x1U << 9)
+            #define EXTI_PR_PR10           (0x1U << 10)
+            #define EXTI_PR_PR11           (0x1U << 11)
+            #define EXTI_PR_PR12           (0x1U << 12)
+            #define EXTI_PR_PR13           (0x1U << 13)
+            #define EXTI_PR_PR14           (0x1U << 14)
+            #define EXTI_PR_PR15           (0x1U << 15)
+            #define EXTI_PR_PR16           (0x1U << 16)
+            #define EXTI_PR_PR17           (0x1U << 17)
+            #define EXTI_PR_PR18           (0x1U << 18)
+            #define EXTI_PR_PR19           (0x1U << 19)
+            #define EXTI_PR_PR20           (0x1U << 20)
+            #define EXTI_PR_PR21           (0x1U << 21)
+            #define EXTI_PR_PR22           (0x1U << 22)
             static inline uint32_t get() { return reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->PR; }
             static inline void set(uint32_t value) { reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->PR = value; }
             template <EMasks ... flags>
@@ -4766,7 +5349,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->PR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<EXTI_t*>(STM32::EXTI_BASE)->PR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -4817,6 +5400,14 @@ namespace STM32_REGS
                 BYTE0_ADDRESS          = (0x10008FU << 10),
                 BYTE2_ADDRESS          = (0x40023C03U << 0),
             };
+            #define FLASH_ACR_LATENCY      (0xFU << 0)
+            #define FLASH_ACR_PRFTEN       (0x1U << 8)
+            #define FLASH_ACR_ICEN         (0x1U << 9)
+            #define FLASH_ACR_DCEN         (0x1U << 10)
+            #define FLASH_ACR_ICRST        (0x1U << 11)
+            #define FLASH_ACR_DCRST        (0x1U << 12)
+            #define FLASH_ACR_BYTE0_ADDRESS (0x10008FU << 10)
+            #define FLASH_ACR_BYTE2_ADDRESS (0x40023C03U << 0)
             static inline uint32_t get() { return reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR; }
             static inline void set(uint32_t value) { reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR = value; }
             template <EMasks ... flags>
@@ -4832,7 +5423,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_LATENCY() { return reinterpret_cast<__IO ACR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR)->LATENCY; }
             static inline void set_LATENCY(uint32_t value) { reinterpret_cast<__IO ACR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->ACR)->LATENCY = value; }
@@ -4902,6 +5493,13 @@ namespace STM32_REGS
                 PGSERR                 = (0x1U << 7),
                 BSY                    = (0x1U << 16),
             };
+            #define FLASH_SR_EOP           (0x1U << 0)
+            #define FLASH_SR_SOP           (0x1U << 1)
+            #define FLASH_SR_WRPERR        (0x1U << 4)
+            #define FLASH_SR_PGAERR        (0x1U << 5)
+            #define FLASH_SR_PGPERR        (0x1U << 6)
+            #define FLASH_SR_PGSERR        (0x1U << 7)
+            #define FLASH_SR_BSY           (0x1U << 16)
             static inline uint32_t get() { return reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -4917,7 +5515,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class CR
@@ -4953,6 +5551,14 @@ namespace STM32_REGS
                 EOPIE                  = (0x1U << 24),
                 LOCK                   = (0x1U << 31),
             };
+            #define FLASH_CR_PG            (0x1U << 0)
+            #define FLASH_CR_SER           (0x1U << 1)
+            #define FLASH_CR_MER           (0x1U << 2)
+            #define FLASH_CR_SNB           (0x1FU << 3)
+            #define FLASH_CR_PSIZE         (0x3U << 8)
+            #define FLASH_CR_STRT          (0x1U << 16)
+            #define FLASH_CR_EOPIE         (0x1U << 24)
+            #define FLASH_CR_LOCK          (0x1U << 31)
             static inline uint32_t get() { return reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -4968,7 +5574,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_SNB() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR)->SNB; }
             static inline void set_SNB(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->CR)->SNB = value; }
@@ -5007,6 +5613,14 @@ namespace STM32_REGS
                 RDP                    = (0xFFU << 8),
                 nWRP                   = (0xFFFU << 16),
             };
+            #define FLASH_OPTCR_OPTLOCK    (0x1U << 0)
+            #define FLASH_OPTCR_OPTSTRT    (0x1U << 1)
+            #define FLASH_OPTCR_BOR_LEV    (0x3U << 2)
+            #define FLASH_OPTCR_WDG_SW     (0x1U << 5)
+            #define FLASH_OPTCR_nRST_STOP  (0x1U << 6)
+            #define FLASH_OPTCR_nRST_STDBY (0x1U << 7)
+            #define FLASH_OPTCR_RDP        (0xFFU << 8)
+            #define FLASH_OPTCR_nWRP       (0xFFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR; }
             static inline void set(uint32_t value) { reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR = value; }
             template <EMasks ... flags>
@@ -5022,7 +5636,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_BOR_LEV() { return reinterpret_cast<__IO OPTCR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR)->BOR_LEV; }
             static inline void set_BOR_LEV(uint32_t value) { reinterpret_cast<__IO OPTCR_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR)->BOR_LEV = value; }
@@ -5049,6 +5663,7 @@ namespace STM32_REGS
             {
                 nWRP                   = (0xFFFU << 16),
             };
+            #define FLASH_OPTCR1_nWRP      (0xFFFU << 16)
             static inline uint32_t get() { return reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR1; }
             static inline void set(uint32_t value) { reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR1 = value; }
             static inline uint32_t get_nWRP() { return reinterpret_cast<__IO OPTCR1_t*>(&reinterpret_cast<FLASH_t*>(STM32::FLASH_BASE)->OPTCR1)->nWRP; }
@@ -5105,6 +5720,7 @@ namespace STM32_REGS
             {
                 MEM_MODE               = (0x3U << 0),
             };
+            #define SYSCFG_MEMRMP_MEM_MODE (0x3U << 0)
             static inline uint32_t get() { return reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->MEMRMP; }
             static inline void set(uint32_t value) { reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->MEMRMP = value; }
             static inline uint32_t get_MEM_MODE() { return reinterpret_cast<__IO MEMRMP_t*>(&reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->MEMRMP)->MEM_MODE; }
@@ -5128,6 +5744,7 @@ namespace STM32_REGS
             {
                 MII_RMII_SEL           = (0x1U << 23),
             };
+            #define SYSCFG_PMC_MII_RMII_SEL (0x1U << 23)
             static inline uint32_t get() { return reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->PMC; }
             static inline void set(uint32_t value) { reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->PMC = value; }
             template <EMasks ... flags>
@@ -5143,7 +5760,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->PMC & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->PMC & SetBits<(std::uint32_t)flags...>());
             }
         };
         class EXTICR
@@ -5192,6 +5809,22 @@ namespace STM32_REGS
                 EXTI14                 = (0xFU << 8),
                 EXTI15                 = (0xFU << 12),
             };
+            #define SYSCFG_EXTICR_EXTI0    (0xFU << 0)
+            #define SYSCFG_EXTICR_EXTI1    (0xFU << 4)
+            #define SYSCFG_EXTICR_EXTI2    (0xFU << 8)
+            #define SYSCFG_EXTICR_EXTI3    (0xFU << 12)
+            #define SYSCFG_EXTICR_EXTI4    (0xFU << 0)
+            #define SYSCFG_EXTICR_EXTI5    (0xFU << 4)
+            #define SYSCFG_EXTICR_EXTI6    (0xFU << 8)
+            #define SYSCFG_EXTICR_EXTI7    (0xFU << 12)
+            #define SYSCFG_EXTICR_EXTI8    (0xFU << 0)
+            #define SYSCFG_EXTICR_EXTI9    (0xFU << 4)
+            #define SYSCFG_EXTICR_EXTI10   (0xFU << 8)
+            #define SYSCFG_EXTICR_EXTI11   (0xFU << 12)
+            #define SYSCFG_EXTICR_EXTI12   (0xFU << 0)
+            #define SYSCFG_EXTICR_EXTI13   (0xFU << 4)
+            #define SYSCFG_EXTICR_EXTI14   (0xFU << 8)
+            #define SYSCFG_EXTICR_EXTI15   (0xFU << 12)
             static inline uint32_t get(uint32_t idx) { return reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->EXTICR[idx]; }
             static inline void set(uint32_t idx, uint32_t value) { reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->EXTICR[idx] = value; }
             static inline uint32_t get_EXTI0(uint32_t idx) { return reinterpret_cast<__IO EXTICR_t*>(&reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->EXTICR[idx])->EXTI0; }
@@ -5247,6 +5880,8 @@ namespace STM32_REGS
                 CMP_PD                 = (0x1U << 0),
                 READY                  = (0x1U << 8),
             };
+            #define SYSCFG_CMPCR_CMP_PD    (0x1U << 0)
+            #define SYSCFG_CMPCR_READY     (0x1U << 8)
             static inline uint32_t get() { return reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->CMPCR; }
             static inline void set(uint32_t value) { reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->CMPCR = value; }
             template <EMasks ... flags>
@@ -5262,7 +5897,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->CMPCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SYSCFG_t*>(STM32::SYSCFG_BASE)->CMPCR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -5300,6 +5935,7 @@ namespace STM32_REGS
             {
                 KEY                    = (0xFFFFU << 0),
             };
+            #define IWDG_KR_KEY            (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->KR; }
             static inline void set(uint32_t value) { reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->KR = value; }
             static inline uint32_t get_KEY() { return reinterpret_cast<__IO KR_t*>(&reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->KR)->KEY; }
@@ -5322,6 +5958,7 @@ namespace STM32_REGS
             {
                 PR                     = (0x7U << 0),
             };
+            #define IWDG_PR_PR             (0x7U << 0)
             static inline uint32_t get() { return reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->PR; }
             static inline void set(uint32_t value) { reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->PR = value; }
             static inline uint32_t get_PR() { return reinterpret_cast<__IO PR_t*>(&reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->PR)->PR; }
@@ -5344,6 +5981,7 @@ namespace STM32_REGS
             {
                 RL                     = (0xFFFU << 0),
             };
+            #define IWDG_RLR_RL            (0xFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->RLR; }
             static inline void set(uint32_t value) { reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->RLR = value; }
             static inline uint32_t get_RL() { return reinterpret_cast<__IO RLR_t*>(&reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->RLR)->RL; }
@@ -5368,6 +6006,8 @@ namespace STM32_REGS
                 PVU                    = (0x1U << 0),
                 RVU                    = (0x1U << 1),
             };
+            #define IWDG_SR_PVU            (0x1U << 0)
+            #define IWDG_SR_RVU            (0x1U << 1)
             static inline uint32_t get() { return reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -5383,7 +6023,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<IWDG_t*>(STM32::IWDG_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -5431,6 +6071,15 @@ namespace STM32_REGS
                 FPDS                   = (0x1U << 9),
                 VOS                    = (0x1U << 14),
             };
+            #define PWR_CR_LPDS            (0x1U << 0)
+            #define PWR_CR_PDDS            (0x1U << 1)
+            #define PWR_CR_CWUF            (0x1U << 2)
+            #define PWR_CR_CSBF            (0x1U << 3)
+            #define PWR_CR_PVDE            (0x1U << 4)
+            #define PWR_CR_PLS             (0x7U << 5)
+            #define PWR_CR_DBP             (0x1U << 8)
+            #define PWR_CR_FPDS            (0x1U << 9)
+            #define PWR_CR_VOS             (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -5446,7 +6095,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_PLS() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR)->PLS; }
             static inline void set_PLS(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CR)->PLS = value; }
@@ -5482,6 +6131,13 @@ namespace STM32_REGS
                 BRE                    = (0x1U << 9),
                 VOSRDY                 = (0x1U << 14),
             };
+            #define PWR_CSR_WUF            (0x1U << 0)
+            #define PWR_CSR_SBF            (0x1U << 1)
+            #define PWR_CSR_PVDO           (0x1U << 2)
+            #define PWR_CSR_BRR            (0x1U << 3)
+            #define PWR_CSR_EWUP           (0x1U << 8)
+            #define PWR_CSR_BRE            (0x1U << 9)
+            #define PWR_CSR_VOSRDY         (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR; }
             static inline void set(uint32_t value) { reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR = value; }
             template <EMasks ... flags>
@@ -5497,7 +6153,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<PWR_t*>(STM32::PWR_BASE)->CSR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -5580,6 +6236,18 @@ namespace STM32_REGS
                 PLLI2SON               = (0x1U << 26),
                 PLLI2SRDY              = (0x1U << 27),
             };
+            #define RCC_CR_HSION           (0x1U << 0)
+            #define RCC_CR_HSIRDY          (0x1U << 1)
+            #define RCC_CR_HSITRIM         (0x1FU << 3)
+            #define RCC_CR_HSICAL          (0xFFU << 8)
+            #define RCC_CR_HSEON           (0x1U << 16)
+            #define RCC_CR_HSERDY          (0x1U << 17)
+            #define RCC_CR_HSEBYP          (0x1U << 18)
+            #define RCC_CR_CSSON           (0x1U << 19)
+            #define RCC_CR_PLLON           (0x1U << 24)
+            #define RCC_CR_PLLRDY          (0x1U << 25)
+            #define RCC_CR_PLLI2SON        (0x1U << 26)
+            #define RCC_CR_PLLI2SRDY       (0x1U << 27)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -5595,7 +6263,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_HSITRIM() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR)->HSITRIM; }
             static inline void set_HSITRIM(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CR)->HSITRIM = value; }
@@ -5631,6 +6299,12 @@ namespace STM32_REGS
                 PLLSRC_HSE             = (0x1U << 22),
                 PLLQ                   = (0xFU << 24),
             };
+            #define RCC_PLLCFGR_PLLM       (0x3FU << 0)
+            #define RCC_PLLCFGR_PLLN       (0x1FFU << 6)
+            #define RCC_PLLCFGR_PLLP       (0x3U << 16)
+            #define RCC_PLLCFGR_PLLSRC     (0x1U << 22)
+            #define RCC_PLLCFGR_PLLSRC_HSE (0x1U << 22)
+            #define RCC_PLLCFGR_PLLQ       (0xFU << 24)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR = value; }
             template <EMasks ... flags>
@@ -5646,7 +6320,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_PLLM() { return reinterpret_cast<__IO PLLCFGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR)->PLLM; }
             static inline void set_PLLM(uint32_t value) { reinterpret_cast<__IO PLLCFGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLCFGR)->PLLM = value; }
@@ -5694,6 +6368,17 @@ namespace STM32_REGS
                 MCO2PRE                = (0x7U << 27),
                 MCO2                   = (0x3U << 30),
             };
+            #define RCC_CFGR_SW            (0x3U << 0)
+            #define RCC_CFGR_SWS           (0x3U << 2)
+            #define RCC_CFGR_HPRE          (0xFU << 4)
+            #define RCC_CFGR_PPRE1         (0x7U << 10)
+            #define RCC_CFGR_PPRE2         (0x7U << 13)
+            #define RCC_CFGR_RTCPRE        (0x1FU << 16)
+            #define RCC_CFGR_MCO1          (0x3U << 21)
+            #define RCC_CFGR_I2SSRC        (0x1U << 23)
+            #define RCC_CFGR_MCO1PRE       (0x7U << 24)
+            #define RCC_CFGR_MCO2PRE       (0x7U << 27)
+            #define RCC_CFGR_MCO2          (0x3U << 30)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR = value; }
             template <EMasks ... flags>
@@ -5709,7 +6394,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_SW() { return reinterpret_cast<__IO CFGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR)->SW; }
             static inline void set_SW(uint32_t value) { reinterpret_cast<__IO CFGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CFGR)->SW = value; }
@@ -5790,6 +6475,26 @@ namespace STM32_REGS
                 PLLI2SRDYC             = (0x1U << 21),
                 CSSC                   = (0x1U << 23),
             };
+            #define RCC_CIR_LSIRDYF        (0x1U << 0)
+            #define RCC_CIR_LSERDYF        (0x1U << 1)
+            #define RCC_CIR_HSIRDYF        (0x1U << 2)
+            #define RCC_CIR_HSERDYF        (0x1U << 3)
+            #define RCC_CIR_PLLRDYF        (0x1U << 4)
+            #define RCC_CIR_PLLI2SRDYF     (0x1U << 5)
+            #define RCC_CIR_CSSF           (0x1U << 7)
+            #define RCC_CIR_LSIRDYIE       (0x1U << 8)
+            #define RCC_CIR_LSERDYIE       (0x1U << 9)
+            #define RCC_CIR_HSIRDYIE       (0x1U << 10)
+            #define RCC_CIR_HSERDYIE       (0x1U << 11)
+            #define RCC_CIR_PLLRDYIE       (0x1U << 12)
+            #define RCC_CIR_PLLI2SRDYIE    (0x1U << 13)
+            #define RCC_CIR_LSIRDYC        (0x1U << 16)
+            #define RCC_CIR_LSERDYC        (0x1U << 17)
+            #define RCC_CIR_HSIRDYC        (0x1U << 18)
+            #define RCC_CIR_HSERDYC        (0x1U << 19)
+            #define RCC_CIR_PLLRDYC        (0x1U << 20)
+            #define RCC_CIR_PLLI2SRDYC     (0x1U << 21)
+            #define RCC_CIR_CSSC           (0x1U << 23)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CIR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CIR = value; }
             template <EMasks ... flags>
@@ -5805,7 +6510,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CIR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CIR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB1RSTR
@@ -5855,6 +6560,20 @@ namespace STM32_REGS
                 ETHMACRST              = (0x1U << 25),
                 OTGHRST                = (0x1U << 29),
             };
+            #define RCC_AHB1RSTR_GPIOARST  (0x1U << 0)
+            #define RCC_AHB1RSTR_GPIOBRST  (0x1U << 1)
+            #define RCC_AHB1RSTR_GPIOCRST  (0x1U << 2)
+            #define RCC_AHB1RSTR_GPIODRST  (0x1U << 3)
+            #define RCC_AHB1RSTR_GPIOERST  (0x1U << 4)
+            #define RCC_AHB1RSTR_GPIOFRST  (0x1U << 5)
+            #define RCC_AHB1RSTR_GPIOGRST  (0x1U << 6)
+            #define RCC_AHB1RSTR_GPIOHRST  (0x1U << 7)
+            #define RCC_AHB1RSTR_GPIOIRST  (0x1U << 8)
+            #define RCC_AHB1RSTR_CRCRST    (0x1U << 12)
+            #define RCC_AHB1RSTR_DMA1RST   (0x1U << 21)
+            #define RCC_AHB1RSTR_DMA2RST   (0x1U << 22)
+            #define RCC_AHB1RSTR_ETHMACRST (0x1U << 25)
+            #define RCC_AHB1RSTR_OTGHRST   (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1RSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1RSTR = value; }
             template <EMasks ... flags>
@@ -5870,7 +6589,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1RSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1RSTR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB2RSTR
@@ -5895,6 +6614,9 @@ namespace STM32_REGS
                 RNGRST                 = (0x1U << 6),
                 OTGFSRST               = (0x1U << 7),
             };
+            #define RCC_AHB2RSTR_DCMIRST   (0x1U << 0)
+            #define RCC_AHB2RSTR_RNGRST    (0x1U << 6)
+            #define RCC_AHB2RSTR_OTGFSRST  (0x1U << 7)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2RSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2RSTR = value; }
             template <EMasks ... flags>
@@ -5910,7 +6632,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2RSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2RSTR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB3RSTR
@@ -5930,6 +6652,7 @@ namespace STM32_REGS
             {
                 FSMCRST                = (0x1U << 0),
             };
+            #define RCC_AHB3RSTR_FSMCRST   (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3RSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3RSTR = value; }
             template <EMasks ... flags>
@@ -5945,7 +6668,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3RSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3RSTR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB1RSTR
@@ -6014,6 +6737,29 @@ namespace STM32_REGS
                 PWRRST                 = (0x1U << 28),
                 DACRST                 = (0x1U << 29),
             };
+            #define RCC_APB1RSTR_TIM2RST   (0x1U << 0)
+            #define RCC_APB1RSTR_TIM3RST   (0x1U << 1)
+            #define RCC_APB1RSTR_TIM4RST   (0x1U << 2)
+            #define RCC_APB1RSTR_TIM5RST   (0x1U << 3)
+            #define RCC_APB1RSTR_TIM6RST   (0x1U << 4)
+            #define RCC_APB1RSTR_TIM7RST   (0x1U << 5)
+            #define RCC_APB1RSTR_TIM12RST  (0x1U << 6)
+            #define RCC_APB1RSTR_TIM13RST  (0x1U << 7)
+            #define RCC_APB1RSTR_TIM14RST  (0x1U << 8)
+            #define RCC_APB1RSTR_WWDGRST   (0x1U << 11)
+            #define RCC_APB1RSTR_SPI2RST   (0x1U << 14)
+            #define RCC_APB1RSTR_SPI3RST   (0x1U << 15)
+            #define RCC_APB1RSTR_USART2RST (0x1U << 17)
+            #define RCC_APB1RSTR_USART3RST (0x1U << 18)
+            #define RCC_APB1RSTR_UART4RST  (0x1U << 19)
+            #define RCC_APB1RSTR_UART5RST  (0x1U << 20)
+            #define RCC_APB1RSTR_I2C1RST   (0x1U << 21)
+            #define RCC_APB1RSTR_I2C2RST   (0x1U << 22)
+            #define RCC_APB1RSTR_I2C3RST   (0x1U << 23)
+            #define RCC_APB1RSTR_CAN1RST   (0x1U << 25)
+            #define RCC_APB1RSTR_CAN2RST   (0x1U << 26)
+            #define RCC_APB1RSTR_PWRRST    (0x1U << 28)
+            #define RCC_APB1RSTR_DACRST    (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1RSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1RSTR = value; }
             template <EMasks ... flags>
@@ -6029,7 +6775,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1RSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1RSTR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB2RSTR
@@ -6074,6 +6820,17 @@ namespace STM32_REGS
                 TIM10RST               = (0x1U << 17),
                 TIM11RST               = (0x1U << 18),
             };
+            #define RCC_APB2RSTR_TIM1RST   (0x1U << 0)
+            #define RCC_APB2RSTR_TIM8RST   (0x1U << 1)
+            #define RCC_APB2RSTR_USART1RST (0x1U << 4)
+            #define RCC_APB2RSTR_USART6RST (0x1U << 5)
+            #define RCC_APB2RSTR_ADCRST    (0x1U << 8)
+            #define RCC_APB2RSTR_SDIORST   (0x1U << 11)
+            #define RCC_APB2RSTR_SPI1RST   (0x1U << 12)
+            #define RCC_APB2RSTR_SYSCFGRST (0x1U << 14)
+            #define RCC_APB2RSTR_TIM9RST   (0x1U << 16)
+            #define RCC_APB2RSTR_TIM10RST  (0x1U << 17)
+            #define RCC_APB2RSTR_TIM11RST  (0x1U << 18)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2RSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2RSTR = value; }
             template <EMasks ... flags>
@@ -6089,7 +6846,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2RSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2RSTR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB1ENR
@@ -6151,6 +6908,26 @@ namespace STM32_REGS
                 OTGHSEN                = (0x1U << 29),
                 OTGHSULPIEN            = (0x1U << 30),
             };
+            #define RCC_AHB1ENR_GPIOAEN    (0x1U << 0)
+            #define RCC_AHB1ENR_GPIOBEN    (0x1U << 1)
+            #define RCC_AHB1ENR_GPIOCEN    (0x1U << 2)
+            #define RCC_AHB1ENR_GPIODEN    (0x1U << 3)
+            #define RCC_AHB1ENR_GPIOEEN    (0x1U << 4)
+            #define RCC_AHB1ENR_GPIOFEN    (0x1U << 5)
+            #define RCC_AHB1ENR_GPIOGEN    (0x1U << 6)
+            #define RCC_AHB1ENR_GPIOHEN    (0x1U << 7)
+            #define RCC_AHB1ENR_GPIOIEN    (0x1U << 8)
+            #define RCC_AHB1ENR_CRCEN      (0x1U << 12)
+            #define RCC_AHB1ENR_BKPSRAMEN  (0x1U << 18)
+            #define RCC_AHB1ENR_CCMDATARAMEN (0x1U << 20)
+            #define RCC_AHB1ENR_DMA1EN     (0x1U << 21)
+            #define RCC_AHB1ENR_DMA2EN     (0x1U << 22)
+            #define RCC_AHB1ENR_ETHMACEN   (0x1U << 25)
+            #define RCC_AHB1ENR_ETHMACTXEN (0x1U << 26)
+            #define RCC_AHB1ENR_ETHMACRXEN (0x1U << 27)
+            #define RCC_AHB1ENR_ETHMACPTPEN (0x1U << 28)
+            #define RCC_AHB1ENR_OTGHSEN    (0x1U << 29)
+            #define RCC_AHB1ENR_OTGHSULPIEN (0x1U << 30)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1ENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1ENR = value; }
             template <EMasks ... flags>
@@ -6166,7 +6943,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1ENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1ENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB2ENR
@@ -6191,6 +6968,9 @@ namespace STM32_REGS
                 RNGEN                  = (0x1U << 6),
                 OTGFSEN                = (0x1U << 7),
             };
+            #define RCC_AHB2ENR_DCMIEN     (0x1U << 0)
+            #define RCC_AHB2ENR_RNGEN      (0x1U << 6)
+            #define RCC_AHB2ENR_OTGFSEN    (0x1U << 7)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2ENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2ENR = value; }
             template <EMasks ... flags>
@@ -6206,7 +6986,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2ENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2ENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB3ENR
@@ -6226,6 +7006,7 @@ namespace STM32_REGS
             {
                 FSMCEN                 = (0x1U << 0),
             };
+            #define RCC_AHB3ENR_FSMCEN     (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3ENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3ENR = value; }
             template <EMasks ... flags>
@@ -6241,7 +7022,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3ENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3ENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB1ENR
@@ -6310,6 +7091,29 @@ namespace STM32_REGS
                 PWREN                  = (0x1U << 28),
                 DACEN                  = (0x1U << 29),
             };
+            #define RCC_APB1ENR_TIM2EN     (0x1U << 0)
+            #define RCC_APB1ENR_TIM3EN     (0x1U << 1)
+            #define RCC_APB1ENR_TIM4EN     (0x1U << 2)
+            #define RCC_APB1ENR_TIM5EN     (0x1U << 3)
+            #define RCC_APB1ENR_TIM6EN     (0x1U << 4)
+            #define RCC_APB1ENR_TIM7EN     (0x1U << 5)
+            #define RCC_APB1ENR_TIM12EN    (0x1U << 6)
+            #define RCC_APB1ENR_TIM13EN    (0x1U << 7)
+            #define RCC_APB1ENR_TIM14EN    (0x1U << 8)
+            #define RCC_APB1ENR_WWDGEN     (0x1U << 11)
+            #define RCC_APB1ENR_SPI2EN     (0x1U << 14)
+            #define RCC_APB1ENR_SPI3EN     (0x1U << 15)
+            #define RCC_APB1ENR_USART2EN   (0x1U << 17)
+            #define RCC_APB1ENR_USART3EN   (0x1U << 18)
+            #define RCC_APB1ENR_UART4EN    (0x1U << 19)
+            #define RCC_APB1ENR_UART5EN    (0x1U << 20)
+            #define RCC_APB1ENR_I2C1EN     (0x1U << 21)
+            #define RCC_APB1ENR_I2C2EN     (0x1U << 22)
+            #define RCC_APB1ENR_I2C3EN     (0x1U << 23)
+            #define RCC_APB1ENR_CAN1EN     (0x1U << 25)
+            #define RCC_APB1ENR_CAN2EN     (0x1U << 26)
+            #define RCC_APB1ENR_PWREN      (0x1U << 28)
+            #define RCC_APB1ENR_DACEN      (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1ENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1ENR = value; }
             template <EMasks ... flags>
@@ -6325,7 +7129,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1ENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1ENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB2ENR
@@ -6373,6 +7177,19 @@ namespace STM32_REGS
                 TIM10EN                = (0x1U << 17),
                 TIM11EN                = (0x1U << 18),
             };
+            #define RCC_APB2ENR_TIM1EN     (0x1U << 0)
+            #define RCC_APB2ENR_TIM8EN     (0x1U << 1)
+            #define RCC_APB2ENR_USART1EN   (0x1U << 4)
+            #define RCC_APB2ENR_USART6EN   (0x1U << 5)
+            #define RCC_APB2ENR_ADC1EN     (0x1U << 8)
+            #define RCC_APB2ENR_ADC2EN     (0x1U << 9)
+            #define RCC_APB2ENR_ADC3EN     (0x1U << 10)
+            #define RCC_APB2ENR_SDIOEN     (0x1U << 11)
+            #define RCC_APB2ENR_SPI1EN     (0x1U << 12)
+            #define RCC_APB2ENR_SYSCFGEN   (0x1U << 14)
+            #define RCC_APB2ENR_TIM9EN     (0x1U << 16)
+            #define RCC_APB2ENR_TIM10EN    (0x1U << 17)
+            #define RCC_APB2ENR_TIM11EN    (0x1U << 18)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2ENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2ENR = value; }
             template <EMasks ... flags>
@@ -6388,7 +7205,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2ENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2ENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB1LPENR
@@ -6454,6 +7271,28 @@ namespace STM32_REGS
                 OTGHSLPEN              = (0x1U << 29),
                 OTGHSULPILPEN          = (0x1U << 30),
             };
+            #define RCC_AHB1LPENR_GPIOALPEN (0x1U << 0)
+            #define RCC_AHB1LPENR_GPIOBLPEN (0x1U << 1)
+            #define RCC_AHB1LPENR_GPIOCLPEN (0x1U << 2)
+            #define RCC_AHB1LPENR_GPIODLPEN (0x1U << 3)
+            #define RCC_AHB1LPENR_GPIOELPEN (0x1U << 4)
+            #define RCC_AHB1LPENR_GPIOFLPEN (0x1U << 5)
+            #define RCC_AHB1LPENR_GPIOGLPEN (0x1U << 6)
+            #define RCC_AHB1LPENR_GPIOHLPEN (0x1U << 7)
+            #define RCC_AHB1LPENR_GPIOILPEN (0x1U << 8)
+            #define RCC_AHB1LPENR_CRCLPEN  (0x1U << 12)
+            #define RCC_AHB1LPENR_FLITFLPEN (0x1U << 15)
+            #define RCC_AHB1LPENR_SRAM1LPEN (0x1U << 16)
+            #define RCC_AHB1LPENR_SRAM2LPEN (0x1U << 17)
+            #define RCC_AHB1LPENR_BKPSRAMLPEN (0x1U << 18)
+            #define RCC_AHB1LPENR_DMA1LPEN (0x1U << 21)
+            #define RCC_AHB1LPENR_DMA2LPEN (0x1U << 22)
+            #define RCC_AHB1LPENR_ETHMACLPEN (0x1U << 25)
+            #define RCC_AHB1LPENR_ETHMACTXLPEN (0x1U << 26)
+            #define RCC_AHB1LPENR_ETHMACRXLPEN (0x1U << 27)
+            #define RCC_AHB1LPENR_ETHMACPTPLPEN (0x1U << 28)
+            #define RCC_AHB1LPENR_OTGHSLPEN (0x1U << 29)
+            #define RCC_AHB1LPENR_OTGHSULPILPEN (0x1U << 30)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1LPENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1LPENR = value; }
             template <EMasks ... flags>
@@ -6469,7 +7308,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1LPENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB1LPENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB2LPENR
@@ -6494,6 +7333,9 @@ namespace STM32_REGS
                 RNGLPEN                = (0x1U << 6),
                 OTGFSLPEN              = (0x1U << 7),
             };
+            #define RCC_AHB2LPENR_DCMILPEN (0x1U << 0)
+            #define RCC_AHB2LPENR_RNGLPEN  (0x1U << 6)
+            #define RCC_AHB2LPENR_OTGFSLPEN (0x1U << 7)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2LPENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2LPENR = value; }
             template <EMasks ... flags>
@@ -6509,7 +7351,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2LPENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB2LPENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class AHB3LPENR
@@ -6529,6 +7371,7 @@ namespace STM32_REGS
             {
                 FSMCLPEN               = (0x1U << 0),
             };
+            #define RCC_AHB3LPENR_FSMCLPEN (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3LPENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3LPENR = value; }
             template <EMasks ... flags>
@@ -6544,7 +7387,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3LPENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->AHB3LPENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB1LPENR
@@ -6613,6 +7456,29 @@ namespace STM32_REGS
                 PWRLPEN                = (0x1U << 28),
                 DACLPEN                = (0x1U << 29),
             };
+            #define RCC_APB1LPENR_TIM2LPEN (0x1U << 0)
+            #define RCC_APB1LPENR_TIM3LPEN (0x1U << 1)
+            #define RCC_APB1LPENR_TIM4LPEN (0x1U << 2)
+            #define RCC_APB1LPENR_TIM5LPEN (0x1U << 3)
+            #define RCC_APB1LPENR_TIM6LPEN (0x1U << 4)
+            #define RCC_APB1LPENR_TIM7LPEN (0x1U << 5)
+            #define RCC_APB1LPENR_TIM12LPEN (0x1U << 6)
+            #define RCC_APB1LPENR_TIM13LPEN (0x1U << 7)
+            #define RCC_APB1LPENR_TIM14LPEN (0x1U << 8)
+            #define RCC_APB1LPENR_WWDGLPEN (0x1U << 11)
+            #define RCC_APB1LPENR_SPI2LPEN (0x1U << 14)
+            #define RCC_APB1LPENR_SPI3LPEN (0x1U << 15)
+            #define RCC_APB1LPENR_USART2LPEN (0x1U << 17)
+            #define RCC_APB1LPENR_USART3LPEN (0x1U << 18)
+            #define RCC_APB1LPENR_UART4LPEN (0x1U << 19)
+            #define RCC_APB1LPENR_UART5LPEN (0x1U << 20)
+            #define RCC_APB1LPENR_I2C1LPEN (0x1U << 21)
+            #define RCC_APB1LPENR_I2C2LPEN (0x1U << 22)
+            #define RCC_APB1LPENR_I2C3LPEN (0x1U << 23)
+            #define RCC_APB1LPENR_CAN1LPEN (0x1U << 25)
+            #define RCC_APB1LPENR_CAN2LPEN (0x1U << 26)
+            #define RCC_APB1LPENR_PWRLPEN  (0x1U << 28)
+            #define RCC_APB1LPENR_DACLPEN  (0x1U << 29)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1LPENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1LPENR = value; }
             template <EMasks ... flags>
@@ -6628,7 +7494,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1LPENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB1LPENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class APB2LPENR
@@ -6676,6 +7542,19 @@ namespace STM32_REGS
                 TIM10LPEN              = (0x1U << 17),
                 TIM11LPEN              = (0x1U << 18),
             };
+            #define RCC_APB2LPENR_TIM1LPEN (0x1U << 0)
+            #define RCC_APB2LPENR_TIM8LPEN (0x1U << 1)
+            #define RCC_APB2LPENR_USART1LPEN (0x1U << 4)
+            #define RCC_APB2LPENR_USART6LPEN (0x1U << 5)
+            #define RCC_APB2LPENR_ADC1LPEN (0x1U << 8)
+            #define RCC_APB2LPENR_ADC2LPEN (0x1U << 9)
+            #define RCC_APB2LPENR_ADC3LPEN (0x1U << 10)
+            #define RCC_APB2LPENR_SDIOLPEN (0x1U << 11)
+            #define RCC_APB2LPENR_SPI1LPEN (0x1U << 12)
+            #define RCC_APB2LPENR_SYSCFGLPEN (0x1U << 14)
+            #define RCC_APB2LPENR_TIM9LPEN (0x1U << 16)
+            #define RCC_APB2LPENR_TIM10LPEN (0x1U << 17)
+            #define RCC_APB2LPENR_TIM11LPEN (0x1U << 18)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2LPENR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2LPENR = value; }
             template <EMasks ... flags>
@@ -6691,7 +7570,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2LPENR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->APB2LPENR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class BDCR
@@ -6723,6 +7602,12 @@ namespace STM32_REGS
                 RTCEN                  = (0x1U << 15),
                 BDRST                  = (0x1U << 16),
             };
+            #define RCC_BDCR_LSEON         (0x1U << 0)
+            #define RCC_BDCR_LSERDY        (0x1U << 1)
+            #define RCC_BDCR_LSEBYP        (0x1U << 2)
+            #define RCC_BDCR_RTCSEL        (0x3U << 8)
+            #define RCC_BDCR_RTCEN         (0x1U << 15)
+            #define RCC_BDCR_BDRST         (0x1U << 16)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR = value; }
             template <EMasks ... flags>
@@ -6738,7 +7623,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_RTCSEL() { return reinterpret_cast<__IO BDCR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR)->RTCSEL; }
             static inline void set_RTCSEL(uint32_t value) { reinterpret_cast<__IO BDCR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->BDCR)->RTCSEL = value; }
@@ -6778,6 +7663,16 @@ namespace STM32_REGS
                 WWDGRSTF               = (0x1U << 30),
                 LPWRRSTF               = (0x1U << 31),
             };
+            #define RCC_CSR_LSION          (0x1U << 0)
+            #define RCC_CSR_LSIRDY         (0x1U << 1)
+            #define RCC_CSR_RMVF           (0x1U << 24)
+            #define RCC_CSR_BORRSTF        (0x1U << 25)
+            #define RCC_CSR_PINRSTF        (0x1U << 26)
+            #define RCC_CSR_PORRSTF        (0x1U << 27)
+            #define RCC_CSR_SFTRSTF        (0x1U << 28)
+            #define RCC_CSR_IWDGRSTF       (0x1U << 29)
+            #define RCC_CSR_WWDGRSTF       (0x1U << 30)
+            #define RCC_CSR_LPWRRSTF       (0x1U << 31)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR = value; }
             template <EMasks ... flags>
@@ -6793,7 +7688,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->CSR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class SSCGR
@@ -6819,6 +7714,10 @@ namespace STM32_REGS
                 SPREADSEL              = (0x1U << 30),
                 SSCGEN                 = (0x1U << 31),
             };
+            #define RCC_SSCGR_MODPER       (0x1FFFU << 0)
+            #define RCC_SSCGR_INCSTEP      (0x7FFFU << 13)
+            #define RCC_SSCGR_SPREADSEL    (0x1U << 30)
+            #define RCC_SSCGR_SSCGEN       (0x1U << 31)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR = value; }
             template <EMasks ... flags>
@@ -6834,7 +7733,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_MODPER() { return reinterpret_cast<__IO SSCGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR)->MODPER; }
             static inline void set_MODPER(uint32_t value) { reinterpret_cast<__IO SSCGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->SSCGR)->MODPER = value; }
@@ -6862,6 +7761,8 @@ namespace STM32_REGS
                 PLLI2SN                = (0x1FFU << 6),
                 PLLI2SR                = (0x7U << 28),
             };
+            #define RCC_PLLI2SCFGR_PLLI2SN (0x1FFU << 6)
+            #define RCC_PLLI2SCFGR_PLLI2SR (0x7U << 28)
             static inline uint32_t get() { return reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLI2SCFGR; }
             static inline void set(uint32_t value) { reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLI2SCFGR = value; }
             static inline uint32_t get_PLLI2SN() { return reinterpret_cast<__IO PLLI2SCFGR_t*>(&reinterpret_cast<RCC_t*>(STM32::RCC_BASE)->PLLI2SCFGR)->PLLI2SN; }
@@ -6947,6 +7848,13 @@ namespace STM32_REGS
                 ST                     = (0x7U << 4),
                 SU                     = (0xFU << 0),
             };
+            #define RTC_TR_PM              (0x1U << 22)
+            #define RTC_TR_HT              (0x3U << 20)
+            #define RTC_TR_HU              (0xFU << 16)
+            #define RTC_TR_MNT             (0x7U << 12)
+            #define RTC_TR_MNU             (0xFU << 8)
+            #define RTC_TR_ST              (0x7U << 4)
+            #define RTC_TR_SU              (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR = value; }
             template <EMasks ... flags>
@@ -6962,7 +7870,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_HT() { return reinterpret_cast<__IO TR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR)->HT; }
             static inline void set_HT(uint32_t value) { reinterpret_cast<__IO TR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TR)->HT = value; }
@@ -7006,6 +7914,13 @@ namespace STM32_REGS
                 DT                     = (0x3U << 4),
                 DU                     = (0xFU << 0),
             };
+            #define RTC_DR_YT              (0xFU << 20)
+            #define RTC_DR_YU              (0xFU << 16)
+            #define RTC_DR_WDU             (0x7U << 13)
+            #define RTC_DR_MT              (0x1U << 12)
+            #define RTC_DR_MU              (0xFU << 8)
+            #define RTC_DR_DT              (0x3U << 4)
+            #define RTC_DR_DU              (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR = value; }
             template <EMasks ... flags>
@@ -7021,7 +7936,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_YT() { return reinterpret_cast<__IO DR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR)->YT; }
             static inline void set_YT(uint32_t value) { reinterpret_cast<__IO DR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->DR)->YT = value; }
@@ -7093,6 +8008,27 @@ namespace STM32_REGS
                 TSEDGE                 = (0x1U << 3),
                 WUCKSEL                = (0x7U << 0),
             };
+            #define RTC_CR_COE             (0x1U << 23)
+            #define RTC_CR_OSEL            (0x3U << 21)
+            #define RTC_CR_POL             (0x1U << 20)
+            #define RTC_CR_COSEL           (0x1U << 19)
+            #define RTC_CR_BKP             (0x1U << 18)
+            #define RTC_CR_SUB1H           (0x1U << 17)
+            #define RTC_CR_ADD1H           (0x1U << 16)
+            #define RTC_CR_TSIE            (0x1U << 15)
+            #define RTC_CR_WUTIE           (0x1U << 14)
+            #define RTC_CR_ALRBIE          (0x1U << 13)
+            #define RTC_CR_ALRAIE          (0x1U << 12)
+            #define RTC_CR_TSE             (0x1U << 11)
+            #define RTC_CR_WUTE            (0x1U << 10)
+            #define RTC_CR_ALRBE           (0x1U << 9)
+            #define RTC_CR_ALRAE           (0x1U << 8)
+            #define RTC_CR_DCE             (0x1U << 7)
+            #define RTC_CR_FMT             (0x1U << 6)
+            #define RTC_CR_BYPSHAD         (0x1U << 5)
+            #define RTC_CR_REFCKON         (0x1U << 4)
+            #define RTC_CR_TSEDGE          (0x1U << 3)
+            #define RTC_CR_WUCKSEL         (0x7U << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -7108,7 +8044,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_OSEL() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR)->OSEL; }
             static inline void set_OSEL(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CR)->OSEL = value; }
@@ -7162,6 +8098,22 @@ namespace STM32_REGS
                 ALRBWF                 = (0x1U << 1),
                 ALRAWF                 = (0x1U << 0),
             };
+            #define RTC_ISR_RECALPF        (0x1U << 16)
+            #define RTC_ISR_TAMP1F         (0x1U << 13)
+            #define RTC_ISR_TAMP2F         (0x1U << 14)
+            #define RTC_ISR_TSOVF          (0x1U << 12)
+            #define RTC_ISR_TSF            (0x1U << 11)
+            #define RTC_ISR_WUTF           (0x1U << 10)
+            #define RTC_ISR_ALRBF          (0x1U << 9)
+            #define RTC_ISR_ALRAF          (0x1U << 8)
+            #define RTC_ISR_INIT           (0x1U << 7)
+            #define RTC_ISR_INITF          (0x1U << 6)
+            #define RTC_ISR_RSF            (0x1U << 5)
+            #define RTC_ISR_INITS          (0x1U << 4)
+            #define RTC_ISR_SHPF           (0x1U << 3)
+            #define RTC_ISR_WUTWF          (0x1U << 2)
+            #define RTC_ISR_ALRBWF         (0x1U << 1)
+            #define RTC_ISR_ALRAWF         (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ISR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ISR = value; }
             template <EMasks ... flags>
@@ -7177,7 +8129,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ISR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ISR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class PRER
@@ -7199,6 +8151,8 @@ namespace STM32_REGS
                 PREDIV_A               = (0x7FU << 16),
                 PREDIV_S               = (0x7FFFU << 0),
             };
+            #define RTC_PRER_PREDIV_A      (0x7FU << 16)
+            #define RTC_PRER_PREDIV_S      (0x7FFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->PRER; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->PRER = value; }
             static inline uint32_t get_PREDIV_A() { return reinterpret_cast<__IO PRER_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->PRER)->PREDIV_A; }
@@ -7223,6 +8177,7 @@ namespace STM32_REGS
             {
                 WUT                    = (0xFFFFU << 0),
             };
+            #define RTC_WUTR_WUT           (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WUTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WUTR = value; }
             static inline uint32_t get_WUT() { return reinterpret_cast<__IO WUTR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WUTR)->WUT; }
@@ -7248,6 +8203,8 @@ namespace STM32_REGS
                 DCS                    = (0x1U << 7),
                 DC                     = (0x1FU << 0),
             };
+            #define RTC_CALIBR_DCS         (0x1U << 7)
+            #define RTC_CALIBR_DC          (0x1FU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR = value; }
             template <EMasks ... flags>
@@ -7263,7 +8220,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_DC() { return reinterpret_cast<__IO CALIBR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR)->DC; }
             static inline void set_DC(uint32_t value) { reinterpret_cast<__IO CALIBR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALIBR)->DC = value; }
@@ -7311,6 +8268,20 @@ namespace STM32_REGS
                 ST                     = (0x7U << 4),
                 SU                     = (0xFU << 0),
             };
+            #define RTC_ALRMAR_MSK4        (0x1U << 31)
+            #define RTC_ALRMAR_WDSEL       (0x1U << 30)
+            #define RTC_ALRMAR_DT          (0x3U << 28)
+            #define RTC_ALRMAR_DU          (0xFU << 24)
+            #define RTC_ALRMAR_MSK3        (0x1U << 23)
+            #define RTC_ALRMAR_PM          (0x1U << 22)
+            #define RTC_ALRMAR_HT          (0x3U << 20)
+            #define RTC_ALRMAR_HU          (0xFU << 16)
+            #define RTC_ALRMAR_MSK2        (0x1U << 15)
+            #define RTC_ALRMAR_MNT         (0x7U << 12)
+            #define RTC_ALRMAR_MNU         (0xFU << 8)
+            #define RTC_ALRMAR_MSK1        (0x1U << 7)
+            #define RTC_ALRMAR_ST          (0x7U << 4)
+            #define RTC_ALRMAR_SU          (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR = value; }
             template <EMasks ... flags>
@@ -7326,7 +8297,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_DT() { return reinterpret_cast<__IO ALRMAR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR)->DT; }
             static inline void set_DT(uint32_t value) { reinterpret_cast<__IO ALRMAR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMAR)->DT = value; }
@@ -7388,6 +8359,20 @@ namespace STM32_REGS
                 ST                     = (0x7U << 4),
                 SU                     = (0xFU << 0),
             };
+            #define RTC_ALRMBR_MSK4        (0x1U << 31)
+            #define RTC_ALRMBR_WDSEL       (0x1U << 30)
+            #define RTC_ALRMBR_DT          (0x3U << 28)
+            #define RTC_ALRMBR_DU          (0xFU << 24)
+            #define RTC_ALRMBR_MSK3        (0x1U << 23)
+            #define RTC_ALRMBR_PM          (0x1U << 22)
+            #define RTC_ALRMBR_HT          (0x3U << 20)
+            #define RTC_ALRMBR_HU          (0xFU << 16)
+            #define RTC_ALRMBR_MSK2        (0x1U << 15)
+            #define RTC_ALRMBR_MNT         (0x7U << 12)
+            #define RTC_ALRMBR_MNU         (0xFU << 8)
+            #define RTC_ALRMBR_MSK1        (0x1U << 7)
+            #define RTC_ALRMBR_ST          (0x7U << 4)
+            #define RTC_ALRMBR_SU          (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR = value; }
             template <EMasks ... flags>
@@ -7403,7 +8388,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_DT() { return reinterpret_cast<__IO ALRMBR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR)->DT; }
             static inline void set_DT(uint32_t value) { reinterpret_cast<__IO ALRMBR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBR)->DT = value; }
@@ -7439,6 +8424,7 @@ namespace STM32_REGS
             {
                 KEY                    = (0xFFU << 0),
             };
+            #define RTC_WPR_KEY            (0xFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WPR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WPR = value; }
             static inline uint32_t get_KEY() { return reinterpret_cast<__IO WPR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->WPR)->KEY; }
@@ -7461,6 +8447,7 @@ namespace STM32_REGS
             {
                 SS                     = (0xFFFFU << 0),
             };
+            #define RTC_SSR_SS             (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SSR = value; }
             static inline uint32_t get_SS() { return reinterpret_cast<__IO SSR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SSR)->SS; }
@@ -7485,6 +8472,8 @@ namespace STM32_REGS
                 SUBFS                  = (0x7FFFU << 0),
                 ADD1S                  = (0x1U << 31),
             };
+            #define RTC_SHIFTR_SUBFS       (0x7FFFU << 0)
+            #define RTC_SHIFTR_ADD1S       (0x1U << 31)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR = value; }
             template <EMasks ... flags>
@@ -7500,7 +8489,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_SUBFS() { return reinterpret_cast<__IO SHIFTR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR)->SUBFS; }
             static inline void set_SUBFS(uint32_t value) { reinterpret_cast<__IO SHIFTR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->SHIFTR)->SUBFS = value; }
@@ -7534,6 +8523,13 @@ namespace STM32_REGS
                 ST                     = (0x7U << 4),
                 SU                     = (0xFU << 0),
             };
+            #define RTC_TSTR_PM            (0x1U << 22)
+            #define RTC_TSTR_HT            (0x3U << 20)
+            #define RTC_TSTR_HU            (0xFU << 16)
+            #define RTC_TSTR_MNT           (0x7U << 12)
+            #define RTC_TSTR_MNU           (0xFU << 8)
+            #define RTC_TSTR_ST            (0x7U << 4)
+            #define RTC_TSTR_SU            (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR = value; }
             template <EMasks ... flags>
@@ -7549,7 +8545,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_HT() { return reinterpret_cast<__IO TSTR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR)->HT; }
             static inline void set_HT(uint32_t value) { reinterpret_cast<__IO TSTR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSTR)->HT = value; }
@@ -7590,6 +8586,11 @@ namespace STM32_REGS
                 DT                     = (0x3U << 4),
                 DU                     = (0xFU << 0),
             };
+            #define RTC_TSDR_WDU           (0x7U << 13)
+            #define RTC_TSDR_MT            (0x1U << 12)
+            #define RTC_TSDR_MU            (0xFU << 8)
+            #define RTC_TSDR_DT            (0x3U << 4)
+            #define RTC_TSDR_DU            (0xFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR = value; }
             template <EMasks ... flags>
@@ -7605,7 +8606,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_WDU() { return reinterpret_cast<__IO TSDR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR)->WDU; }
             static inline void set_WDU(uint32_t value) { reinterpret_cast<__IO TSDR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSDR)->WDU = value; }
@@ -7633,6 +8634,7 @@ namespace STM32_REGS
             {
                 SS                     = (0xFFFFU << 0),
             };
+            #define RTC_TSSSR_SS           (0xFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSSSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSSSR = value; }
             static inline uint32_t get_SS() { return reinterpret_cast<__IO TSSSR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TSSSR)->SS; }
@@ -7662,6 +8664,10 @@ namespace STM32_REGS
                 CALW16                 = (0x1U << 13),
                 CALM                   = (0x1FFU << 0),
             };
+            #define RTC_CALR_CALP          (0x1U << 15)
+            #define RTC_CALR_CALW8         (0x1U << 14)
+            #define RTC_CALR_CALW16        (0x1U << 13)
+            #define RTC_CALR_CALM          (0x1FFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR = value; }
             template <EMasks ... flags>
@@ -7677,7 +8683,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_CALM() { return reinterpret_cast<__IO CALR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR)->CALM; }
             static inline void set_CALM(uint32_t value) { reinterpret_cast<__IO CALR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->CALR)->CALM = value; }
@@ -7723,6 +8729,19 @@ namespace STM32_REGS
                 TAMP1TRG               = (0x1U << 1),
                 TAMP1E                 = (0x1U << 0),
             };
+            #define RTC_TAFCR_ALARMOUTTYPE (0x1U << 18)
+            #define RTC_TAFCR_TSINSEL      (0x1U << 17)
+            #define RTC_TAFCR_TAMP1INSEL   (0x1U << 16)
+            #define RTC_TAFCR_TAMPPUDIS    (0x1U << 15)
+            #define RTC_TAFCR_TAMPPRCH     (0x3U << 13)
+            #define RTC_TAFCR_TAMPFLT      (0x3U << 11)
+            #define RTC_TAFCR_TAMPFREQ     (0x7U << 8)
+            #define RTC_TAFCR_TAMPTS       (0x1U << 7)
+            #define RTC_TAFCR_TAMP2TRG     (0x1U << 4)
+            #define RTC_TAFCR_TAMP2E       (0x1U << 3)
+            #define RTC_TAFCR_TAMPIE       (0x1U << 2)
+            #define RTC_TAFCR_TAMP1TRG     (0x1U << 1)
+            #define RTC_TAFCR_TAMP1E       (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR = value; }
             template <EMasks ... flags>
@@ -7738,7 +8757,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_TAMPPRCH() { return reinterpret_cast<__IO TAFCR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR)->TAMPPRCH; }
             static inline void set_TAMPPRCH(uint32_t value) { reinterpret_cast<__IO TAFCR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->TAFCR)->TAMPPRCH = value; }
@@ -7766,6 +8785,8 @@ namespace STM32_REGS
                 MASKSS                 = (0xFU << 24),
                 SS                     = (0x7FFFU << 0),
             };
+            #define RTC_ALRMASSR_MASKSS    (0xFU << 24)
+            #define RTC_ALRMASSR_SS        (0x7FFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMASSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMASSR = value; }
             static inline uint32_t get_MASKSS() { return reinterpret_cast<__IO ALRMASSR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMASSR)->MASKSS; }
@@ -7792,6 +8813,8 @@ namespace STM32_REGS
                 MASKSS                 = (0xFU << 24),
                 SS                     = (0x7FFFU << 0),
             };
+            #define RTC_ALRMBSSR_MASKSS    (0xFU << 24)
+            #define RTC_ALRMBSSR_SS        (0x7FFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBSSR; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBSSR = value; }
             static inline uint32_t get_MASKSS() { return reinterpret_cast<__IO ALRMBSSR_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->ALRMBSSR)->MASKSS; }
@@ -7815,6 +8838,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP0R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP0R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP0R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP0R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP0R)->DATA; }
@@ -7836,6 +8860,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP1R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP1R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP1R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP1R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP1R)->DATA; }
@@ -7857,6 +8882,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP2R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP2R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP2R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP2R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP2R)->DATA; }
@@ -7878,6 +8904,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP3R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP3R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP3R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP3R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP3R)->DATA; }
@@ -7899,6 +8926,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP4R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP4R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP4R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP4R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP4R)->DATA; }
@@ -7920,6 +8948,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP5R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP5R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP5R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP5R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP5R)->DATA; }
@@ -7941,6 +8970,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP6R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP6R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP6R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP6R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP6R)->DATA; }
@@ -7962,6 +8992,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP7R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP7R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP7R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP7R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP7R)->DATA; }
@@ -7983,6 +9014,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP8R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP8R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP8R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP8R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP8R)->DATA; }
@@ -8004,6 +9036,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP9R_DATA         (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP9R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP9R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP9R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP9R)->DATA; }
@@ -8025,6 +9058,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP10R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP10R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP10R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP10R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP10R)->DATA; }
@@ -8046,6 +9080,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP11R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP11R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP11R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP11R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP11R)->DATA; }
@@ -8067,6 +9102,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP12R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP12R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP12R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP12R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP12R)->DATA; }
@@ -8088,6 +9124,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP13R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP13R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP13R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP13R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP13R)->DATA; }
@@ -8109,6 +9146,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP14R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP14R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP14R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP14R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP14R)->DATA; }
@@ -8130,6 +9168,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP15R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP15R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP15R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP15R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP15R)->DATA; }
@@ -8151,6 +9190,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP16R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP16R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP16R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP16R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP16R)->DATA; }
@@ -8172,6 +9212,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP17R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP17R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP17R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP17R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP17R)->DATA; }
@@ -8193,6 +9234,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP18R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP18R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP18R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP18R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP18R)->DATA; }
@@ -8214,6 +9256,7 @@ namespace STM32_REGS
             {
                 DATA                   = (0xFFFFFFFFU << 0),
             };
+            #define RTC_BKP19R_DATA        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP19R; }
             static inline void set(uint32_t value) { reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP19R = value; }
             static inline uint32_t get_DATA() { return reinterpret_cast<__IO BKP19R_t*>(&reinterpret_cast<RTC_t*>(STM32::RTC_BASE)->BKP19R)->DATA; }
@@ -8230,20 +9273,20 @@ namespace STM32_REGS
             __IO uint32_t                 CLKCR;
             __IO uint32_t                 ARG;
             __IO uint32_t                 CMD;
-            const uint32_t                RESPCMD;
-            const uint32_t                RESP1;
-            const uint32_t                RESP2;
-            const uint32_t                RESP3;
-            const uint32_t                RESP4;
+            __IO const uint32_t           RESPCMD;
+            __IO const uint32_t           RESP1;
+            __IO const uint32_t           RESP2;
+            __IO const uint32_t           RESP3;
+            __IO const uint32_t           RESP4;
             __IO uint32_t                 DTIMER;
             __IO uint32_t                 DLEN;
             __IO uint32_t                 DCTRL;
-            const uint32_t                DCOUNT;
-            const uint32_t                STA;
+            __IO const uint32_t           DCOUNT;
+            __IO const uint32_t           STA;
             __IO uint32_t                 ICR;
             __IO uint32_t                 MASK;
             uint32_t                      RESERVED0[2];
-            const uint32_t                FIFOCNT;
+            __IO const uint32_t           FIFOCNT;
             uint32_t                      RESERVED1[13];
             __IO uint32_t                 FIFO;
         };
@@ -8265,6 +9308,7 @@ namespace STM32_REGS
             {
                 PWRCTRL                = (0x3U << 0),
             };
+            #define SDIO_POWER_PWRCTRL     (0x3U << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->POWER; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->POWER = value; }
             static inline uint32_t get_PWRCTRL() { return reinterpret_cast<__IO POWER_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->POWER)->PWRCTRL; }
@@ -8299,6 +9343,13 @@ namespace STM32_REGS
                 NEGEDGE                = (0x1U << 13),
                 HWFC_EN                = (0x1U << 14),
             };
+            #define SDIO_CLKCR_CLKDIV      (0xFFU << 0)
+            #define SDIO_CLKCR_CLKEN       (0x1U << 8)
+            #define SDIO_CLKCR_PWRSAV      (0x1U << 9)
+            #define SDIO_CLKCR_BYPASS      (0x1U << 10)
+            #define SDIO_CLKCR_WIDBUS      (0x3U << 11)
+            #define SDIO_CLKCR_NEGEDGE     (0x1U << 13)
+            #define SDIO_CLKCR_HWFC_EN     (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR = value; }
             template <EMasks ... flags>
@@ -8314,7 +9365,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_CLKDIV() { return reinterpret_cast<__IO CLKCR_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR)->CLKDIV; }
             static inline void set_CLKDIV(uint32_t value) { reinterpret_cast<__IO CLKCR_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CLKCR)->CLKDIV = value; }
@@ -8337,6 +9388,7 @@ namespace STM32_REGS
             {
                 CMDARG                 = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_ARG_CMDARG        (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ARG; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ARG = value; }
             static inline uint32_t get_CMDARG() { return reinterpret_cast<__IO ARG_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ARG)->CMDARG; }
@@ -8375,6 +9427,15 @@ namespace STM32_REGS
                 NIEN                   = (0x1U << 13),
                 CEATACMD               = (0x1U << 14),
             };
+            #define SDIO_CMD_CMDINDEX      (0x3FU << 0)
+            #define SDIO_CMD_WAITRESP      (0x3U << 6)
+            #define SDIO_CMD_WAITINT       (0x1U << 8)
+            #define SDIO_CMD_WAITPEND      (0x1U << 9)
+            #define SDIO_CMD_CPSMEN        (0x1U << 10)
+            #define SDIO_CMD_SDIOSUSPEND   (0x1U << 11)
+            #define SDIO_CMD_ENCMDCOMPL    (0x1U << 12)
+            #define SDIO_CMD_NIEN          (0x1U << 13)
+            #define SDIO_CMD_CEATACMD      (0x1U << 14)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD = value; }
             template <EMasks ... flags>
@@ -8390,7 +9451,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_CMDINDEX() { return reinterpret_cast<__IO CMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD)->CMDINDEX; }
             static inline void set_CMDINDEX(uint32_t value) { reinterpret_cast<__IO CMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->CMD)->CMDINDEX = value; }
@@ -8415,9 +9476,11 @@ namespace STM32_REGS
                 RESPCMD                = (0x3FU << 0),
                 CARDSTATUS0            = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_RESPCMD_RESPCMD   (0x3FU << 0)
+            #define SDIO_RESPCMD_CARDSTATUS0 (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESPCMD; }
-            static inline uint32_t get_RESPCMD() { return reinterpret_cast<const RESPCMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESPCMD)->RESPCMD; }
-            static inline uint32_t get_CARDSTATUS0() { return reinterpret_cast<const RESPCMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESPCMD)->CARDSTATUS0; }
+            static inline uint32_t get_RESPCMD() { return reinterpret_cast<__IO const RESPCMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESPCMD)->RESPCMD; }
+            static inline uint32_t get_CARDSTATUS0() { return reinterpret_cast<__IO const RESPCMD_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESPCMD)->CARDSTATUS0; }
         };
         class RESP1
         {
@@ -8435,8 +9498,9 @@ namespace STM32_REGS
             {
                 CARDSTATUS1            = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_RESP1_CARDSTATUS1 (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP1; }
-            static inline uint32_t get_CARDSTATUS1() { return reinterpret_cast<const RESP1_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP1)->CARDSTATUS1; }
+            static inline uint32_t get_CARDSTATUS1() { return reinterpret_cast<__IO const RESP1_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP1)->CARDSTATUS1; }
         };
         class RESP2
         {
@@ -8454,8 +9518,9 @@ namespace STM32_REGS
             {
                 CARDSTATUS2            = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_RESP2_CARDSTATUS2 (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP2; }
-            static inline uint32_t get_CARDSTATUS2() { return reinterpret_cast<const RESP2_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP2)->CARDSTATUS2; }
+            static inline uint32_t get_CARDSTATUS2() { return reinterpret_cast<__IO const RESP2_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP2)->CARDSTATUS2; }
         };
         class RESP3
         {
@@ -8473,8 +9538,9 @@ namespace STM32_REGS
             {
                 CARDSTATUS3            = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_RESP3_CARDSTATUS3 (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP3; }
-            static inline uint32_t get_CARDSTATUS3() { return reinterpret_cast<const RESP3_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP3)->CARDSTATUS3; }
+            static inline uint32_t get_CARDSTATUS3() { return reinterpret_cast<__IO const RESP3_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP3)->CARDSTATUS3; }
         };
         class RESP4
         {
@@ -8492,8 +9558,9 @@ namespace STM32_REGS
             {
                 CARDSTATUS4            = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_RESP4_CARDSTATUS4 (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP4; }
-            static inline uint32_t get_CARDSTATUS4() { return reinterpret_cast<const RESP4_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP4)->CARDSTATUS4; }
+            static inline uint32_t get_CARDSTATUS4() { return reinterpret_cast<__IO const RESP4_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->RESP4)->CARDSTATUS4; }
         };
         class DTIMER
         {
@@ -8511,6 +9578,7 @@ namespace STM32_REGS
             {
                 DATATIME               = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_DTIMER_DATATIME   (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DTIMER; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DTIMER = value; }
             static inline uint32_t get_DATATIME() { return reinterpret_cast<__IO DTIMER_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DTIMER)->DATATIME; }
@@ -8533,6 +9601,7 @@ namespace STM32_REGS
             {
                 DATALENGTH             = (0x1FFFFFFU << 0),
             };
+            #define SDIO_DLEN_DATALENGTH   (0x1FFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DLEN; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DLEN = value; }
             static inline uint32_t get_DATALENGTH() { return reinterpret_cast<__IO DLEN_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DLEN)->DATALENGTH; }
@@ -8571,6 +9640,15 @@ namespace STM32_REGS
                 RWMOD                  = (0x1U << 10),
                 SDIOEN                 = (0x1U << 11),
             };
+            #define SDIO_DCTRL_DTEN        (0x1U << 0)
+            #define SDIO_DCTRL_DTDIR       (0x1U << 1)
+            #define SDIO_DCTRL_DTMODE      (0x1U << 2)
+            #define SDIO_DCTRL_DMAEN       (0x1U << 3)
+            #define SDIO_DCTRL_DBLOCKSIZE  (0xFU << 4)
+            #define SDIO_DCTRL_RWSTART     (0x1U << 8)
+            #define SDIO_DCTRL_RWSTOP      (0x1U << 9)
+            #define SDIO_DCTRL_RWMOD       (0x1U << 10)
+            #define SDIO_DCTRL_SDIOEN      (0x1U << 11)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL = value; }
             template <EMasks ... flags>
@@ -8586,7 +9664,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_DBLOCKSIZE() { return reinterpret_cast<__IO DCTRL_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL)->DBLOCKSIZE; }
             static inline void set_DBLOCKSIZE(uint32_t value) { reinterpret_cast<__IO DCTRL_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCTRL)->DBLOCKSIZE = value; }
@@ -8608,8 +9686,9 @@ namespace STM32_REGS
             {
                 DATACOUNT              = (0x1FFFFFFU << 0),
             };
+            #define SDIO_DCOUNT_DATACOUNT  (0x1FFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCOUNT; }
-            static inline uint32_t get_DATACOUNT() { return reinterpret_cast<const DCOUNT_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCOUNT)->DATACOUNT; }
+            static inline uint32_t get_DATACOUNT() { return reinterpret_cast<__IO const DCOUNT_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->DCOUNT)->DATACOUNT; }
         };
         class STA
         {
@@ -8674,11 +9753,35 @@ namespace STM32_REGS
                 SDIOIT                 = (0x1U << 22),
                 CEATAEND               = (0x1U << 23),
             };
+            #define SDIO_STA_CCRCFAIL      (0x1U << 0)
+            #define SDIO_STA_DCRCFAIL      (0x1U << 1)
+            #define SDIO_STA_CTIMEOUT      (0x1U << 2)
+            #define SDIO_STA_DTIMEOUT      (0x1U << 3)
+            #define SDIO_STA_TXUNDERR      (0x1U << 4)
+            #define SDIO_STA_RXOVERR       (0x1U << 5)
+            #define SDIO_STA_CMDREND       (0x1U << 6)
+            #define SDIO_STA_CMDSENT       (0x1U << 7)
+            #define SDIO_STA_DATAEND       (0x1U << 8)
+            #define SDIO_STA_STBITERR      (0x1U << 9)
+            #define SDIO_STA_DBCKEND       (0x1U << 10)
+            #define SDIO_STA_CMDACT        (0x1U << 11)
+            #define SDIO_STA_TXACT         (0x1U << 12)
+            #define SDIO_STA_RXACT         (0x1U << 13)
+            #define SDIO_STA_TXFIFOHE      (0x1U << 14)
+            #define SDIO_STA_RXFIFOHF      (0x1U << 15)
+            #define SDIO_STA_TXFIFOF       (0x1U << 16)
+            #define SDIO_STA_RXFIFOF       (0x1U << 17)
+            #define SDIO_STA_TXFIFOE       (0x1U << 18)
+            #define SDIO_STA_RXFIFOE       (0x1U << 19)
+            #define SDIO_STA_TXDAVL        (0x1U << 20)
+            #define SDIO_STA_RXDAVL        (0x1U << 21)
+            #define SDIO_STA_SDIOIT        (0x1U << 22)
+            #define SDIO_STA_CEATAEND      (0x1U << 23)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->STA; }
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->STA & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->STA & SetBits<(std::uint32_t)flags...>());
             }
         };
         class ICR
@@ -8723,6 +9826,19 @@ namespace STM32_REGS
                 SDIOITC                = (0x1U << 22),
                 CEATAENDC              = (0x1U << 23),
             };
+            #define SDIO_ICR_CCRCFAILC     (0x1U << 0)
+            #define SDIO_ICR_DCRCFAILC     (0x1U << 1)
+            #define SDIO_ICR_CTIMEOUTC     (0x1U << 2)
+            #define SDIO_ICR_DTIMEOUTC     (0x1U << 3)
+            #define SDIO_ICR_TXUNDERRC     (0x1U << 4)
+            #define SDIO_ICR_RXOVERRC      (0x1U << 5)
+            #define SDIO_ICR_CMDRENDC      (0x1U << 6)
+            #define SDIO_ICR_CMDSENTC      (0x1U << 7)
+            #define SDIO_ICR_DATAENDC      (0x1U << 8)
+            #define SDIO_ICR_STBITERRC     (0x1U << 9)
+            #define SDIO_ICR_DBCKENDC      (0x1U << 10)
+            #define SDIO_ICR_SDIOITC       (0x1U << 22)
+            #define SDIO_ICR_CEATAENDC     (0x1U << 23)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ICR; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ICR = value; }
             template <EMasks ... flags>
@@ -8738,7 +9854,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ICR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->ICR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class MASK
@@ -8804,6 +9920,30 @@ namespace STM32_REGS
                 SDIOITIE               = (0x1U << 22),
                 CEATAENDIE             = (0x1U << 23),
             };
+            #define SDIO_MASK_CCRCFAILIE   (0x1U << 0)
+            #define SDIO_MASK_DCRCFAILIE   (0x1U << 1)
+            #define SDIO_MASK_CTIMEOUTIE   (0x1U << 2)
+            #define SDIO_MASK_DTIMEOUTIE   (0x1U << 3)
+            #define SDIO_MASK_TXUNDERRIE   (0x1U << 4)
+            #define SDIO_MASK_RXOVERRIE    (0x1U << 5)
+            #define SDIO_MASK_CMDRENDIE    (0x1U << 6)
+            #define SDIO_MASK_CMDSENTIE    (0x1U << 7)
+            #define SDIO_MASK_DATAENDIE    (0x1U << 8)
+            #define SDIO_MASK_STBITERRIE   (0x1U << 9)
+            #define SDIO_MASK_DBCKENDIE    (0x1U << 10)
+            #define SDIO_MASK_CMDACTIE     (0x1U << 11)
+            #define SDIO_MASK_TXACTIE      (0x1U << 12)
+            #define SDIO_MASK_RXACTIE      (0x1U << 13)
+            #define SDIO_MASK_TXFIFOHEIE   (0x1U << 14)
+            #define SDIO_MASK_RXFIFOHFIE   (0x1U << 15)
+            #define SDIO_MASK_TXFIFOFIE    (0x1U << 16)
+            #define SDIO_MASK_RXFIFOFIE    (0x1U << 17)
+            #define SDIO_MASK_TXFIFOEIE    (0x1U << 18)
+            #define SDIO_MASK_RXFIFOEIE    (0x1U << 19)
+            #define SDIO_MASK_TXDAVLIE     (0x1U << 20)
+            #define SDIO_MASK_RXDAVLIE     (0x1U << 21)
+            #define SDIO_MASK_SDIOITIE     (0x1U << 22)
+            #define SDIO_MASK_CEATAENDIE   (0x1U << 23)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->MASK; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->MASK = value; }
             template <EMasks ... flags>
@@ -8819,7 +9959,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->MASK & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->MASK & SetBits<(std::uint32_t)flags...>());
             }
         };
         class FIFOCNT
@@ -8839,8 +9979,9 @@ namespace STM32_REGS
             {
                 FIFOCOUNT              = (0xFFFFFFU << 0),
             };
+            #define SDIO_FIFOCNT_FIFOCOUNT (0xFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFOCNT; }
-            static inline uint32_t get_FIFOCOUNT() { return reinterpret_cast<const FIFOCNT_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFOCNT)->FIFOCOUNT; }
+            static inline uint32_t get_FIFOCOUNT() { return reinterpret_cast<__IO const FIFOCNT_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFOCNT)->FIFOCOUNT; }
         };
         class FIFO
         {
@@ -8858,6 +9999,7 @@ namespace STM32_REGS
             {
                 FIFODATA               = (0xFFFFFFFFU << 0),
             };
+            #define SDIO_FIFO_FIFODATA     (0xFFFFFFFFU << 0)
             static inline uint32_t get() { return reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFO; }
             static inline void set(uint32_t value) { reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFO = value; }
             static inline uint32_t get_FIFODATA() { return reinterpret_cast<__IO FIFO_t*>(&reinterpret_cast<SDIO_t*>(STM32::SDIO_BASE)->FIFO)->FIFODATA; }
@@ -8909,6 +10051,8 @@ namespace STM32_REGS
                 T                      = (0x7FU << 0),
                 WDGA                   = (0x1U << 7),
             };
+            #define WWDG_CR_T              (0x7FU << 0)
+            #define WWDG_CR_WDGA           (0x1U << 7)
             static inline uint32_t get() { return reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -8924,7 +10068,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_T() { return reinterpret_cast<__IO CR_t*>(&reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR)->T; }
             static inline void set_T(uint32_t value) { reinterpret_cast<__IO CR_t*>(&reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CR)->T = value; }
@@ -8950,6 +10094,9 @@ namespace STM32_REGS
                 WDGTB                  = (0x3U << 7),
                 EWI                    = (0x1U << 9),
             };
+            #define WWDG_CFR_W             (0x7FU << 0)
+            #define WWDG_CFR_WDGTB         (0x3U << 7)
+            #define WWDG_CFR_EWI           (0x1U << 9)
             static inline uint32_t get() { return reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR; }
             static inline void set(uint32_t value) { reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR = value; }
             template <EMasks ... flags>
@@ -8965,7 +10112,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR & SetBits<(std::uint32_t)flags...>());
             }
             static inline uint32_t get_W() { return reinterpret_cast<__IO CFR_t*>(&reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR)->W; }
             static inline void set_W(uint32_t value) { reinterpret_cast<__IO CFR_t*>(&reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->CFR)->W = value; }
@@ -8989,6 +10136,7 @@ namespace STM32_REGS
             {
                 EWIF                   = (0x1U << 0),
             };
+            #define WWDG_SR_EWIF           (0x1U << 0)
             static inline uint32_t get() { return reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -9004,7 +10152,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<WWDG_t*>(STM32::WWDG_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
     };
@@ -9039,6 +10187,8 @@ namespace STM32_REGS
                 RNGEN                  = (0x1U << 2),
                 IE                     = (0x1U << 3),
             };
+            #define RNG_CR_RNGEN           (0x1U << 2)
+            #define RNG_CR_IE              (0x1U << 3)
             static inline uint32_t get() { return reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->CR; }
             static inline void set(uint32_t value) { reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->CR = value; }
             template <EMasks ... flags>
@@ -9054,7 +10204,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->CR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->CR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class SR
@@ -9083,6 +10233,11 @@ namespace STM32_REGS
                 CEIS                   = (0x1U << 5),
                 SEIS                   = (0x1U << 6),
             };
+            #define RNG_SR_DRDY            (0x1U << 0)
+            #define RNG_SR_CECS            (0x1U << 1)
+            #define RNG_SR_SECS            (0x1U << 2)
+            #define RNG_SR_CEIS            (0x1U << 5)
+            #define RNG_SR_SEIS            (0x1U << 6)
             static inline uint32_t get() { return reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->SR; }
             static inline void set(uint32_t value) { reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->SR = value; }
             template <EMasks ... flags>
@@ -9098,7 +10253,7 @@ namespace STM32_REGS
             template <EMasks ... flags>
             static inline bool get_flags()
             {
-                return ((reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->SR & SetBits<(std::uint32_t)flags...>()) == SetBits<(std::uint32_t)flags...>());
+                return (reinterpret_cast<RNG_t*>(STM32::RNG_BASE)->SR & SetBits<(std::uint32_t)flags...>());
             }
         };
         class DR

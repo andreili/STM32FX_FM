@@ -3,7 +3,9 @@
 
 #include "stm32_inc.h"
 
-class STM32_SD
+namespace STM32 {
+
+class SD
 {
 public:
 
@@ -250,7 +252,7 @@ public:
     enum class ETransferDir: uint32_t
     {
         TO_CARD         = 0x00000000U,
-        TO_SDIO         = SDIO_DCTRL_DTDIR
+        TO_SDIO         = (uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTDIR,
     };
 
     enum class EDataBlockSize: uint32_t
@@ -282,25 +284,25 @@ public:
     enum class EClockEdge: uint32_t
     {
         RISING  = 0x00000000U,
-        FALLING = SDIO_CLKCR_NEGEDGE,
+        FALLING = (uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::NEGEDGE,
     };
 
     enum class EClockBypass: uint32_t
     {
         DISABLE = 0x00000000U,
-        ENABLE  = SDIO_CLKCR_BYPASS,
+        ENABLE  = (uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::BYPASS,
     };
 
     enum class EClockPowerSave: uint32_t
     {
         DISABLE = 0x00000000U,
-        ENABLE  = SDIO_CLKCR_PWRSAV,
+        ENABLE  = (uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::PWRSAV,
     };
 
     enum class EHWFlowControl: uint32_t
     {
         DISABLE = 0x00000000U,
-        ENABLE  = SDIO_CLKCR_HWFC_EN,
+        ENABLE  = (uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::HWFC_EN,
     };
 
     enum class EBusWide: uint32_t
@@ -314,40 +316,32 @@ public:
     {
         NO      = 0x00000000U,
         SHORT   = SDIO_CMD_WAITRESP_0,
-        LONG    = SDIO_CMD_WAITRESP,
+        LONG    = (uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITRESP,
     };
 
     enum class EWait: uint32_t
     {
         NO      = 0x00000000U,
-        IT      = SDIO_CMD_WAITINT,
-        PEND    = SDIO_CMD_WAITPEND,
+        IT      = (uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITINT,
+        PEND    = (uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITPEND,
     };
 
     enum class ECPSM: uint32_t
     {
         DISABLE = 0x00000000U,
-        ENABLE  = SDIO_CMD_CPSMEN,
+        ENABLE  = (uint32_t)STM32_REGS::SDIO::CMD::EMasks::CPSMEN,
     };
 
     enum class EDPSM: uint32_t
     {
         DISABLE = 0x00000000U,
-        ENABLE  = SDIO_DCTRL_DTEN,
-    };
-
-    enum class EResp: uint32_t
-    {
-        RESP1   = 0x00000000U,
-        RESP2   = 0x00000004U,
-        RESP3   = 0x00000008U,
-        RESP4   = 0x0000000CU,
+        ENABLE  = (uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTEN,
     };
 
     enum class ETransferMode: uint32_t
     {
         BLOCK   = 0x00000000U,
-        STREAM  = SDIO_DCTRL_DTMODE,
+        STREAM  = (uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTMODE,
     };
 
     /*enum class EReadWaitMode: uint32_t
@@ -439,22 +433,27 @@ private:
 
     static ESDError is_card_programming(ECardState *status);
 
-    static inline void enable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = 1; }
-    static inline void disable_SDIO() { BIT_BAND_PER((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->CLKCR, SDIO_CLKCR_CLKEN) = 0; }
+    static inline void enable_SDIO() { STM32_REGS::SDIO::CLKCR::set_flags<STM32_REGS::SDIO::CLKCR::EMasks::CLKEN>(); }
+    static inline void disable_SDIO() { STM32_REGS::SDIO::CLKCR::clear_flags<STM32_REGS::SDIO::CLKCR::EMasks::CLKEN>(); }
 
-    static inline void power_state_ON() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = SDIO_POWER_PWRCTRL; }
-    static inline void power_state_OFF() { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER = 0; }
+    static inline void power_state_ON() { STM32_REGS::SDIO::POWER::set_PWRCTRL(0x03); }
+    static inline void power_state_OFF() { STM32_REGS::SDIO::POWER::set_PWRCTRL(0); }
 
-    static inline uint32_t get_flag(uint32_t flag_msk) { return ((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->STA & flag_msk); }
-    static inline void clear_flag(uint32_t flag_msk) { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->ICR = flag_msk; }
+    template <STM32_REGS::SDIO::STA::EMasks ... flags>
+    static inline uint32_t get_flag() { return STM32_REGS::SDIO::STA::get_flags<flags...>(); }
+    template <STM32_REGS::SDIO::STA::EMasks ... flags>
+    static inline void clear_flag() { STM32_REGS::SDIO::ICR::set_flags<(STM32_REGS::SDIO::ICR::EMasks)flags...>(); }
 
-    static inline ECMD get_cmd_response() { return static_cast<ECMD>((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->RESPCMD); }
-    static inline uint32_t get_response(EResp resp) { return (&(reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->RESP1)[static_cast<uint32_t>(resp) >> 2]; }
+    static inline ECMD get_cmd_response() { return static_cast<ECMD>(STM32_REGS::SDIO::RESPCMD::get()); }
+    static inline uint32_t get_response1() { return STM32_REGS::SDIO::RESP1::get(); }
+    static inline uint32_t get_response2() { return STM32_REGS::SDIO::RESP2::get(); }
+    static inline uint32_t get_response3() { return STM32_REGS::SDIO::RESP3::get(); }
+    static inline uint32_t get_response4() { return STM32_REGS::SDIO::RESP4::get(); }
 
-    static inline uint32_t get_power_state() { return ((reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->POWER & SDIO_POWER_PWRCTRL); }
+    static inline uint32_t get_power_state() { return STM32_REGS::SDIO::POWER::get_PWRCTRL(); }
 
-    static inline uint32_t read_FIFO() { return (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->FIFO; }
-    static inline void write_FIFO(uint32_t *val) { (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))->FIFO = *val; }
+    static inline uint32_t read_FIFO() { return STM32_REGS::SDIO::FIFO::get(); }
+    static inline void write_FIFO(uint32_t *val) { STM32_REGS::SDIO::FIFO::set(*val); }
 
     static ESDError wide_bus_enable();
     static ESDError wide_bus_disable();
@@ -463,5 +462,7 @@ private:
 
     static ECardState get_state();
 };
+
+}
 
 #endif // STM32_SD_H

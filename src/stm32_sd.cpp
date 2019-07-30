@@ -1,79 +1,33 @@
-#include "stm32_sd.h"
+#include "stm32_sd.hpp"
 
 #ifdef STM32_USE_SD
 
-#define SDIO_                (reinterpret_cast<SDIO_TypeDef*>(SDIO_BASE))
-
 #define DATA_BLOCK_SIZE                  EDataBlockSize::_512B
 
-#define SDIO_IT_CCRCFAIL                    SDIO_STA_CCRCFAIL
-#define SDIO_IT_DCRCFAIL                    SDIO_STA_DCRCFAIL
-#define SDIO_IT_CTIMEOUT                    SDIO_STA_CTIMEOUT
-#define SDIO_IT_DTIMEOUT                    SDIO_STA_DTIMEOUT
-#define SDIO_IT_TXUNDERR                    SDIO_STA_TXUNDERR
-#define SDIO_IT_RXOVERR                     SDIO_STA_RXOVERR
-#define SDIO_IT_CMDREND                     SDIO_STA_CMDREND
-#define SDIO_IT_CMDSENT                     SDIO_STA_CMDSENT
-#define SDIO_IT_DATAEND                     SDIO_STA_DATAEND
-#define SDIO_IT_STBITERR                    SDIO_STA_STBITERR
-#define SDIO_IT_DBCKEND                     SDIO_STA_DBCKEND
-#define SDIO_IT_CMDACT                      SDIO_STA_CMDACT
-#define SDIO_IT_TXACT                       SDIO_STA_TXACT
-#define SDIO_IT_RXACT                       SDIO_STA_RXACT
-#define SDIO_IT_TXFIFOHE                    SDIO_STA_TXFIFOHE
-#define SDIO_IT_RXFIFOHF                    SDIO_STA_RXFIFOHF
-#define SDIO_IT_TXFIFOF                     SDIO_STA_TXFIFOF
-#define SDIO_IT_RXFIFOF                     SDIO_STA_RXFIFOF
-#define SDIO_IT_TXFIFOE                     SDIO_STA_TXFIFOE
-#define SDIO_IT_RXFIFOE                     SDIO_STA_RXFIFOE
-#define SDIO_IT_TXDAVL                      SDIO_STA_TXDAVL
-#define SDIO_IT_RXDAVL                      SDIO_STA_RXDAVL
-#define SDIO_IT_SDIOIT                      SDIO_STA_SDIOIT
-#define SDIO_IT_CEATAEND                    SDIO_STA_CEATAEND
+#define SDIO_STATIC_FLAGS                   SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::DCRCFAIL, \
+                                            SDIO_STA::EMasks::CTIMEOUT, SDIO_STA::EMasks::DTIMEOUT, \
+                                            SDIO_STA::EMasks::TXUNDERR, SDIO_STA::EMasks::RXOVERR, \
+                                            SDIO_STA::EMasks::CMDREND,  SDIO_STA::EMasks::CMDSENT, \
+                                            SDIO_STA::EMasks::DATAEND,  SDIO_STA::EMasks::DBCKEND
 
-#define SDIO_FLAG_CCRCFAIL                  SDIO_STA_CCRCFAIL
-#define SDIO_FLAG_DCRCFAIL                  SDIO_STA_DCRCFAIL
-#define SDIO_FLAG_CTIMEOUT                  SDIO_STA_CTIMEOUT
-#define SDIO_FLAG_DTIMEOUT                  SDIO_STA_DTIMEOUT
-#define SDIO_FLAG_TXUNDERR                  SDIO_STA_TXUNDERR
-#define SDIO_FLAG_RXOVERR                   SDIO_STA_RXOVERR
-#define SDIO_FLAG_CMDREND                   SDIO_STA_CMDREND
-#define SDIO_FLAG_CMDSENT                   SDIO_STA_CMDSENT
-#define SDIO_FLAG_DATAEND                   SDIO_STA_DATAEND
-#define SDIO_FLAG_STBITERR                  SDIO_STA_STBITERR
-#define SDIO_FLAG_DBCKEND                   SDIO_STA_DBCKEND
-#define SDIO_FLAG_CMDACT                    SDIO_STA_CMDACT
-#define SDIO_FLAG_TXACT                     SDIO_STA_TXACT
-#define SDIO_FLAG_RXACT                     SDIO_STA_RXACT
-#define SDIO_FLAG_TXFIFOHE                  SDIO_STA_TXFIFOHE
-#define SDIO_FLAG_RXFIFOHF                  SDIO_STA_RXFIFOHF
-#define SDIO_FLAG_TXFIFOF                   SDIO_STA_TXFIFOF
-#define SDIO_FLAG_RXFIFOF                   SDIO_STA_RXFIFOF
-#define SDIO_FLAG_TXFIFOE                   SDIO_STA_TXFIFOE
-#define SDIO_FLAG_RXFIFOE                   SDIO_STA_RXFIFOE
-#define SDIO_FLAG_TXDAVL                    SDIO_STA_TXDAVL
-#define SDIO_FLAG_RXDAVL                    SDIO_STA_RXDAVL
-#define SDIO_FLAG_SDIOIT                    SDIO_STA_SDIOIT
-#define SDIO_FLAG_CEATAEND                  SDIO_STA_CEATAEND
+#define CLKCR_CLEAR_MASK         SetBits<(std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::CLKDIV, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::PWRSAV, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::BYPASS, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::WIDBUS, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::NEGEDGE, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CLKCR::EMasks::HWFC_EN>()
 
-#define SDIO_STATIC_FLAGS                   (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_DCRCFAIL | \
-                                             SDIO_FLAG_CTIMEOUT | SDIO_FLAG_DTIMEOUT | \
-                                             SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR | \
-                                             SDIO_FLAG_CMDREND | SDIO_FLAG_CMDSENT | \
-                                             SDIO_FLAG_DATAEND | SDIO_FLAG_DBCKEND)
+#define DCTRL_CLEAR_MASK         SetBits<(std::uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTEN, \
+                                         (std::uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTDIR, \
+                                         (std::uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DTMODE, \
+                                         (std::uint32_t)STM32_REGS::SDIO::DCTRL::EMasks::DBLOCKSIZE>()
 
-#define CLKCR_CLEAR_MASK         (SDIO_CLKCR_CLKDIV  | SDIO_CLKCR_PWRSAV |\
-                                  SDIO_CLKCR_BYPASS  | SDIO_CLKCR_WIDBUS |\
-                                  SDIO_CLKCR_NEGEDGE | SDIO_CLKCR_HWFC_EN)
-
-#define DCTRL_CLEAR_MASK         (SDIO_DCTRL_DTEN    | SDIO_DCTRL_DTDIR |\
-                                  SDIO_DCTRL_DTMODE  | SDIO_DCTRL_DBLOCKSIZE)
-
-#define CMD_CLEAR_MASK           (SDIO_CMD_CMDINDEX | SDIO_CMD_WAITRESP |\
-                                  SDIO_CMD_WAITINT  | SDIO_CMD_WAITPEND |\
-                                  SDIO_CMD_CPSMEN   | SDIO_CMD_SDIOSUSPEND)
-
-#define SDIO_RESP_ADDR           ((uint32_t)(SDIO_BASE + 0x14U))
+#define CMD_CLEAR_MASK           SetBits<(std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::CMDINDEX, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITRESP, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITINT, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::WAITPEND, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::CPSMEN, \
+                                         (std::uint32_t)STM32_REGS::SDIO::CMD::EMasks::SDIOSUSPEND>()
 
 #define SDIO_INIT_CLK_DIV 0x76U
 
@@ -114,13 +68,17 @@
 #define SD_CCCC_WRITE_PROT              0x00000040U
 #define SD_CCCC_ERASE                   0x00000020U
 
-STM32_SD::ECardType STM32_SD::m_card_type;
-uint16_t STM32_SD::m_RCA;
-uint32_t STM32_SD::m_CSD[4];
-uint32_t STM32_SD::m_CID[4];
-STM32_SD::CardInfo STM32_SD::m_card_info;
+using SDIO_STA = STM32_REGS::SDIO::STA;
 
-STM32_SD::ESDError STM32_SD::init()
+namespace STM32 {
+
+SD::ECardType SD::m_card_type;
+uint16_t SD::m_RCA;
+uint32_t SD::m_CSD[4];
+uint32_t SD::m_CID[4];
+SD::CardInfo SD::m_card_info;
+
+SD::ESDError SD::init()
 {
     init_gpio();
     ///TODO init_DMA();
@@ -154,7 +112,7 @@ STM32_SD::ESDError STM32_SD::init()
     return errorstate;
 }
 
-void STM32_SD::deinit()
+void SD::deinit()
 {
     power_OFF();
 
@@ -167,7 +125,7 @@ void STM32_SD::deinit()
     STM32::NVIC::disable_IRQ(STM32::IRQn::SDIO);
 }
 
-STM32_SD::ESDError STM32_SD::wide_bus_config(EBusWide mode)
+SD::ESDError SD::wide_bus_config(EBusWide mode)
 {
     ESDError errorstate = ESDError::OK;
 
@@ -200,7 +158,7 @@ STM32_SD::ESDError STM32_SD::wide_bus_config(EBusWide mode)
     return errorstate;
 }
 
-STM32_SD::ETransferState STM32_SD::get_status()
+SD::ETransferState SD::get_status()
 {
     ECardState cardstate =  ECardState::TRANSFER;
 
@@ -215,13 +173,13 @@ STM32_SD::ETransferState STM32_SD::get_status()
         return ETransferState::BUSY;
 }
 
-STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint16_t blocks)
+SD::ESDError SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint32_t block_size, uint16_t blocks)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t count = 0U, *tempbuff = reinterpret_cast<uint32_t*>(buf);
 
     /* Initialize data control register */
-    SDIO_->DCTRL = 0U;
+    STM32_REGS::SDIO::DCTRL::set(0);
 
     if (m_card_type == ECardType::HIGH_CAPACITY)
     {
@@ -271,12 +229,14 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
 
         /* Poll on SDIO flags */
         #ifdef SDIO_STA_STBITERR
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DATAEND | SDIO_FLAG_STBITERR))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DATAEND, SDIO_STA::EMasks::STBITERR>())
         #else /* SDIO_STA_STBITERR not defined */
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DATAEND))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DATAEND>())
         #endif /* SDIO_STA_STBITERR */
         {
-            if (get_flag(SDIO_FLAG_RXFIFOHF))
+            if (get_flag<SDIO_STA::EMasks::RXFIFOHF>())
             {
                 /* Read data from SDIO Rx FIFO */
                 for (count = 0U; count < 8U; count++)
@@ -297,12 +257,14 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
 
         /* In case of single block transfer, no need of stop transfer at all */
         #ifdef SDIO_STA_STBITERR
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND, SDIO_STA::EMasks::STBITERR>())
         #else /* SDIO_STA_STBITERR not defined */
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND>())
         #endif /* SDIO_STA_STBITERR */
         {
-            if (get_flag(SDIO_FLAG_RXFIFOHF))
+            if (get_flag<SDIO_STA::EMasks::RXFIFOHF>())
             {
                 /* Read data from SDIO Rx FIFO */
                 for (count = 0U; count < 8U; count++)
@@ -314,7 +276,7 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     }
 
     /* Send stop transmission command in case of multiblock read */
-    if (get_flag(SDIO_FLAG_DATAEND) && (blocks > 1U))
+    if (get_flag<SDIO_STA::EMasks::DATAEND>() && (blocks > 1U))
     {
         if ((m_card_type == ECardType::STD_CAPACITY_V1_1) ||
             (m_card_type == ECardType::STD_CAPACITY_V2_0) ||
@@ -324,25 +286,25 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     }
 
     /* Get error state */
-    if (get_flag(SDIO_FLAG_DTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::DTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_DTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::DTIMEOUT>();
         return ESDError::DATA_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_DCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::DCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_DCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::DCRCFAIL>();
         return ESDError::DATA_CRC_FAIL;
     }
-    else if (get_flag(SDIO_FLAG_RXOVERR))
+    else if (get_flag<SDIO_STA::EMasks::RXOVERR>())
     {
-        clear_flag(SDIO_FLAG_RXOVERR);
+        clear_flag<SDIO_STA::EMasks::RXOVERR>();
         return ESDError::RX_OVERRUN;
     }
     #ifdef SDIO_STA_STBITERR
-    else if (get_flag(SDIO_FLAG_STBITERR))
+    else if (get_flag<SDIO_STA::EMasks::STBITERR>())
     {
-        clear_flag(SDIO_FLAG_STBITERR);
+        clear_flag<SDIO_STA::EMasks::STBITERR>();
         return ESDError::START_BIT_ERR;
     }
     #endif /* SDIO_STA_STBITERR */
@@ -354,7 +316,7 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     count = SD_DATATIMEOUT;
 
     /* Empty FIFO if there is still any data */
-    while ((get_flag(SDIO_FLAG_RXDAVL)) && (count > 0U))
+    while ((get_flag<SDIO_STA::EMasks::RXDAVL>()) && (count > 0U))
     {
         *tempbuff = read_FIFO();
         tempbuff++;
@@ -362,12 +324,12 @@ STM32_SD::ESDError STM32_SD::read_blocks(uint8_t *buf, uint32_t read_addr, uint3
     }
 
     /* Clear all the static flags */
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint16_t blocks)
+SD::ESDError SD::write_blocks(uint8_t *buf, uint32_t write_addr, uint32_t block_size, uint16_t blocks)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t totalnumberofbytes = 0U, bytestransferred = 0U, count = 0U, restwords = 0U;
@@ -375,7 +337,7 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     ECardState cardstate  = ECardState::READY;
 
     /* Initialize data control register */
-    SDIO_->DCTRL = 0U;
+    STM32_REGS::SDIO::DCTRL::set(0);
 
     if (m_card_type == ECardType::HIGH_CAPACITY)
     {
@@ -423,12 +385,14 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     if (blocks > 1U)
     {
         #ifdef SDIO_STA_STBITERR
-        while (!get_flag(SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DATAEND | SDIO_FLAG_STBITERR))
+        while (!get_flag<SDIO_STA::EMasks::TXUNDERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DATAEND, SDIO_STA::EMasks::STBITERR>())
         #else /* SDIO_STA_STBITERR not defined */
-        while (!get_flag(SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DATAEND))
+        while (!get_flag<SDIO_STA::EMasks::TXUNDERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DATAEND>())
         #endif /* SDIO_STA_STBITERR */
         {
-            if (get_flag(SDIO_FLAG_TXFIFOHE))
+            if (get_flag<SDIO_STA::EMasks::TXFIFOHE>())
             {
                 if ((totalnumberofbytes - bytestransferred) < 32U)
                 {
@@ -460,12 +424,14 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     {
         /* In case of single data block transfer no need of stop command at all */
         #ifdef SDIO_STA_STBITERR
-        while (!get_flag(SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+        while (!get_flag<SDIO_STA::EMasks::TXUNDERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND, SDIO_STA::EMasks::STBITERR>())
         #else /* SDIO_STA_STBITERR not defined */
-        while (!get_flag(SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+        while (!get_flag<SDIO_STA::EMasks::TXUNDERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND>())
         #endif /* SDIO_STA_STBITERR */
         {
-            if (get_flag(SDIO_FLAG_TXFIFOHE))
+            if (get_flag<SDIO_STA::EMasks::TXFIFOHE>())
             {
                 if ((totalnumberofbytes - bytestransferred) < 32U)
                 {
@@ -495,7 +461,7 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     }
 
     /* Send stop transmission command in case of multiblock write */
-    if (get_flag(SDIO_FLAG_DATAEND) && (blocks > 1U))
+    if (get_flag<SDIO_STA::EMasks::DATAEND>() && (blocks > 1U))
     {
         if ((m_card_type == ECardType::STD_CAPACITY_V1_1) ||
             (m_card_type == ECardType::STD_CAPACITY_V2_0) ||\
@@ -505,25 +471,25 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     }
 
     /* Get error state */
-    if (get_flag(SDIO_FLAG_DTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::DTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_DTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::DTIMEOUT>();
         return ESDError::DATA_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_DCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::DCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_DCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::DCRCFAIL>();
         return ESDError::DATA_CRC_FAIL;
     }
-    else if (get_flag(SDIO_FLAG_TXUNDERR))
+    else if (get_flag<SDIO_STA::EMasks::TXUNDERR>())
     {
-        clear_flag(SDIO_FLAG_TXUNDERR);
+        clear_flag<SDIO_STA::EMasks::TXUNDERR>();
         return ESDError::TX_UNDERRUN;
     }
     #ifdef SDIO_STA_STBITERR
-    else if (get_flag(SDIO_FLAG_STBITERR))
+    else if (get_flag<SDIO_STA::EMasks::STBITERR>())
     {
-        clear_flag(SDIO_FLAG_STBITERR);
+        clear_flag<SDIO_STA::EMasks::STBITERR>();
         return ESDError::START_BIT_ERR;
     }
     #endif /* SDIO_STA_STBITERR */
@@ -533,7 +499,7 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     }
 
     /* Clear all the static flags */
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
     /* Wait till the card is in programming state */
     errorstate = is_card_programming(&cardstate);
@@ -546,7 +512,7 @@ STM32_SD::ESDError STM32_SD::write_blocks(uint8_t *buf, uint32_t write_addr, uin
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::erase(uint32_t start_addr, uint32_t end_addr)
+SD::ESDError SD::erase(uint32_t start_addr, uint32_t end_addr)
 {
     ESDError errorstate = ESDError::OK;
 
@@ -559,9 +525,9 @@ STM32_SD::ESDError STM32_SD::erase(uint32_t start_addr, uint32_t end_addr)
         return ESDError::REQUEST_NOT_APPLICABLE;
 
     /* Get max delay value */
-    maxdelay = 120000U / (((SDIO_->CLKCR) & 0xFFU) + 2U);
+    maxdelay = 120000U / (((STM32_REGS::SDIO::CLKCR::get()) & 0xFFU) + 2U);
 
-    if ((get_response(EResp::RESP1) & SD_CARD_LOCKED) == SD_CARD_LOCKED)
+    if ((get_response1() & SD_CARD_LOCKED) == SD_CARD_LOCKED)
         return ESDError::LOCK_UNLOCK_FAILED;
 
     /* Get start and end block for high capacity cards */
@@ -626,7 +592,7 @@ STM32_SD::ESDError STM32_SD::erase(uint32_t start_addr, uint32_t end_addr)
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::high_speed()
+SD::ESDError SD::high_speed()
 {
     ESDError errorstate = ESDError::OK;
 
@@ -636,7 +602,7 @@ STM32_SD::ESDError STM32_SD::high_speed()
     uint32_t count = 0U, *tempbuff = reinterpret_cast<uint32_t*>(SD_hs);
 
     /* Initialize the Data control register */
-    SDIO_->DCTRL = 0U;
+    STM32_REGS::SDIO::DCTRL::set(0);
 
     /* Get SCR Register */
     errorstate = find_SCR(SD_scr);
@@ -674,12 +640,14 @@ STM32_SD::ESDError STM32_SD::high_speed()
         if (errorstate != ESDError::OK)
             return errorstate;
         #ifdef SDIO_STA_STBITERR
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND, SDIO_STA::EMasks::STBITERR>())
         #else /* SDIO_STA_STBITERR */
-        while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+        while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+               SDIO_STA::EMasks::DBCKEND>())
         #endif /* SDIO_STA_STBITERR */
         {
-            if (get_flag(SDIO_FLAG_RXFIFOHF))
+            if (get_flag<SDIO_STA::EMasks::RXFIFOHF>())
             {
                 for (count = 0U; count < 8U; count++)
                     *(tempbuff + count) = read_FIFO();
@@ -688,25 +656,25 @@ STM32_SD::ESDError STM32_SD::high_speed()
             }
         }
 
-        if (get_flag(SDIO_FLAG_DTIMEOUT))
+        if (get_flag<SDIO_STA::EMasks::DTIMEOUT>())
         {
-            clear_flag(SDIO_FLAG_DTIMEOUT);
+            clear_flag<SDIO_STA::EMasks::DTIMEOUT>();
             return ESDError::DATA_TIMEOUT;
         }
-        else if (get_flag(SDIO_FLAG_DCRCFAIL))
+        else if (get_flag<SDIO_STA::EMasks::DCRCFAIL>())
         {
-            clear_flag(SDIO_FLAG_DCRCFAIL);
+            clear_flag<SDIO_STA::EMasks::DCRCFAIL>();
             return ESDError::DATA_CRC_FAIL;
         }
-        else if (get_flag(SDIO_FLAG_RXOVERR))
+        else if (get_flag<SDIO_STA::EMasks::RXOVERR>())
         {
-            clear_flag(SDIO_FLAG_RXOVERR);
+            clear_flag<SDIO_STA::EMasks::RXOVERR>();
             return ESDError::RX_OVERRUN;
         }
         #ifdef SDIO_STA_STBITERR
-        else if (get_flag(SDIO_FLAG_STBITERR))
+        else if (get_flag<SDIO_STA::EMasks::STBITERR>())
         {
-            clear_flag(SDIO_FLAG_STBITERR);
+            clear_flag<SDIO_STA::EMasks::STBITERR>();
             return ESDError::START_BIT_ERR;
         }
         #endif /* SDIO_STA_STBITERR */
@@ -717,7 +685,7 @@ STM32_SD::ESDError STM32_SD::high_speed()
 
         count = SD_DATATIMEOUT;
 
-        while ((get_flag(SDIO_FLAG_RXDAVL)) && (count > 0U))
+        while ((get_flag<SDIO_STA::EMasks::RXDAVL>()) && (count > 0U))
         {
             *tempbuff = read_FIFO();
             tempbuff++;
@@ -725,7 +693,7 @@ STM32_SD::ESDError STM32_SD::high_speed()
         }
 
         /* Clear all the static flags */
-        clear_flag(SDIO_STATIC_FLAGS);
+        clear_flag<SDIO_STATIC_FLAGS>();
 
         /* Test if the switch mode HS is ok */
         if ((SD_hs[13U]& 2U) != 2U)
@@ -735,13 +703,13 @@ STM32_SD::ESDError STM32_SD::high_speed()
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
+SD::ESDError SD::send_SD_status(uint32_t *status)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t count = 0U;
 
     /* Check SD response */
-    if ((get_response(EResp::RESP1) & SD_CARD_LOCKED) == SD_CARD_LOCKED)
+    if ((get_response1() & SD_CARD_LOCKED) == SD_CARD_LOCKED)
         return ESDError::LOCK_UNLOCK_FAILED;
 
     /* Set block size for card if it is not equal to current block size for card */
@@ -781,12 +749,14 @@ STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
 
     /* Get status data */
     #ifdef SDIO_STA_STBITERR
-    while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+    while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+           SDIO_STA::EMasks::DBCKEND, SDIO_STA::EMasks::STBITERR>())
     #else /* SDIO_STA_STBITERR not defined */
-    while (!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+    while (!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+           SDIO_STA::EMasks::DBCKEND>())
     #endif /* SDIO_STA_STBITERR */
     {
-        if (get_flag(SDIO_FLAG_RXFIFOHF))
+        if (get_flag<SDIO_STA::EMasks::RXFIFOHF>())
         {
             for (count = 0U; count < 8U; count++)
                 *(status + count) = read_FIFO();
@@ -795,25 +765,25 @@ STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
         }
     }
 
-    if (get_flag(SDIO_FLAG_DTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::DTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_DTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::DTIMEOUT>();
         return ESDError::DATA_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_DCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::DCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_DCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::DCRCFAIL>();
         return ESDError::DATA_CRC_FAIL;
     }
-    else if (get_flag(SDIO_FLAG_RXOVERR))
+    else if (get_flag<SDIO_STA::EMasks::RXOVERR>())
     {
-        clear_flag(SDIO_FLAG_RXOVERR);
+        clear_flag<SDIO_STA::EMasks::RXOVERR>();
         return ESDError::RX_OVERRUN;
     }
     #ifdef SDIO_STA_STBITERR
-    else if (get_flag(SDIO_FLAG_STBITERR))
+    else if (get_flag<SDIO_STA::EMasks::STBITERR>())
     {
-        clear_flag(SDIO_FLAG_STBITERR);
+        clear_flag<SDIO_STA::EMasks::STBITERR>();
         return ESDError::START_BIT_ERR;
     }
     #endif /* SDIO_STA_STBITERR */
@@ -823,7 +793,7 @@ STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
     }
 
     count = SD_DATATIMEOUT;
-    while ((get_flag(SDIO_FLAG_RXDAVL)) && (count > 0U))
+    while ((get_flag<SDIO_STA::EMasks::RXDAVL>()) && (count > 0U))
     {
         *status = read_FIFO();
         status++;
@@ -831,12 +801,12 @@ STM32_SD::ESDError STM32_SD::send_SD_status(uint32_t *status)
     }
 
     /* Clear all the static status flags*/
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
     return errorstate;
 }
 
-void STM32_SD::init_gpio()
+void SD::init_gpio()
 {
     STM32::RCC::enable_clk_SDIO();
     STM32::RCC::enable_clk_GPIOC();
@@ -851,7 +821,7 @@ void STM32_SD::init_gpio()
                      STM32_GPIO::ESpeed::VERY_HIGH, STM32_GPIO::EPull::NOPULL);
 }
 
-void STM32_SD::deinit_gpio()
+void SD::deinit_gpio()
 {
     gpioc.unset_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 |
                        STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12);
@@ -860,19 +830,21 @@ void STM32_SD::deinit_gpio()
     STM32::RCC::disable_clk_GPIOD();
 }
 
-void STM32_SD::init_low(EClockEdge clock_edge, EClockBypass clock_bypass,
+void SD::init_low(EClockEdge clock_edge, EClockBypass clock_bypass,
                         EClockPowerSave clock_power_save, EBusWide bus_wide,
                         EHWFlowControl hw_control, uint32_t clock_div)
 {
-    uint32_t tmpreg = static_cast<uint32_t>(clock_edge) |
-            static_cast<uint32_t>(clock_bypass) |
-            static_cast<uint32_t>(clock_power_save) |
-            static_cast<uint32_t>(bus_wide) |
-            static_cast<uint32_t>(hw_control) | clock_div;
-    MODIFY_REG(SDIO_->CLKCR, CLKCR_CLEAR_MASK, tmpreg);
+    uint32_t val = STM32_REGS::SDIO::CLKCR::get();
+    val &= ~(CLKCR_CLEAR_MASK);
+    val |= static_cast<uint32_t>(clock_edge) |
+           static_cast<uint32_t>(clock_bypass) |
+           static_cast<uint32_t>(clock_power_save) |
+           static_cast<uint32_t>(bus_wide) |
+           static_cast<uint32_t>(hw_control) | clock_div;
+    STM32_REGS::SDIO::CLKCR::set(val);
 }
 
-STM32_SD::ESDError STM32_SD::power_ON()
+SD::ESDError SD::power_ON()
 {
     /* CMD0: GO_IDLE_STATE */
     send_command(0, ECMD::GO_IDLE_STATE, EResponse::NO,
@@ -880,7 +852,7 @@ STM32_SD::ESDError STM32_SD::power_ON()
     ESDError errorstate = cmd_error();
     if (errorstate != ESDError::OK)
     {
-        clear_flag(SDIO_STATIC_FLAGS);
+        clear_flag<SDIO_STATIC_FLAGS>();
         return errorstate;
     }
 
@@ -936,7 +908,7 @@ STM32_SD::ESDError STM32_SD::power_ON()
                 return errorstate;
 
             /* Get command response */
-            response = get_response(EResp::RESP1);
+            response = get_response1();
             validvoltage = ((response & SD_VOLTAGE_WINDOW_WALID) == SD_VOLTAGE_WINDOW_WALID);
 
             ++count;
@@ -957,13 +929,13 @@ STM32_SD::ESDError STM32_SD::power_ON()
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::power_OFF()
+SD::ESDError SD::power_OFF()
 {
-    SDIO_->POWER = 0x00000000U;
+    power_state_OFF();
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::send_status(uint32_t *card_status)
+SD::ESDError SD::send_status(uint32_t *card_status)
 {
     ESDError errorstate = ESDError::OK;
 
@@ -981,12 +953,12 @@ STM32_SD::ESDError STM32_SD::send_status(uint32_t *card_status)
         return errorstate;
 
     /* Get SD card status */
-    *card_status = get_response(EResp::RESP1);
+    *card_status = get_response1();
 
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::initialize_cards()
+SD::ESDError SD::initialize_cards()
 {
     ESDError errorstate = ESDError::OK;
     uint16_t sd_rca = 1;
@@ -1003,10 +975,10 @@ STM32_SD::ESDError STM32_SD::initialize_cards()
         if ((errorstate = cmd_resp2_error()) != ESDError::OK)
             return errorstate;
 
-        m_CID[0] = get_response(EResp::RESP1);
-        m_CID[1] = get_response(EResp::RESP2);
-        m_CID[2] = get_response(EResp::RESP3);
-        m_CID[3] = get_response(EResp::RESP4);
+        m_CID[0] = get_response1();
+        m_CID[1] = get_response2();
+        m_CID[2] = get_response3();
+        m_CID[3] = get_response4();
     }
 
     if ((m_card_type == ECardType::STD_CAPACITY_V1_1) ||
@@ -1033,66 +1005,70 @@ STM32_SD::ESDError STM32_SD::initialize_cards()
         if ((errorstate = cmd_resp2_error()) != ESDError::OK)
             return errorstate;
 
-        m_CSD[0] = get_response(EResp::RESP1);
-        m_CSD[1] = get_response(EResp::RESP2);
-        m_CSD[2] = get_response(EResp::RESP3);
-        m_CSD[3] = get_response(EResp::RESP4);
+        m_CSD[0] = get_response1();
+        m_CSD[1] = get_response2();
+        m_CSD[2] = get_response3();
+        m_CSD[3] = get_response4();
     }
 
     return errorstate;
 }
 
-void STM32_SD::send_command(uint32_t arg, ECMD cmd,
+void SD::send_command(uint32_t arg, ECMD cmd,
                             EResponse resp, EWait wait_IT,
                             ECPSM cpsm)
 {
-    SDIO_->ARG = arg;
-    MODIFY_REG(SDIO_->CMD, CMD_CLEAR_MASK, (static_cast<uint32_t>(cmd) |
-                                           static_cast<uint32_t>(resp) |
-                                           static_cast<uint32_t>(wait_IT) |
-                                           static_cast<uint32_t>(cpsm)));
+    STM32_REGS::SDIO::ARG::set(arg);
+
+    uint32_t val = STM32_REGS::SDIO::CMD::get();
+    val &= ~(CMD_CLEAR_MASK);
+    val |= static_cast<uint32_t>(cmd) |
+           static_cast<uint32_t>(resp) |
+           static_cast<uint32_t>(wait_IT) |
+           static_cast<uint32_t>(cpsm);
+    STM32_REGS::SDIO::CMD::set(val);
 }
 
-STM32_SD::ESDError STM32_SD::cmd_error()
+SD::ESDError SD::cmd_error()
 {
-    WAIT_TIMEOUT_EX((!get_flag(SDIO_FLAG_CMDSENT)), SDIO_CMD0TIMEOUT, ESDError::CMD_RSP_TIMEOUT);
-    clear_flag(SDIO_STATIC_FLAGS);
+    WAIT_TIMEOUT_EX((!get_flag<SDIO_STA::EMasks::CMDSENT>()), SDIO_CMD0TIMEOUT, ESDError::CMD_RSP_TIMEOUT);
+    clear_flag<SDIO_STATIC_FLAGS>();
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::cmd_resp7_error()
+SD::ESDError SD::cmd_resp7_error()
 {
-    WAIT_TIMEOUT_EX((!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)),
+    WAIT_TIMEOUT_EX((!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()),
                  SDIO_CMD0TIMEOUT, ESDError::CMD_RSP_TIMEOUT);
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
         /* Card is not V2.0 compliant or card does not support the set voltage range */
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
-    if (get_flag(SDIO_FLAG_CMDREND))
+    if (get_flag<SDIO_STA::EMasks::CMDREND>())
     {
         /* Card is SD V2.0 compliant */
-        clear_flag(SDIO_FLAG_CMDREND);
+        clear_flag<SDIO_STA::EMasks::CMDREND>();
         return ESDError::OK;
     }
 
     return ESDError::ERROR;
 }
 
-STM32_SD::ESDError STM32_SD::cmd_resp1_error(ECMD cmd)
+SD::ESDError SD::cmd_resp1_error(ECMD cmd)
 {
-    while (!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) {}
+    while (!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()) {}
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_CCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::CCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_CCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::CCRCFAIL>();
         return ESDError::CMD_CRC_FAIL;
     }
 
@@ -1101,9 +1077,9 @@ STM32_SD::ESDError STM32_SD::cmd_resp1_error(ECMD cmd)
         return ESDError::CMD_CRC_FAIL;
 
     /* Clear all the static flags */
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
-    uint32_t response_r1 = get_response(EResp::RESP1);
+    uint32_t response_r1 = get_response1();
 
     if ((response_r1 & EOCRMasks::ERRORBITS) == SD_ALLZERO)
         return ESDError::OK;
@@ -1168,60 +1144,60 @@ STM32_SD::ESDError STM32_SD::cmd_resp1_error(ECMD cmd)
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::cmd_resp3_error()
+SD::ESDError SD::cmd_resp3_error()
 {
-    while (!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) {}
+    while (!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()) {}
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
 
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::cmd_resp2_error()
+SD::ESDError SD::cmd_resp2_error()
 {
-    while (!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) {}
+    while (!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()) {}
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_CCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::CCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_CCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::CCRCFAIL>();
         return ESDError::CMD_CRC_FAIL;
     }
 
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::cmd_resp6_error(ECMD cmd, uint16_t *pRCA)
+SD::ESDError SD::cmd_resp6_error(ECMD cmd, uint16_t *pRCA)
 {
-    while (!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) {}
+    while (!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()) {}
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_CCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::CCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_CCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::CCRCFAIL>();
         return ESDError::CMD_CRC_FAIL;
     }
 
     if (get_cmd_response() != cmd)
         return ESDError::ILLEGAL_CMD;
 
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
-    ER6Msk response_r1 = static_cast<ER6Msk>(get_response(EResp::RESP1));
+    ER6Msk response_r1 = static_cast<ER6Msk>(get_response1());
 
     if (response_r1 & ER6Msk::GENERAL_UNKNOWN_ERROR_6)
         return ESDError::GENERAL_UNKNOWN_ERROR;
@@ -1234,21 +1210,23 @@ STM32_SD::ESDError STM32_SD::cmd_resp6_error(ECMD cmd, uint16_t *pRCA)
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::data_config(uint32_t time_out, uint32_t dat_len,
+SD::ESDError SD::data_config(uint32_t time_out, uint32_t dat_len,
                                         EDataBlockSize block_size, ETransferDir transf_dir,
                                         ETransferMode transf_mode, EDPSM DPSM)
 {
-    SDIO_->DTIMER = time_out;
-    SDIO_->DLEN = dat_len;
-    uint32_t tmpreg = static_cast<uint32_t>(block_size) |
-                      static_cast<uint32_t>(transf_dir) |
-                      static_cast<uint32_t>(transf_mode) |
-                      static_cast<uint32_t>(DPSM);
-    MODIFY_REG(SDIO_->DCTRL, DCTRL_CLEAR_MASK, tmpreg);
+    STM32_REGS::SDIO::DTIMER::set(time_out);
+    STM32_REGS::SDIO::DLEN::set(dat_len);
+    uint32_t val = STM32_REGS::SDIO::DCTRL::get();
+    val &= ~(DCTRL_CLEAR_MASK);
+    val |= static_cast<uint32_t>(block_size) |
+           static_cast<uint32_t>(transf_dir) |
+           static_cast<uint32_t>(transf_mode) |
+           static_cast<uint32_t>(DPSM);
+    STM32_REGS::SDIO::DCTRL::set(val);
     return ESDError::OK;
 }
 
-STM32_SD::ESDError STM32_SD::stop_transfer()
+SD::ESDError SD::stop_transfer()
 {
     send_command(0, ECMD::STOP_TRANSMISSION, EResponse::SHORT,
                  EWait::NO, ECPSM::ENABLE);
@@ -1256,7 +1234,7 @@ STM32_SD::ESDError STM32_SD::stop_transfer()
     return cmd_resp1_error(ECMD::STOP_TRANSMISSION);
 }
 
-STM32_SD::ESDError STM32_SD::get_card_info()
+SD::ESDError SD::get_card_info()
 {
     ESDError errorstate = ESDError::OK;
 
@@ -1454,14 +1432,14 @@ STM32_SD::ESDError STM32_SD::get_card_info()
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::select_deselect(uint32_t addr)
+SD::ESDError SD::select_deselect(uint32_t addr)
 {
     send_command(addr, ECMD::SEL_DESEL_CARD, EResponse::SHORT,
                  EWait::NO, ECPSM::ENABLE);
     return cmd_resp1_error(ECMD::SEL_DESEL_CARD);
 }
 
-STM32_SD::ESDError STM32_SD::is_card_programming(ECardState *status)
+SD::ESDError SD::is_card_programming(ECardState *status)
 {
     ESDError errorstate = ESDError::OK;
     __IO uint32_t responseR1 = 0U;
@@ -1469,16 +1447,16 @@ STM32_SD::ESDError STM32_SD::is_card_programming(ECardState *status)
     send_command(static_cast<uint32_t>(m_RCA << 16U), ECMD::SEND_STATUS, EResponse::SHORT,
                  EWait::NO, ECPSM::ENABLE);
 
-    while (!get_flag(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) {}
+    while (!get_flag<SDIO_STA::EMasks::CCRCFAIL, SDIO_STA::EMasks::CMDREND, SDIO_STA::EMasks::CTIMEOUT>()) {}
 
-    if (get_flag(SDIO_FLAG_CTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::CTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_CTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::CTIMEOUT>();
         return ESDError::CMD_RSP_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_CCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::CCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_CCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::CCRCFAIL>();
         return ESDError::CMD_CRC_FAIL;
     }
     else
@@ -1491,11 +1469,11 @@ STM32_SD::ESDError STM32_SD::is_card_programming(ECardState *status)
         return ESDError::ILLEGAL_CMD;
 
     /* Clear all the static flags */
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
 
     /* We have received response, retrieve it for analysis */
-    responseR1 = get_response(EResp::RESP1);
+    responseR1 = get_response1();
 
     /* Find out card status */
     *status = static_cast<ECardState>((responseR1 >> 9U) & 0x0000000FU);
@@ -1563,13 +1541,13 @@ STM32_SD::ESDError STM32_SD::is_card_programming(ECardState *status)
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::wide_bus_enable()
+SD::ESDError SD::wide_bus_enable()
 {
     ESDError errorstate = ESDError::OK;
 
     uint32_t scr[2U] = {0U, 0U};
 
-    if ((get_response(EResp::RESP1) & SD_CARD_LOCKED) == SD_CARD_LOCKED)
+    if ((get_response1() & SD_CARD_LOCKED) == SD_CARD_LOCKED)
         return ESDError::LOCK_UNLOCK_FAILED;
 
     /* Get SCR Register */
@@ -1604,13 +1582,13 @@ STM32_SD::ESDError STM32_SD::wide_bus_enable()
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::wide_bus_disable()
+SD::ESDError SD::wide_bus_disable()
 {
     ESDError errorstate = ESDError::OK;
 
     uint32_t scr[2U] = {0U, 0U};
 
-    if ((get_response(EResp::RESP1) & SD_CARD_LOCKED) == SD_CARD_LOCKED)
+    if ((get_response1() & SD_CARD_LOCKED) == SD_CARD_LOCKED)
         return ESDError::LOCK_UNLOCK_FAILED;
 
     /* Get SCR Register */
@@ -1645,7 +1623,7 @@ STM32_SD::ESDError STM32_SD::wide_bus_disable()
     return errorstate;
 }
 
-STM32_SD::ESDError STM32_SD::find_SCR(uint32_t *scr)
+SD::ESDError SD::find_SCR(uint32_t *scr)
 {
     ESDError errorstate = ESDError::OK;
     uint32_t index = 0U;
@@ -1687,37 +1665,39 @@ STM32_SD::ESDError STM32_SD::find_SCR(uint32_t *scr)
         return errorstate;
 
     #ifdef SDIO_STA_STBITERR
-    while(!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))
+    while(!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+          SDIO_STA::EMasks::DBCKEND, SDIO_STA::EMasks::STBITERR>())
     #else /* SDIO_STA_STBITERR not defined */
-    while(!get_flag(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND))
+    while(!get_flag<SDIO_STA::EMasks::RXOVERR, SDIO_STA::EMasks::DCRCFAIL, SDIO_STA::EMasks::DTIMEOUT,
+          SDIO_STA::EMasks::DBCKEND>())
     #endif /* SDIO_STA_STBITERR */
     {
-        if(get_flag(SDIO_FLAG_RXDAVL))
+        if(get_flag<SDIO_STA::EMasks::RXDAVL>())
         {
             *(tempscr + index) = read_FIFO();
             index++;
         }
     }
 
-    if (get_flag(SDIO_FLAG_DTIMEOUT))
+    if (get_flag<SDIO_STA::EMasks::DTIMEOUT>())
     {
-        clear_flag(SDIO_FLAG_DTIMEOUT);
+        clear_flag<SDIO_STA::EMasks::DTIMEOUT>();
         return ESDError::DATA_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_DCRCFAIL))
+    else if (get_flag<SDIO_STA::EMasks::DCRCFAIL>())
     {
-        clear_flag(SDIO_FLAG_DCRCFAIL);
+        clear_flag<SDIO_STA::EMasks::DCRCFAIL>();
         return ESDError::DATA_TIMEOUT;
     }
-    else if (get_flag(SDIO_FLAG_RXOVERR))
+    else if (get_flag<SDIO_STA::EMasks::RXOVERR>())
     {
-        clear_flag(SDIO_FLAG_RXOVERR);
+        clear_flag<SDIO_STA::EMasks::RXOVERR>();
         return ESDError::RX_OVERRUN;
     }
     #ifdef SDIO_STA_STBITERR
-    else if (get_flag(SDIO_FLAG_STBITERR))
+    else if (get_flag<SDIO_STA::EMasks::STBITERR>())
     {
-        clear_flag(SDIO_FLAG_STBITERR);
+        clear_flag<SDIO_STA::EMasks::STBITERR>();
         return ESDError::START_BIT_ERR;
     }
     #endif /* SDIO_STA_STBITERR */
@@ -1727,7 +1707,7 @@ STM32_SD::ESDError STM32_SD::find_SCR(uint32_t *scr)
     }
 
     /* Clear all the static flags */
-    clear_flag(SDIO_STATIC_FLAGS);
+    clear_flag<SDIO_STATIC_FLAGS>();
 
     *(scr + 1U) = ((tempscr[0U] & SD_0TO7BITS) << 24U)  | ((tempscr[0U] & SD_8TO15BITS) << 8U) |
                   ((tempscr[0U] & SD_16TO23BITS) >> 8U) | ((tempscr[0U] & SD_24TO31BITS) >> 24U);
@@ -1738,7 +1718,7 @@ STM32_SD::ESDError STM32_SD::find_SCR(uint32_t *scr)
     return errorstate;
 }
 
-STM32_SD::ECardState STM32_SD::get_state()
+SD::ECardState SD::get_state()
 {
     uint32_t resp1 = 0U;
 
@@ -1746,6 +1726,8 @@ STM32_SD::ECardState STM32_SD::get_state()
         return ECardState::ERROR;
     else
         return static_cast<ECardState>((resp1 >> 9U) & 0x0FU);
+}
+
 }
 
 void ISR::SDIO_IRQ()
