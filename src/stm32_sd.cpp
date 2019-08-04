@@ -823,8 +823,7 @@ void SD::init_gpio()
 
 void SD::deinit_gpio()
 {
-    gpioc.unset_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 |
-                       STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12);
+    gpioc.unset_config(STM32_GPIO::PIN_8 | STM32_GPIO::PIN_9 | STM32_GPIO::PIN_10 | STM32_GPIO::PIN_11 | STM32_GPIO::PIN_12);
     gpiod.unset_config(STM32_GPIO::PIN_2);
     STM32::RCC::disable_clk_GPIOC();
     STM32::RCC::disable_clk_GPIOD();

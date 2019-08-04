@@ -1,15 +1,5 @@
 #include "stm32_inc.h"
 
-#define GPIO_MODE             0x00000003U
-#define EXTI_MODE             0x10000000U
-#define GPIO_MODE_IT          0x00010000U
-#define GPIO_MODE_EVT         0x00020000U
-#define RISING_EDGE           0x00100000U
-#define FALLING_EDGE          0x00200000U
-#define GPIO_OUTPUT_TYPE      0x00000010U
-
-#define GPIO_NUMBER           16U
-
 #ifdef STM32F1
 /* Definitions for bit manipulation of CRL and CRH register */
 #define  GPIO_CR_MODE_INPUT         0x00000000U /*!< 00: Input mode (reset state)  */
@@ -22,25 +12,34 @@
 #define  GPIO_CR_CNF_AF_OUTPUT_OD   0x0000000CU /*!< 11: Alternate function output Open-drain  */
 #endif
 
+STM32_GPIO gpioa;
+STM32_GPIO gpiob;
+STM32_GPIO gpioc;
+STM32_GPIO gpiod;
+STM32_GPIO gpioe;
+STM32_GPIO gpiof;
+STM32_GPIO gpiog;
+STM32_GPIO gpioh;
+STM32_GPIO gpioi;
+
 void STM32_GPIO::init_all()
 {
-    gpioa.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOA_BASE);
-    gpiob.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOB_BASE);
-    gpioc.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOC_BASE);
-    gpiod.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOD_BASE);
-    gpioe.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOE_BASE);
+    gpioa.m_base = STM32::GPIOA_BASE;
+    gpiob.m_base = STM32::GPIOB_BASE;
+    gpioc.m_base = STM32::GPIOC_BASE;
+    gpiod.m_base = STM32::GPIOD_BASE;
+    gpioe.m_base = STM32::GPIOE_BASE;
+    gpiof.m_base = STM32::GPIOF_BASE;
+    gpiog.m_base = STM32::GPIOG_BASE;
+    gpioh.m_base = STM32::GPIOH_BASE;
+    gpioi.m_base = STM32::GPIOI_BASE;
 
-    /*gpioa.set_config(STM32_GPIO::PIN_All & (~(STM32_GPIO::PIN_13 | STM32_GPIO::PIN_14)), STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
+    gpioa.set_config(STM32_GPIO::PIN_All & (~(STM32_GPIO::PIN_13 | STM32_GPIO::PIN_14)),
+                                                       STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpiob.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpioc.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
     gpiod.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
-    gpioe.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);*/
-    #ifdef GPIOF_BASE
-    gpiof.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOF_BASE);
-    gpiog.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOG_BASE);
-    gpioh.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOH_BASE);
-    gpioi.m_gpio = reinterpret_cast<GPIO_TypeDef*>(GPIOI_BASE);
-    #endif
+    gpioe.set_config(STM32_GPIO::PIN_All, STM32_GPIO::EMode::INPUT, EAF::NONE, STM32_GPIO::ESpeed::LOW, STM32_GPIO::EPull::NOPULL);
 }
 
 void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, EAF pin_alt, ESpeed pin_speed, EPull pin_pull)
@@ -146,40 +145,40 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, EAF pin_alt, ESpe
             if ((pin_mode == EMode::AF_PP) || (pin_mode == EMode::AF_OD))
             {
                 /* Configure Alternate function mapped with the current IO */
-                temp = m_gpio->AFR[position >> 3U];
+                temp = STM32_REGS::GPIO::AFR::get(m_base, position >> 3U);
                 temp &= ~(0xFU << ((position & 0x07U) * 4U)) ;
                 temp |= (uint32_t(pin_alt) << ((position & 0x07U) * 4U));
-                m_gpio->AFR[position >> 3U] = temp;
+                STM32_REGS::GPIO::AFR::set(m_base, position >> 3U, temp);
             }
 
             /* Configure IO Direction mode (Input, Output, Alternate or Analog) */
-            temp = m_gpio->MODER;
+            temp = STM32_REGS::GPIO::MODER::get(m_base);
             temp &= ~(GPIO_MODER_MODER0 << (position * 2U));
             temp |= ((static_cast<uint32_t>(pin_mode) & GPIO_MODE) << (position * 2U));
-            m_gpio->MODER = temp;
+            STM32_REGS::GPIO::MODER::set(m_base, temp);
 
             /* In case of Output or Alternate function mode selection */
             if ((pin_mode == EMode::OUTPUT_PP) || (pin_mode == EMode::AF_PP) ||
                 (pin_mode == EMode::OUTPUT_OD) || (pin_mode == EMode::AF_OD))
             {
                 /* Configure the IO Speed */
-                temp = m_gpio->OSPEEDR;
+                temp = STM32_REGS::GPIO::OSPEEDR::get(m_base);
                 temp &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
                 temp |= (static_cast<uint32_t>(pin_speed) << (position * 2U));
-                m_gpio->OSPEEDR = temp;
+                STM32_REGS::GPIO::OSPEEDR::set(m_base, temp);
 
                 /* Configure the IO Output Type */
-                temp = m_gpio->OTYPER;
+                temp = STM32_REGS::GPIO::OTYPER::get(m_base);
                 temp &= ~(GPIO_OTYPER_OT_0 << position) ;
                 temp |= (((static_cast<uint32_t>(pin_mode) & GPIO_OUTPUT_TYPE) >> 4U) << position);
-                m_gpio->OTYPER = temp;
+                STM32_REGS::GPIO::OTYPER::set(m_base, temp);
             }
 
             /* Activate the Pull-up or Pull down resistor for the current IO */
-            temp = m_gpio->PUPDR;
+            STM32_REGS::GPIO::PUPDR::get(m_base);
             temp &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
             temp |= (static_cast<uint32_t>(pin_pull) << (position * 2U));
-            m_gpio->PUPDR = temp;
+            STM32_REGS::GPIO::PUPDR::set(m_base, temp);
 
             /*--------------------- EXTI Mode Configuration ------------------------*/
             /* Configure the External Interrupt or event for the current IO */
@@ -227,6 +226,7 @@ void STM32_GPIO::set_config(uint32_t pin_mask, EMode pin_mode, EAF pin_alt, ESpe
         ioposition <<= 1;
     }
 }
+
 
 void STM32_GPIO::unset_config(uint32_t pin_mask)
 {
@@ -286,19 +286,19 @@ void STM32_GPIO::unset_config(uint32_t pin_mask)
             #elif defined(STM32F4)
             /*------------------------- GPIO Mode Configuration --------------------*/
             /* Configure IO Direction in Input Floating Mode */
-            m_gpio->MODER &= ~(GPIO_MODER_MODER0 << (position * 2U));
+            STM32_REGS::GPIO::MODER::set(m_base, STM32_REGS::GPIO::MODER::get(m_base) & ~(GPIO_MODER_MODER0 << (position * 2U)));
 
             /* Configure the default Alternate Function in current IO */
-            m_gpio->AFR[position >> 3U] &= ~(0xFU << ((position & 0x07U) * 4U)) ;
+            STM32_REGS::GPIO::AFR::set(m_base, position >> 3U, STM32_REGS::GPIO::AFR::get(m_base, position >> 3U) & ~(0xFU << ((position & 0x07U) * 4U)));
 
             /* Configure the default value for IO Speed */
-            m_gpio->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
+            STM32_REGS::GPIO::OSPEEDR::set(m_base, STM32_REGS::GPIO::OSPEEDR::get(m_base) & ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U)));
 
             /* Configure the default value IO Output Type */
-            m_gpio->OTYPER  &= ~(GPIO_OTYPER_OT_0 << position) ;
+            STM32_REGS::GPIO::OTYPER::set(m_base, STM32_REGS::GPIO::OTYPER::get(m_base) & ~(GPIO_OTYPER_OT_0 << position));
 
             /* Deactivate the Pull-up and Pull-down resistor for the current IO */
-            m_gpio->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
+            STM32_REGS::GPIO::PUPDR::set(m_base, STM32_REGS::GPIO::PUPDR::get(m_base) & ~(GPIO_PUPDR_PUPDR0 << (position * 2U)));
 
             /*------------------------- EXTI Mode Configuration --------------------*/
             #ifdef STM32_USE_EXTI
@@ -328,11 +328,11 @@ uint32_t STM32_GPIO::pin_lock(uint32_t pin)
 {
     __IO uint32_t tmp = GPIO_LCKR_LCKK;
     tmp |= pin;
-    m_gpio->LCKR = tmp;
-    m_gpio->LCKR = pin;
-    m_gpio->LCKR = tmp;
-    tmp = m_gpio->LCKR;
-    if ((m_gpio->LCKR & GPIO_LCKR_LCKK) != RESET)
+    STM32_REGS::GPIO::LCKR::set(m_base, tmp);
+    STM32_REGS::GPIO::LCKR::set(m_base, pin);
+    STM32_REGS::GPIO::LCKR::set(m_base, tmp);
+    tmp = STM32_REGS::GPIO::LCKR::get(m_base);
+    if ((STM32_REGS::GPIO::LCKR::get(m_base) & GPIO_LCKR_LCKK) != RESET)
         return STM32_RESULT_OK;
     else
         return STM32_RESULT_FAIL;
@@ -343,16 +343,6 @@ void STM32_GPIO::EXTI_IRQ_Handler(STM32::EXTI::ELine pin)
     STM32_GPIO::EXTI_clear_IT(pin);
     EXTI_cb(pin);
 }
-
-STM32_GPIO gpioa;
-STM32_GPIO gpiob;
-STM32_GPIO gpioc;
-STM32_GPIO gpiod;
-STM32_GPIO gpioe;
-STM32_GPIO gpiof;
-STM32_GPIO gpiog;
-STM32_GPIO gpioh;
-STM32_GPIO gpioi;
 
 __attribute__((weak)) void EXTI_cb(uint32_t pin)
 {

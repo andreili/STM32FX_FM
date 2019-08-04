@@ -7,6 +7,17 @@
 
 #include "stm32_inc.h"
 
+
+#define GPIO_MODE             0x00000003U
+#define EXTI_MODE             0x10000000U
+#define GPIO_MODE_IT          0x00010000U
+#define GPIO_MODE_EVT         0x00020000U
+//#define RISING_EDGE           0x00100000U
+//#define FALLING_EDGE          0x00200000U
+#define GPIO_OUTPUT_TYPE      0x00000010U
+
+#define GPIO_NUMBER           16U
+
 class STM32_GPIO
 {
 public:
@@ -168,14 +179,16 @@ public:
     void set_config(uint32_t pin_mask, EMode pin_mode, EAF pin_alt, ESpeed pin_speed, EPull pin_pull);
     void unset_config(uint32_t pin_mask);
 
-    inline void pin_ON(uint32_t pin_mask) { m_gpio->BSRR = pin_mask; }
-    inline void pin_OFF(uint32_t pin_mask) { m_gpio->BSRR = (pin_mask << GPIO_BSRR_BR0_Pos); }
+    inline void pin_ON(uint32_t pin_mask) { STM32_REGS::GPIO::BSRR::set(m_base, pin_mask); }
+    inline void pin_OFF(uint32_t pin_mask) { STM32_REGS::GPIO::BSRR::set(m_base, pin_mask << GPIO_BSRR_BR0_Pos); }
 
-    inline bool pin_read(uint32_t pin) { return ((m_gpio->IDR & pin) == pin); }
-    inline uint32_t pins_read(uint32_t pin) { return (m_gpio->IDR & pin); }
-    inline void pins_write(uint32_t data) { m_gpio->ODR = data; }
-    inline void pins_write_mask(uint32_t data, uint32_t mask) { m_gpio->ODR = ((m_gpio->ODR & (~mask)) | data); }
-    inline void pin_toggle(uint32_t pin) { m_gpio->ODR ^= pin; }
+    inline bool pin_read(uint32_t pin) { return ((STM32_REGS::GPIO::IDR::get(m_base) & pin) == pin); }
+    inline uint32_t pins_read(uint32_t pin) { return (STM32_REGS::GPIO::IDR::get(m_base) & pin); }
+    inline void pins_write(uint32_t data) { STM32_REGS::GPIO::ODR::set(m_base, data); }
+    inline void pins_write_mask(uint32_t data, uint32_t mask) { STM32_REGS::GPIO::ODR::set(m_base,
+                    (STM32_REGS::GPIO::ODR::get(m_base) & (~mask)) | data); }
+    inline void pin_toggle(uint32_t pin) { STM32_REGS::GPIO::ODR::set(m_base,
+                    STM32_REGS::GPIO::ODR::get(m_base) ^ pin); }
     uint32_t pin_lock(uint32_t pin);
 
     static inline bool EXTI_get_IT(STM32::EXTI::ELine line) { return STM32::EXTI::get_flag(line); }
@@ -183,7 +196,7 @@ public:
     static inline void EXTI_generate_swit(STM32::EXTI::ELine line) { STM32::EXTI::generate_SWIT(line); }
     static inline void EXTI_IRQ_Handler(STM32::EXTI::ELine pin);
 private:
-    GPIO_TypeDef*   m_gpio;
+    uint32_t    m_base;
 };
 
 void EXTI_cb(STM32::EXTI::ELine pin);
