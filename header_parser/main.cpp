@@ -166,6 +166,7 @@ typedef struct
 {
     std::string name;
     std::string sub_name;
+    std::deque<std::string> base_num;
     std::deque<std::string> synonyms;
     std::deque<REG_FIELD_t> fields;
     std::deque<REG_FIELD_MASKS_t> masks;
@@ -195,10 +196,16 @@ std::string to_upper(std::string s)
 bool is_REG(REG_t& reg, std::string name)
 {
     name = to_upper(name);
-    if (to_upper(reg.sub_name).compare(name) == 0)
-        return true;
-    if (to_upper(reg.name).compare(name) == 0)
-        return true;
+    if (reg.sub_name.size())
+    {
+        if (to_upper(reg.sub_name).compare(name) == 0)
+            return true;
+    }
+    else
+    {
+        if (to_upper(reg.name).compare(name) == 0)
+            return true;
+    }
     for (std::string& syn : reg.synonyms)
     {
         if (to_upper(syn).compare(name) == 0)
@@ -272,17 +279,20 @@ bool parse_includes(std::string& str)
 
 bool parse_regs(std::string& str, REG_t& reg)
 {
-    static std::regex expr("}\\s*([A-Z\\d_]+)_([A-Za-z\\d]*)(_*)TypeDef;");
+    static std::regex expr("}\\s*([A-Z\\d_]+)_([A-Za-z_\\d]*)(_*)TypeDef;");
     static std::regex expr_f("\\s+(\\S+\\s?\\S+\\s?[const]?\\S+)\\s+([A-Za-z\\d]+)([\\[\\]\\dxA-Z]*);");
     static std::smatch smatch;
     if (std::regex_search(str, smatch, expr))
     {
         reg.name = smatch[1];
         std::string name_ex = smatch[2];
+        if (name_ex[name_ex.size() - 1] == '_')
+            name_ex.erase(name_ex.size() - 1);
         if (name_ex.size())
             reg.sub_name = reg.name + "_" + name_ex;
         std::cout << reg.name << ":" << reg.sub_name << std::endl;
         stm.regs.push_back(reg);
+        reg.base_num.clear();
         reg.masks.clear();
         reg.fields.clear();
         reg.synonyms.clear();
@@ -304,6 +314,91 @@ bool parse_regs(std::string& str, REG_t& reg)
     return false;
 }
 
+typedef struct
+{
+    std::string reg_name;
+    std::string struct_name;
+} rsyn_t;
+
+std::vector<rsyn_t> reg_syns {
+    {"TIM1",     "TIM"},
+    {"TIM2",     "TIM"},
+    {"TIM3",     "TIM"},
+    {"TIM4",     "TIM"},
+    {"TIM5",     "TIM"},
+    {"TIM6",     "TIM"},
+    {"TIM7",     "TIM"},
+    {"TIM8",     "TIM"},
+    {"TIM9",     "TIM"},
+    {"TIM10",    "TIM"},
+    {"TIM11",    "TIM"},
+    {"TIM12",    "TIM"},
+    {"TIM13",    "TIM"},
+    {"TIM14",    "TIM"},
+    {"TIM15",    "TIM"},
+    {"TIM16",    "TIM"},
+    {"SPI1",     "SPI"},
+    {"SPI2",     "SPI"},
+    {"SPI3",     "SPI"},
+    {"SPI4",     "SPI"},
+    {"SPI5",     "SPI"},
+    {"SPI6",     "SPI"},
+    {"ADC1",     "ADC"},
+    {"ADC2",     "ADC"},
+    {"ADC3",     "ADC"},
+    {"CAN1",     "CAN"},
+    {"CAN2",     "CAN"},
+    {"CAN3",     "CAN"},
+    {"I2C1",     "I2C"},
+    {"I2C2",     "I2C"},
+    {"I2C3",     "I2C"},
+    {"I2C4",     "I2C"},
+    {"I2C5",     "I2C"},
+    {"I2C6",     "I2C"},
+    {"I2S1",     "I2S"},
+    {"I2S2",     "I2S"},
+    {"I2S3",     "I2S"},
+    {"I2S4",     "I2S"},
+    {"I2S5",     "I2S"},
+    {"I2S1",     "I2S"},
+    {"USART1",   "USART"},
+    {"USART2",   "USART"},
+    {"USART3",   "USART"},
+    {"UART4",    "USART"},
+    {"UART5",    "USART"},
+    {"USART6",   "USART"},
+    {"USART7",   "USART"},
+    {"USART8",   "USART"},
+    {"USART9",   "USART"},
+    {"DMA1_Stream0", "DMA_Stream"},
+    {"DMA1_Stream1", "DMA_Stream"},
+    {"DMA1_Stream2", "DMA_Stream"},
+    {"DMA1_Stream3", "DMA_Stream"},
+    {"DMA1_Stream4", "DMA_Stream"},
+    {"DMA1_Stream5", "DMA_Stream"},
+    {"DMA1_Stream6", "DMA_Stream"},
+    {"DMA1_Stream7", "DMA_Stream"},
+    {"DMA2_Stream0", "DMA_Stream"},
+    {"DMA2_Stream1", "DMA_Stream"},
+    {"DMA2_Stream2", "DMA_Stream"},
+    {"DMA2_Stream3", "DMA_Stream"},
+    {"DMA2_Stream4", "DMA_Stream"},
+    {"DMA2_Stream5", "DMA_Stream"},
+    {"DMA2_Stream6", "DMA_Stream"},
+    {"DMA2_Stream7", "DMA_Stream"},
+    {"DMA1",    "DMA"},
+    {"DMA2",    "DMA"},
+    {"GPIOA",   "GPIO"},
+    {"GPIOB",   "GPIO"},
+    {"GPIOC",   "GPIO"},
+    {"GPIOD",   "GPIO"},
+    {"GPIOE",   "GPIO"},
+    {"GPIOF",   "GPIO"},
+    {"GPIOG",   "GPIO"},
+    {"GPIOH",   "GPIO"},
+    {"GPIOI",   "GPIO"},
+};
+
 bool parse_BASEs(std::string& str)
 {
     static std::regex expr("#define (\\S+)(_BASE|_END|_SIZE)\\s+(\\S+)(\\ \\+\\ \\S+)?");
@@ -317,6 +412,22 @@ bool parse_BASEs(std::string& str)
         base.offset = smatch[3];
         if (smatch[4].matched)
             base.offset += smatch[4];
+        if (smatch[2].compare("_BASE") == 0)
+        {
+            for (rsyn_t &rsyn : reg_syns)
+                if (base.reg_name.compare(rsyn.reg_name) == 0)
+                {
+                    for (REG_t& reg : stm.regs)
+                        if (is_REG(reg, rsyn.struct_name))
+                        {
+                            reg.base_num.push_back(rsyn.reg_name);
+                            std::cout << rsyn.reg_name << "=" << reg.name << ":" << reg.sub_name << "=" << reg.base_num.size() << std::endl;
+                            break;
+                        }
+                    break;
+                }
+        }
+
         stm.bases.push_back(base);
         if (std::regex_search(str, smatch, expr_syn))
         {
@@ -418,6 +529,21 @@ std::vector<syn_t> field_syns {
     {"FSMC",    "BWTR2",  "BWTR",    "FSMC_Bank1E", 0, 1},
     {"FSMC",    "BWTR3",  "BWTR",    "FSMC_Bank1E", 0, 2},
     {"FSMC",    "BWTR4",  "BWTR",    "FSMC_Bank1E", 0, 3},
+    {"FSMC",    "PCR2",   "PCR2",    "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "SR2",    "SR2",     "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PMEM2",  "PMEM2",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PATT2",  "PATT2",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "ECCR2",  "ECCR2",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PCR3",   "PCR3",    "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "SR3",    "SR3",     "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PMEM3",  "PMEM3",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PATT3",  "PATT3",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "ECCR3",  "ECCR3",   "FSMC_Bank2_3", 0, -1},
+    {"FSMC",    "PCR4",   "PCR4",    "FSMC_Bank4", 0, -1},
+    {"FSMC",    "SR4",    "SR4",     "FSMC_Bank4", 0, -1},
+    {"FSMC",    "PMEM4",  "PMEM4",   "FSMC_Bank4", 0, -1},
+    {"FSMC",    "PATT4",  "PATT4",   "FSMC_Bank4", 0, -1},
+    {"FSMC",    "PIO4",   "PIO4",    "FSMC_Bank4", 0, -1},
     {"GPIO",    "AFRL",   "AFR",     "GPIO", 0, 0},
     {"GPIO",    "AFRH",   "AFR",     "GPIO", 0, 1},
     {"GPIO",    "BRR",    "BSRR",    "GPIO", 0, -1},
@@ -443,6 +569,8 @@ std::vector<syn_t> field_syns {
     {"USB_OTG", "CID",    "CID",     "USB_OTG_Global", 0, -1},
     {"USB_OTG", "HPTXFSIZ","HPTXFSIZ", "USB_OTG_Global", 0, -1},
     {"USB_OTG", "DIEPTXF", "DIEPTXF", "USB_OTG_Global", 0, -1},
+    {"USB_OTG", "HCFG",   "HCFG",    "USB_OTG_Host", 0, -1},
+    {"USB_OTG", "DCFG",   "DCFG",    "USB_OTG_Device", 0, -1},
 };
 
 REG_FIELD_t* get_field(REG_t& reg, std::string name, std::string fsyn)
@@ -654,7 +782,7 @@ void write_defines()
 
 void write_IRQs()
 {
-    out_file << "namespace STM" << stm.bits << std::endl;
+    out_file << "namespace STM" << stm.bits << "_REGS" << std::endl;
     out_file << "{" << std::endl;
     out_file << "    enum class IRQn: std::int32_t" << std::endl;
     out_file << "    {" << std::endl;
@@ -690,8 +818,12 @@ void write_BASEs()
     out_file << "namespace STM" << stm.bits << std::endl;
     out_file << "{" << std::endl;
     for (REG_BASE_t &base : stm.bases)
-        out_file << "    static constexpr std::uint32_t "<< std::setw(FIELD_NAME_WIDTH) << std::left << base.name << " = " << base.offset << ";" << std::endl;
+        out_file << "    static constexpr std::uint32_t "<< std::setw(FIELD_NAME_WIDTH) << std::left <<
+                    to_upper(base.name) << " = " << base.offset << ";" << std::endl;
     out_file << "}" << std::endl;
+    out_file << std::endl;
+    for (REG_BASE_t &base : stm.bases)
+        out_file << "#define __" << base.reg_name << " 1" << std::endl;
     out_file << std::endl;
 }
 
@@ -743,29 +875,38 @@ void write_field_enum(REG_FIELD_t& field)
     }
 }
 
-void write_field_flags_operators(bool is_RO, std:: string type_name, std::string base, std::string fname)
+void write_field_flags_operators(bool is_RO, std:: string type_name, std::string base, std::string fname, bool multiple_regs)
 {
     if (!is_RO)
     {
         out_file << "            template <EMasks ... flags>" << std::endl;
-        out_file << "            static inline void set_flags()" << std::endl;
+        if (multiple_regs)
+            out_file << "            static inline void set_flags(uint32_t base)" << std::endl;
+        else
+            out_file << "            static inline void set_flags()" << std::endl;
         out_file << "            {" << std::endl;
         out_file << "                reinterpret_cast<" + type_name + "_t*>(" << base << ")->" + fname +  " |= SetBits<(std::uint32_t)flags...>();" << std::endl;
         out_file << "            }" << std::endl;
         out_file << "            template <EMasks ... flags>" << std::endl;
-        out_file << "            static inline void clear_flags()" << std::endl;
+        if (multiple_regs)
+            out_file << "            static inline void clear_flags(uint32_t base)" << std::endl;
+        else
+            out_file << "            static inline void clear_flags()" << std::endl;
         out_file << "            {" << std::endl;
         out_file << "                reinterpret_cast<" + type_name + "_t*>(" << base << ")->" + fname + " &= ~(SetBits<(std::uint32_t)flags...>());" << std::endl;
         out_file << "            }" << std::endl;
     }
     out_file << "            template <EMasks ... flags>" << std::endl;
-    out_file << "            static inline bool get_flags()" << std::endl;
+    if (multiple_regs)
+        out_file << "            static inline bool get_flags(uint32_t base)" << std::endl;
+    else
+        out_file << "            static inline bool get_flags()" << std::endl;
     out_file << "            {" << std::endl;
     out_file << "                return (reinterpret_cast<" + type_name + "_t*>(" << base << ")->" + fname + " & SetBits<(std::uint32_t)flags...>());" << std::endl;
     out_file << "            }" << std::endl;
 }
 
-void wfite_field_accs(REG_FIELD_t& field, std::string base, std::string name, bool has_bit_fileds)
+void wfite_field_accs(REG_FIELD_t& field, std::string base, std::string name, bool has_bit_fileds, bool multiple_regs)
 {
     bool indexed = (field.array_size.size() > 0);
     std::string index_hdr = "";
@@ -782,8 +923,27 @@ void wfite_field_accs(REG_FIELD_t& field, std::string base, std::string name, bo
         if (std::regex_search(fname, smatch, ex_idx))
             fname = smatch[1];
     }
+
+    if (multiple_regs)
+    {
+        base = "base";
+        if (index_hdr.size())
+            index_hdr = "uint32_t base, " + index_hdr;
+        else
+            index_hdr = "uint32_t base";
+        index_hdr_ex = "uint32_t base, " + index_hdr_ex;
+    }
+
     std::regex ex_const("(const\\s)");
     std::smatch smatch;
+
+    // field definition (legacy support)
+    for (REG_FIELD_MASKS_t& mask : field.masks)
+    {
+        std::string ff = name + "_" + fname + "_" + mask.name;
+        out_file << "            #define __" << std::setw(FIELD_NAME_WIDTH - 8) << std::left << ff << " (0x" << mask.mask << "U << " <<
+                    mask.pos << ")" << std::endl;
+    }
 
     std::string io_mode = "";
     if (field.type.find("const ") != std::string::npos)
@@ -803,7 +963,7 @@ void wfite_field_accs(REG_FIELD_t& field, std::string base, std::string name, bo
                     name << "_t*>(" << base << ")->" << fname << index << " = value; }" << std::endl;
 
     if (has_bit_fileds)
-        write_field_flags_operators(is_RO, name, base, field.name);
+        write_field_flags_operators(is_RO, name, base, field.name, multiple_regs);
     if (field.type.find("uint32_t") != std::string::npos)
         for (REG_FIELD_MASKS_t& mask : field.masks)
         {
@@ -826,7 +986,6 @@ void write_field(REG_t& reg, REG_FIELD_t& field, std::string base)
         name = reg.sub_name;
     else
         name = reg.name;
-    std::string uname = to_upper(name);
 
     if (to_upper(field.name).find("RESERVED") != std::string::npos)
         return;
@@ -847,7 +1006,7 @@ void write_field(REG_t& reg, REG_FIELD_t& field, std::string base)
     }
 
     write_field_enum(field);
-    wfite_field_accs(field, base, name, has_bit_fileds);
+    wfite_field_accs(field, base, name, has_bit_fileds, reg.base_num.size());
 
     out_file << "        };" << std::endl;
 }
@@ -874,6 +1033,13 @@ void write_reg_fields(REG_t& reg)
     out_file << "        };" << std::endl;
 }
 
+std::map<std::string,std::string> base_alias = {
+    {"FSMC_Bank1", "FSMC_Bank1_R"},
+    {"FSMC_Bank1E", "FSMC_Bank1E_R"},
+    {"FSMC_Bank2_3", "FSMC_Bank2_3_R"},
+    {"FSMC_Bank4", "FSMC_Bank4_R"},
+};
+
 void write_REGs()
 {
     out_file << "namespace STM" << stm.bits << "_REGS" << std::endl;
@@ -881,6 +1047,7 @@ void write_REGs()
     for (std::string& str : stm.regs_defs)
         out_file << "    #define " << str << "_SUPPORT" << std::endl;
     out_file << std::endl;
+    std::cout << "WR:" << std::endl;
     for (REG_t &reg : stm.regs)
     {
         std::string name;
@@ -889,42 +1056,28 @@ void write_REGs()
         else
             name = reg.name;
 
-        bool base_ex = false;
-        for (REG_BASE_t& base : stm.bases)
-            if (base.reg_name.compare(name) == 0)
-            {
-                base_ex = true;
-                break;
-            }
-
         out_file << "    /* " << name << " DEFINITION */" << std::endl;
         std::string base_label;
-        if (!base_ex)
-        {
-            out_file << "    template <uint32_t reg_base>" << std::endl;
-            base_label = "reg_base";
-        }
+        if (base_alias.count(name))
+            base_label = to_upper("STM" + stm.bits + "::" + base_alias[name] + "_BASE");
         else
-            base_label = "STM" + stm.bits + "::" + name + "_BASE";
+            base_label = to_upper("STM" + stm.bits + "::" + name + "_BASE");
         out_file << "    class " << name << std::endl;
         out_file << "    {" << std::endl;
-        if (base_ex)
+        out_file << "    private:" << std::endl;
+        if ((name.find("CAN") != std::string::npos) || (name.find("USB_OTG") != std::string::npos))
         {
-            out_file << "    private:" << std::endl;
-            if ((name.find("CAN_") != std::string::npos))
-                out_file << "#warning TODO: " << name << std::endl;
-            else
-            {
-                write_reg_fields(reg);
-                out_file << "    public:" << std::endl;
-                //fields_t& fields = reg.fields_array[0];
-                for (REG_FIELD_t& field : reg.fields)
-                    write_field(reg, field, base_label);
-            }
+            //out_file << "#warning TODO: " << name << std::endl;
         }
         else
-            out_file << "#warning TODO: " << name << std::endl;
+        {
+            write_reg_fields(reg);
+            out_file << "    public:" << std::endl;
+            for (REG_FIELD_t& field : reg.fields)
+                write_field(reg, field, base_label);
+        }
         out_file << "    };" << std::endl;
+
     }
     out_file << "}" << std::endl;
     out_file << std::endl;
