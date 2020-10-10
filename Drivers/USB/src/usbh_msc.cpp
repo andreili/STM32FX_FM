@@ -20,11 +20,10 @@ USBHCore::EStatus USBH_MSC::init(USBHCore* host)
 {
     debug_fn();
     m_host = host;
-    USBHClass* act_class = m_host->get_active_class();
     uint8_t interface = m_host->find_interface(get_class_code(), MSC_TRANSPARENT, 0xff);
     if (interface == 0xff)
     {
-        USBH_DbgLog("Cannot Find the interface for %s class.", act_class->get_name());
+        USBH_DbgLog("Cannot Find the interface for %s class.", m_host->get_active_class()->get_name());
         return USBHCore::EStatus::FAIL;
     }
     m_host->select_interface(interface);
